@@ -1,0 +1,4 @@
+# No external dependencies required.
+# This project uses Python standard library modules:
+# secrets
+# string
