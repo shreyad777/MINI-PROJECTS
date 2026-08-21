@@ -33,6 +33,27 @@ The project uses Python's `secrets` module for secure random password generation
 * Secure random generation using Python's `secrets` module.
 * Simple command-line interface.
 
+## 🖥️ GUI Version
+
+The project also includes a graphical user interface built using Python Tkinter.
+
+The GUI version provides:
+
+- Password length selection
+- Uppercase letter option
+- Lowercase letter option
+- Number option
+- Special character option
+- Password generation button
+- Copy password button
+- Password strength indicator
+
+### Run the GUI
+
+Use:
+
+```bash
+python password_generator_gui.py
 ## 🛠️ Technologies Used
 
 | Technology | Purpose                                              |
@@ -117,26 +138,6 @@ This project demonstrates:
 * Random generation
 * Basic security concepts
 
-## 🚀 How to Run
-
-### Step 1 — Install Python
-
-Make sure Python is installed on your computer.
-
-Check using:
-
-```bash
-python --version
-```
-
-### Step 2 — Clone the Repository
-
-Clone the GitHub repository:
-
-```bash
-git clone https://github.com/YOUR-USERNAME/mini-projects.git
-```
-
 
 ## 🔮 Future Enhancements
 
@@ -167,3 +168,5 @@ B.E. Computer Science and Engineering (Data Science)
 ## 📜 License
 
 This project is created for educational and academic purposes.
+
+
