@@ -34,23 +34,33 @@ The project uses Python's `secrets` module for secure random password generation
 * Simple command-line interface.
 
 ## 🖥️ GUI Version
-## 🖥️ Professional GUI Version
+## 🚀 Advanced Version
 
-Version 3 of the project includes a professional graphical user interface built using Python Tkinter.
+The latest version includes additional features for generating and managing secure passwords.
 
-### GUI Features
+### Advanced Features
 
-- 🔐 Secure password generation
-- 📏 Custom password length from 4 to 100 characters
-- 🔤 Uppercase letter selection
-- 🔡 Lowercase letter selection
+- 🔐 Secure random password generation
+- 📏 Password length from 4 to 100 characters
+- 🔤 Uppercase character selection
+- 🔡 Lowercase character selection
 - 🔢 Number selection
 - 🔣 Special character selection
 - 👁️ Show/Hide password
 - 📋 Copy password to clipboard
-- ✖ Clear generated password
-- 📊 Password strength indicator
+- ✖ Clear generated passwords
+- 📊 Password strength analysis
+- 📐 Estimated entropy calculation
+- 🎲 Generate multiple passwords
+- 💾 Save generated passwords to a text file
 - ⚠️ Input validation
+
+### Password Entropy
+
+The application estimates password entropy using:
+
+```text
+Entropy = Password Length × log₂(Character Pool Size)
 
 ### Run the GUI
 

@@ -140,3 +140,25 @@ Generated Password: A7@kP2!xQ9#m
 ```
 
 The generated value will change each time the program is executed.
+
+
+# Advanced Features
+
+## Password Strength
+
+The application estimates password strength using password length and character pool size.
+
+The approximate entropy is calculated using:
+
+Entropy = Length × log₂(Character Pool Size)
+
+Higher entropy indicates a larger number of possible password combinations.
+
+## Multiple Password Generation
+
+The application can generate between 1 and 20 passwords in a single operation.
+
+Each password is generated independently using:
+
+```python
+secrets.choice()
