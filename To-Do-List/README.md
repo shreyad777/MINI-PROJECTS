@@ -14,15 +14,26 @@ This project is designed to practice fundamental Python programming concepts suc
 - Practice data structures.
 - Build a simple command-line application.
 
+
+
 ## ✨ Features
+
+### Version 1
 
 - ➕ Add new tasks
 - 📋 View all tasks
 - ✅ Mark tasks as completed
 - 🗑️ Delete tasks
 - ⚠️ Input validation
-- 💻 Simple command-line interface
+- 💻 Command-line interface
 
+### Version 2 — Persistent Storage
+
+- 💾 Automatically save tasks
+- 📂 Load tasks when the application starts
+- 🔄 Tasks remain available after restarting the program
+- 🗃️ JSON-based data storage
+- 🛡️ Handles missing or invalid JSON files
 ## 🛠️ Technologies Used
 
 | Technology | Purpose |
@@ -34,8 +45,18 @@ This project is designed to practice fundamental Python programming concepts suc
 
 ## 📂 Project Structure
 
-```text
 To-Do-List/
 │
 ├── todo.py
-└── README.md
+├── tasks.json
+├── README.md
+├── requirements.txt
+├── .gitignore
+│
+└── Documentation/
+    └── working.md## 💾 Persistent Storage
+
+Version 2 uses a JSON file named:
+
+```text
+tasks.json

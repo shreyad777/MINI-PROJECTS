@@ -1,7 +1,28 @@
-tasks = []
+import json
+import os
 
 
-def show_tasks():
+TASKS_FILE = "tasks.json"
+
+
+def load_tasks():
+    if not os.path.exists(TASKS_FILE):
+        return []
+
+    try:
+        with open(TASKS_FILE, "r") as file:
+            return json.load(file)
+
+    except (json.JSONDecodeError, FileNotFoundError):
+        return []
+
+
+def save_tasks(tasks):
+    with open(TASKS_FILE, "w") as file:
+        json.dump(tasks, file, indent=4)
+
+
+def show_tasks(tasks):
     if not tasks:
         print("\nNo tasks available.")
         return
@@ -9,6 +30,7 @@ def show_tasks():
     print("\n========== TASKS ==========")
 
     for index, task in enumerate(tasks, start=1):
+
         status = "✓" if task["completed"] else " "
 
         print(
@@ -16,7 +38,8 @@ def show_tasks():
         )
 
 
-def add_task():
+def add_task(tasks):
+
     title = input("\nEnter task: ").strip()
 
     if not title:
@@ -28,16 +51,20 @@ def add_task():
         "completed": False
     })
 
+    save_tasks(tasks)
+
     print("Task added successfully.")
 
 
-def complete_task():
-    show_tasks()
+def complete_task(tasks):
+
+    show_tasks(tasks)
 
     if not tasks:
         return
 
     try:
+
         number = int(
             input("\nEnter task number to complete: ")
         )
@@ -48,19 +75,24 @@ def complete_task():
 
         tasks[number - 1]["completed"] = True
 
+        save_tasks(tasks)
+
         print("Task completed.")
 
     except ValueError:
+
         print("Please enter a valid number.")
 
 
-def delete_task():
-    show_tasks()
+def delete_task(tasks):
+
+    show_tasks(tasks)
 
     if not tasks:
         return
 
     try:
+
         number = int(
             input("\nEnter task number to delete: ")
         )
@@ -71,15 +103,20 @@ def delete_task():
 
         removed = tasks.pop(number - 1)
 
+        save_tasks(tasks)
+
         print(
             f"Deleted task: {removed['title']}"
         )
 
     except ValueError:
+
         print("Please enter a valid number.")
 
 
 def main():
+
+    tasks = load_tasks()
 
     while True:
 
@@ -96,22 +133,28 @@ def main():
         choice = input("\nEnter your choice: ")
 
         if choice == "1":
-            add_task()
+
+            add_task(tasks)
 
         elif choice == "2":
-            show_tasks()
+
+            show_tasks(tasks)
 
         elif choice == "3":
-            complete_task()
+
+            complete_task(tasks)
 
         elif choice == "4":
-            delete_task()
+
+            delete_task(tasks)
 
         elif choice == "5":
+
             print("Goodbye!")
             break
 
         else:
+
             print("Invalid choice.")
 
 
