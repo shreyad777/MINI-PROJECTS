@@ -34,26 +34,32 @@ The project uses Python's `secrets` module for secure random password generation
 * Simple command-line interface.
 
 ## 🖥️ GUI Version
+## 🖥️ Professional GUI Version
 
-The project also includes a graphical user interface built using Python Tkinter.
+Version 3 of the project includes a professional graphical user interface built using Python Tkinter.
 
-The GUI version provides:
+### GUI Features
 
-- Password length selection
-- Uppercase letter option
-- Lowercase letter option
-- Number option
-- Special character option
-- Password generation button
-- Copy password button
-- Password strength indicator
+- 🔐 Secure password generation
+- 📏 Custom password length from 4 to 100 characters
+- 🔤 Uppercase letter selection
+- 🔡 Lowercase letter selection
+- 🔢 Number selection
+- 🔣 Special character selection
+- 👁️ Show/Hide password
+- 📋 Copy password to clipboard
+- ✖ Clear generated password
+- 📊 Password strength indicator
+- ⚠️ Input validation
 
 ### Run the GUI
 
-Use:
+From the `Password-Generator` directory:
 
 ```bash
 python password_generator_gui.py
+.
+
 ## 🛠️ Technologies Used
 
 | Technology | Purpose                                              |
@@ -143,9 +149,6 @@ This project demonstrates:
 
 The project can be improved by adding:
 
-* Password strength checking.
-* Graphical User Interface using Tkinter.
-* Copy-to-clipboard functionality.
 * Password history.
 * Password strength indicator.
 * Option to generate multiple passwords.
