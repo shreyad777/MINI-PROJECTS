@@ -14,3 +14,6 @@ env/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Local backup
+todo_gui_backup.py
