@@ -1,5 +1,3 @@
-# MINI-PROJECTS
-
 # 🚀 Mini Projects
 
 A collection of Python mini-projects created to practice programming, problem-solving, and software development concepts.
