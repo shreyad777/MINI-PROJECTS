@@ -1,57 +1,31 @@
 # MINI-PROJECTS
 
-Collection of Python and programming mini projects.
+# 🚀 Mini Projects
 
-\# 🚀 Mini Projects
+A collection of Python mini-projects created to practice programming, problem-solving, and software development concepts.
 
-A collection of programming mini-projects developed to practice programming, problem-solving, software development, and project documentation.
+## 📂 Projects
 
-\## 📂 Projects
+| # | Project | Description |
+|---|---|---|
+| 1 | 🔐 [Password Generator](Password-Generator/) | Generates secure random passwords with a GUI. |
+| 2 | 📝 [To-Do List](To-Do-List/) | Task management application with persistent JSON storage and GUI. |
+| 3 | 🧮 [Calculator](Calculator/) | Basic calculator for arithmetic operations. |
 
-\## 🔐 Password Generator
+## 🛠️ Technologies
 
-The Password Generator is a Python application that creates secure random passwords using the `secrets` module.
+- Python
+- Tkinter
+- JSON
+- Git
+- GitHub
 
-\### Features
+## 🎯 Purpose
 
-\- Custom password length
+These projects are developed for learning and practicing programming concepts through hands-on implementation.
 
-\- Uppercase letters
+## 👩‍💻 Author
 
-\- Lowercase letters
+**Shreya D.**
 
-\- Numbers
-
-\- Special characters
-
-\- Password strength analysis
-
-\- Entropy estimation
-
-\- Show/Hide password
-
-\- Copy to clipboard
-
-\- Generate multiple passwords
-
-\- Save passwords to a text file
-
-\- Tkinter graphical user interface
-
-
-
-\### Technologies
-
-
-
-\- Python
-
-\- Tkinter
-
-\- Python Standard Library
-
-\- Git
-
-\- GitHub
-
-
+B.E. Computer Science and Engineering (Data Science)
