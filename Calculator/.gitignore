@@ -10,4 +10,6 @@ env/
 
 .DS_Store
 Thumbs.db
+
 calculator_backup.py
+calculator_gui_backup.py

@@ -1,140 +1,78 @@
 # Calculator — Working Principle
 
-## Version 1
+## Overview
 
-The first version implemented four basic arithmetic operations:
+The Calculator project contains two versions:
+
+1. Command-line calculator
+2. Tkinter GUI calculator
+
+---
+
+# Version 1 — Basic Calculator
+
+The first version supports:
 
 - Addition
 - Subtraction
 - Multiplication
 - Division
 
-The program used separate functions for each operation.
+It uses functions to perform each arithmetic operation.
 
-## Version 2 — Advanced Calculator
+---
 
-Version 2 extends the calculator with additional mathematical operations and calculation history.
+# Version 2 — Advanced Calculator
 
-## Mathematical Operations
+Version 2 added:
 
-### Addition
+- Modulus
+- Power
+- Floor division
+- Square root
+- Percentage
+- Absolute value
+- Calculation history
+
+The `math` module is used for mathematical operations such as square root.
+
+---
+
+# Version 3 — GUI Calculator
+
+Version 3 introduces a graphical interface using Tkinter.
+
+The GUI contains:
+
+- Calculator display
+- Number buttons
+- Arithmetic operators
+- Clear button
+- Backspace button
+- Square root
+- Percentage
+- Power
+- Equals button
+- Calculation history
+
+---
+
+## GUI Architecture
 
 ```text
-a + b
-Subtraction
-a - b
-Multiplication
-a × b
-Division
-a ÷ b
-
-Division by zero is prevented.
-
-Modulus
-
-Returns the remainder:
-
-17 % 5 = 2
-Power
-
-Raises one number to another:
-
-2 ^ 5 = 32
-
-Python implements this using:
-
-a ** b
-Floor Division
-
-Returns the floor value of the division:
-
-17 // 5 = 3
-Square Root
-
-The math.sqrt() function is used:
-
-math.sqrt(number)
-
-Negative values are rejected because their square roots are not real numbers.
-
-Percentage
-
-The calculator calculates:
-
-a% of b
-
-using:
-
-(a / 100) * b
-Absolute Value
-
-The abs() function returns the positive magnitude of a number.
-
-Example:
-
-|-25| = 25
-Calculation History
-
-The program stores calculations in a Python list:
-
-history = []
-
-After every successful calculation, the operation is added to the list.
-
-The History option displays all calculations performed during the current session.
-
-Error Handling
-
-The application handles:
-
-Invalid numbers
-try:
-    number = float(input())
-except ValueError:
-    print("Please enter a valid number.")
-Division by zero
-if b == 0:
-    return "Error: Cannot divide by zero."
-Negative square root
-if a < 0:
-    return "Error: Cannot calculate square root of a negative number."
-Program Flow
-START
-  │
-  ▼
-Display Menu
-  │
-  ▼
-Select Operation
-  │
-  ├── Basic Operation
-  │
-  ├── Advanced Operation
-  │
-  └── History
-  │
-  ▼
-Validate Input
-  │
-  ▼
-Perform Calculation
-  │
-  ▼
-Display Result
-  │
-  ▼
-Store in History
-  │
-  ▼
-Return to Menu
-  │
-  ▼
-EXIT
-Technologies
-Python
-Math module
-Functions
-Lists
-Loops
-Conditional statements
-Exception handling
+                 Tkinter Window
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+        Calculator            History
+             │                   │
+      ┌──────┴──────┐            │
+      │             │            │
+   Display       Buttons       History
+      │             │            │
+      └──────┬──────┘            │
+             │                   │
+             └────────┬──────────┘
+                      │
+                      ▼
+                Calculation
