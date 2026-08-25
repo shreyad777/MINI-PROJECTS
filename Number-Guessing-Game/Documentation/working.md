@@ -4,31 +4,35 @@
 
 The Number Guessing Game is a Python application where the computer generates a random number and the player attempts to guess it.
 
-The project contains:
+The project contains both a console version and a graphical version built using Tkinter.
 
-- Console version
-- Tkinter GUI version
+The application supports:
 
-The application supports difficulty levels, scoring, attempt limits, input validation, and replay functionality.
+- Difficulty levels
+- Score calculation
+- Attempt limits
+- Input validation
+- Replay functionality
+- Game statistics
 
 ## 2. Random Number Generation
 
 The `random` module generates the secret number:
 
 ```python
-number = random.randint(minimum, maximum)
-The minimum and maximum values depend on the selected difficulty.
+secret_number = random.randint(minimum, maximum)
+The range depends on the selected difficulty.
 
 3. Difficulty Levels
 
-The game provides three difficulty levels.
+The player can select one of three difficulty levels.
 
 Difficulty	Range	Attempts
 Easy	1–50	10
 Medium	1–100	10
 Hard	1–200	10
 
-The choose_difficulty() function is responsible for selecting the appropriate range.
+The set_difficulty() function determines the selected range.
 
 4. Attempts
 
@@ -36,7 +40,7 @@ The attempts counter begins at zero:
 
 attempts = 0
 
-Each valid guess increases the counter:
+Every valid guess increases the counter:
 
 attempts += 1
 
@@ -45,22 +49,22 @@ The maximum number of attempts is:
 max_attempts = 10
 5. Guess Comparison
 
-The player's guess is compared with the generated number.
+The player's guess is compared with the secret number.
 
 Too Low
-guess < number
+guess < secret_number
 
-Output:
+The program displays:
 
 Too low! Try again.
 Too High
-guess > number
+guess > secret_number
 
-Output:
+The program displays:
 
 Too high! Try again.
 Correct
-guess == number
+guess == secret_number
 
 The player wins and receives a score.
 
@@ -74,35 +78,70 @@ For example, if the player wins in 3 attempts:
 
 10 - 3 + 1 = 8
 
-The score is therefore 8.
+Therefore, the score is 8.
 
 7. Input Validation
 
-The application handles invalid input using try-except.
+The application uses exception handling to prevent invalid input from crashing the program.
 
 try:
-    guess = int(input())
+    guess = int(guess_entry.get())
 except ValueError:
-    print("Please enter a valid number.")
+    messagebox.showerror(
+        "Invalid Input",
+        "Please enter a valid number."
+    )
 
-The program also checks whether the guess is within the selected range.
+The program also checks whether the entered number is inside the selected range.
 
-8. Replay System
+8. Game Statistics
 
-After completing a game, the console version asks:
+Version 4 introduces game statistics.
 
-Do you want to play again? (y/n):
+The following variables track the player's performance:
 
-Entering y starts another game.
+best_score = 0
+games_played = 0
+games_won = 0
+games_lost = 0
+Games Played
 
-Entering n exits the application.
+Increases whenever a game is completed.
 
-9. GUI Version
+Games Won
 
-The GUI is built using Python's Tkinter library.
+Increases when the player correctly guesses the number.
+
+Games Lost
+
+Increases when the player reaches the maximum number of attempts.
+
+Best Score
+
+Stores the highest score achieved during the current program session.
+
+The best score is updated using:
+
+if score > best_score:
+    best_score = score
+9. Statistics Display
+
+The GUI displays:
+
+Games Played: 0
+Games Won: 0
+Games Lost: 0
+Best Score: 0
+
+The values are updated after each completed game.
+
+10. GUI Version
+
+The graphical interface is created using Python's Tkinter library.
 
 The GUI contains:
 
+Title
 Difficulty selector
 Start Game button
 Guess input field
@@ -110,9 +149,9 @@ Guess button
 Result display
 Attempts counter
 Score display
+Statistics section
 New Game button
-Error and information popups
-10. GUI Game Flow
+11. GUI Game Flow
 START
   |
   v
@@ -148,22 +187,13 @@ Compare Guess
       Calculate Score
           |
           v
+      Update Statistics
+          |
+          v
       Display Result
           |
           v
-         END
-11. Error Handling
-
-The GUI displays an error message when the user enters invalid input.
-
-Example:
-
-Invalid Input
-
-Please enter a valid number.
-
-It also displays a warning if the number is outside the selected range.
-
+      Start New Game
 12. Technologies
 Python
 Tkinter
@@ -174,10 +204,11 @@ Conditional statements
 Exception handling
 GUI programming
 13. Future Improvements
-High-score tracking
+Permanent high-score storage
 Leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
 Advanced statistics
 Improved GUI themes
+SQLite database for game history
