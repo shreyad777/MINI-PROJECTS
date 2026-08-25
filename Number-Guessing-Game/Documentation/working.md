@@ -8,27 +8,42 @@ The project contains:
 
 - Console version
 - Tkinter GUI version
+- Difficulty levels
+- Score calculation
 - Game statistics
-- Permanent JSON data storage
+- Permanent JSON storage
+- Player personalization
 
-## 2. Random Number Generation
+## 2. Player Name
 
-The `random` module generates the secret number:
+Before starting a game, the player enters their name.
+
+The program reads the name using:
 
 ```python
+player_name = name_entry.get().strip()
+If no name is entered, the application displays a warning:
+
+Name Required
+
+Please enter your name before starting the game.
+3. Random Number Generation
+
+The random module generates the secret number:
+
 secret_number = random.randint(minimum, maximum)
 
 The range depends on the selected difficulty.
 
-3. Difficulty Levels
-
-The player can select one of three difficulty levels.
-
+4. Difficulty Levels
 Difficulty	Range	Attempts
 Easy	1–50	10
 Medium	1–100	10
 Hard	1–200	10
-4. Attempts
+
+The set_difficulty() function determines the selected range.
+
+5. Attempts
 
 The attempts counter starts at zero:
 
@@ -41,20 +56,20 @@ attempts += 1
 The maximum number of attempts is:
 
 max_attempts = 10
-5. Guess Comparison
+6. Guess Comparison
 
 The player's guess is compared with the secret number.
 
 Too Low
 guess < secret_number
 
-The program displays:
+Output:
 
 Too low! Try again.
 Too High
 guess > secret_number
 
-The program displays:
+Output:
 
 Too high! Try again.
 Correct
@@ -62,7 +77,7 @@ guess == secret_number
 
 The player wins and receives a score.
 
-6. Score System
+7. Score System
 
 The score is calculated using:
 
@@ -72,9 +87,9 @@ For example:
 
 10 - 3 + 1 = 8
 
-If the player wins in 3 attempts, the score is 8.
+Therefore, winning in 3 attempts gives a score of 8.
 
-7. Game Statistics
+8. Game Statistics
 
 The application tracks:
 
@@ -85,15 +100,15 @@ best_score
 
 These values are displayed in the GUI.
 
-8. JSON Data Storage
+9. JSON Data Storage
 
-Version 5 introduces permanent data storage using JSON.
+The game uses JSON for permanent statistics storage.
 
 The data file is:
 
 game_data.json
 
-Example data:
+Example:
 
 {
     "games_played": 5,
@@ -101,59 +116,72 @@ Example data:
     "games_lost": 1,
     "best_score": 9
 }
-9. Loading Statistics
+10. Loading Statistics
 
-When the program starts, it checks whether game_data.json exists.
+When the application starts, it checks whether the JSON file exists.
 
 The load_statistics() function reads the saved information:
 
 with open(DATA_FILE, "r") as file:
     data = json.load(file)
 
-The stored values are then loaded into the program.
+The stored values are loaded into the program.
 
-10. Saving Statistics
+11. Saving Statistics
 
-After a game is completed, the save_statistics() function stores the updated statistics:
+After a game is completed, the save_statistics() function stores the updated information:
 
 with open(DATA_FILE, "w") as file:
     json.dump(data, file, indent=4)
 
-This allows the statistics to remain available after the application is closed.
+This allows statistics to remain available after the program is closed.
 
-11. Error Handling
+12. Personalized Messages
 
-The application handles invalid JSON data and file errors:
+The player's name is used in game messages.
 
-except (json.JSONDecodeError, OSError):
-    return 0, 0, 0, 0
+Example:
 
-This prevents the application from crashing because of a damaged or unavailable data file.
+Welcome, Shreya!
+Guess a number between 1 and 100.
 
-12. GUI Version
+After winning:
 
-The graphical interface is created using Tkinter.
+Congratulations, Shreya!
 
-The GUI contains:
+This provides a more personalized user experience.
 
+13. GUI Components
+
+The Tkinter interface contains:
+
+Application title
+Player name field
 Difficulty selector
 Start Game button
-Guess input
+Guess input field
 Guess button
 Result display
 Attempts counter
 Score display
 Statistics display
 New Game button
-Error messages
-13. Program Flow
+14. Program Flow
 START
   |
   v
 Load Saved Statistics
   |
   v
+Enter Player Name
+  |
+  +---- Empty ------> Show Warning
+  |
+  v
 Select Difficulty
+  |
+  v
+Start Game
   |
   v
 Generate Random Number
@@ -192,14 +220,25 @@ Compare Guess
           |
           v
          END
+15. Error Handling
 
-14. Git Security
+The program handles:
+
+Empty player name
+Invalid numeric input
+Numbers outside the selected range
+Invalid JSON data
+File access errors
+
+This prevents common input and file-related errors from crashing the application.
+
+16. Git Security
 
 The game_data.json file is included in .gitignore.
 
-This prevents personal game statistics from being uploaded to GitHub.
+Therefore, personal game statistics are not uploaded to GitHub.
 
-15. Technologies
+17. Technologies
 Python
 Tkinter
 JSON
@@ -210,12 +249,13 @@ Conditional statements
 Exception handling
 File handling
 GUI programming
-16. Future Improvements
+18. Future Improvements
 Leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
-Advanced statistics
 Player profiles
 SQLite database
 Online leaderboard
+Advanced statistics
+Improved GUI themes
