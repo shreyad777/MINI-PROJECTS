@@ -1,33 +1,35 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game with difficulty levels, scoring, replay functionality, and a graphical user interface built using Tkinter.
+A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, replay functionality, attempt limits, and game statistics.
 
 ## ✨ Features
 
 ### Console Version
 
-- 🎲 Random number generation
-- 🔢 User input
-- ⬆️ Too-high hints
-- ⬇️ Too-low hints
-- 🎯 Attempts counter
-- ⚠️ Invalid input handling
-- 🟢 Easy, Medium, and Hard difficulty levels
-- 🏆 Score system
-- 🔄 Replay option
-- 🔒 Maximum attempt limit
+- Random number generation
+- User input
+- Too-high and too-low hints
+- Attempts counter
+- Input validation
+- Easy, Medium, and Hard difficulty levels
+- Score system
+- Replay option
+- Maximum attempt limit
 
 ### GUI Version
 
-- 🖥️ Tkinter graphical interface
-- 🎚️ Difficulty selection
-- 🔢 Guess input
-- ⬆️ High/low hints
-- 🏆 Score display
-- 🎯 Attempts display
-- ⚠️ Input validation
-- 🔄 New Game button
-- 🎉 Win and Game Over messages
+- Tkinter graphical interface
+- Difficulty selection
+- Guess input
+- High/low hints
+- Score display
+- Attempts display
+- Games played counter
+- Games won counter
+- Games lost counter
+- Best score tracking
+- New Game button
+- Error and information popups
 
 ## 🎮 Difficulty Levels
 
@@ -41,10 +43,21 @@ A Python-based number guessing game with difficulty levels, scoring, replay func
 
 The score depends on the number of attempts used.
 
-The fewer attempts used, the higher the score.
-
 ```text
 Score = Maximum Attempts - Attempts Used + 1
+Using fewer attempts results in a higher score.
+
+📊 Game Statistics
+
+The GUI tracks:
+
+Games Played
+Games Won
+Games Lost
+Best Score
+
+Statistics are maintained while the application is running.
+
 🛠️ Technologies
 Python
 Tkinter
@@ -53,60 +66,26 @@ Functions
 Loops
 Conditional statements
 Exception handling
+GUI programming
 🚀 How to Run
 Console Version
 python number_guessing_game.py
 GUI Version
 python number_guessing_gui.py
 
-Tkinter is included with most standard Python installations, so no external packages are required.
+No external Python packages are required.
 
 🎮 How to Play
-Console Version
-Run the Python program.
+Run the game.
 Select a difficulty level.
-Enter your guess.
-Use the hints to adjust your next guess.
-Try to find the number within 10 attempts.
-Your score is displayed when you win.
-Choose whether to play again.
-GUI Version
-Run number_guessing_gui.py.
-Select Easy, Medium, or Hard.
 Click Start Game.
 Enter your guess.
 Click GUESS.
-Follow the hints.
-Try to guess the number before reaching the attempt limit.
-📋 Example
-==============================
-      NUMBER GUESSING GAME
-==============================
-
-Select a difficulty level.
-
-Choose Difficulty
-1. Easy
-2. Medium
-3. Hard
-
-Enter your choice: 1
-
-I have selected a number between 1 and 50.
-You have 10 attempts.
-
-Attempt 1: 25
-Too high! Try again.
-
-Attempt 2: 12
-Too low! Try again.
-
-Attempt 3: 18
-
-🎉 Congratulations!
-
-You guessed the number in 3 attempts.
-Your score: 8
+Follow the high/low hints.
+Try to find the number within 10 attempts.
+Your score is displayed when you win.
+Game statistics are updated automatically.
+Click New Game to start another round.
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -119,14 +98,15 @@ Number-Guessing-Game/
 └── Documentation/
     └── working.md
 🔮 Future Enhancements
-High-score tracking
+Permanent high-score storage
 Leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
-Advanced game statistics
+Advanced statistics
 Improved GUI themes
 Difficulty-based scoring
+SQLite database for game history
 👩‍💻 Author
 
 Shreya D.
