@@ -1,6 +1,6 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, replay functionality, game statistics, permanent JSON storage, and personalized player names.
+A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, player personalization, game statistics, permanent JSON storage, and game history.
 
 ## ✨ Features
 
@@ -30,7 +30,9 @@ A Python-based number guessing game with a console version and a Tkinter graphic
 - Games won counter
 - Games lost counter
 - Best score tracking
-- Permanent statistics storage using JSON
+- Permanent statistics storage
+- Complete game history
+- History viewer
 - New Game button
 - Error and information popups
 
@@ -50,6 +52,9 @@ The score depends on the number of attempts used.
 Score = Maximum Attempts - Attempts Used + 1
 Using fewer attempts results in a higher score.
 
+For a lost game, the score is recorded as:
+
+0
 📊 Game Statistics
 
 The GUI tracks:
@@ -59,35 +64,71 @@ Games Won
 Games Lost
 Best Score
 
-Statistics are saved using a JSON file and remain available when the application is reopened.
+Statistics remain available after restarting the application.
+
+📜 Game History
+
+Every completed game is stored in the game history.
+
+Each record contains:
+
+Player name
+Difficulty level
+Game result
+Number of attempts
+Score
+
+The History button opens a separate window where previous games can be viewed.
+
+Example:
+
+Game 1
+Player     : Shreya
+Difficulty : Medium
+Result     : Won
+Attempts   : 3
+Score      : 8
+
+The newest game is displayed first.
 
 👤 Player Personalization
 
 The player enters their name before starting a game.
 
-The application then displays personalized messages such as:
+Example:
 
 Welcome, Shreya!
 Guess a number between 1 and 100.
 
-A player name is required before starting the game.
+A player name is required before starting a game.
 
 💾 Data Storage
 
-Game statistics are stored in:
+Game information is stored using:
 
 game_data.json
 
-The stored information includes:
+The file contains statistics and game history.
+
+Example:
 
 {
-    "games_played": 0,
-    "games_won": 0,
-    "games_lost": 0,
-    "best_score": 0
+    "games_played": 2,
+    "games_won": 1,
+    "games_lost": 1,
+    "best_score": 8,
+    "game_history": [
+        {
+            "player": "Shreya",
+            "difficulty": "Medium",
+            "result": "Won",
+            "attempts": 3,
+            "score": 8
+        }
+    ]
 }
 
-The game_data.json file is included in .gitignore so personal game statistics are not uploaded to GitHub.
+The game_data.json file is included in .gitignore so personal game data is not uploaded to GitHub.
 
 🛠️ Technologies
 Python
@@ -119,6 +160,7 @@ Follow the high/low hints.
 Try to find the number within 10 attempts.
 Check your score and statistics.
 Click New Game to play again.
+Click History to view previous games.
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -135,12 +177,13 @@ Leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
-Advanced statistics
 Player profiles
 SQLite database
 Online leaderboard
-Difficulty-based scoring
+Advanced statistics
 Improved GUI themes
+Export game history
+Delete history option
 👩‍💻 Author
 
 Shreya D.
