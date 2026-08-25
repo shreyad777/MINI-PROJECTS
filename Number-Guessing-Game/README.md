@@ -1,8 +1,10 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game where the player tries to find a randomly generated number using hints, difficulty levels, scoring, and replay functionality.
+A Python-based number guessing game with difficulty levels, scoring, replay functionality, and a graphical user interface built using Tkinter.
 
 ## ✨ Features
+
+### Console Version
 
 - 🎲 Random number generation
 - 🔢 User input
@@ -14,6 +16,18 @@ A Python-based number guessing game where the player tries to find a randomly ge
 - 🏆 Score system
 - 🔄 Replay option
 - 🔒 Maximum attempt limit
+
+### GUI Version
+
+- 🖥️ Tkinter graphical interface
+- 🎚️ Difficulty selection
+- 🔢 Guess input
+- ⬆️ High/low hints
+- 🏆 Score display
+- 🎯 Attempts display
+- ⚠️ Input validation
+- 🔄 New Game button
+- 🎉 Win and Game Over messages
 
 ## 🎮 Difficulty Levels
 
@@ -29,34 +43,41 @@ The score depends on the number of attempts used.
 
 The fewer attempts used, the higher the score.
 
-## 🛠️ Technologies
-
-- Python
-- Random module
-- Functions
-- Loops
-- Conditional statements
-- Exception handling
-- User input
-
-## 🚀 How to Run
-
-Check Python:
-
-```bash
-python --version
-Run the game:
-
+```text
+Score = Maximum Attempts - Attempts Used + 1
+🛠️ Technologies
+Python
+Tkinter
+Random module
+Functions
+Loops
+Conditional statements
+Exception handling
+🚀 How to Run
+Console Version
 python number_guessing_game.py
+GUI Version
+python number_guessing_gui.py
+
+Tkinter is included with most standard Python installations, so no external packages are required.
+
 🎮 How to Play
-Start the game.
+Console Version
+Run the Python program.
 Select a difficulty level.
-The computer generates a random number.
 Enter your guess.
 Use the hints to adjust your next guess.
 Try to find the number within 10 attempts.
 Your score is displayed when you win.
 Choose whether to play again.
+GUI Version
+Run number_guessing_gui.py.
+Select Easy, Medium, or Hard.
+Click Start Game.
+Enter your guess.
+Click GUESS.
+Follow the hints.
+Try to guess the number before reaching the attempt limit.
 📋 Example
 ==============================
       NUMBER GUESSING GAME
@@ -90,6 +111,7 @@ Your score: 8
 Number-Guessing-Game/
 │
 ├── number_guessing_game.py
+├── number_guessing_gui.py
 ├── README.md
 ├── requirements.txt
 ├── .gitignore
@@ -97,13 +119,14 @@ Number-Guessing-Game/
 └── Documentation/
     └── working.md
 🔮 Future Enhancements
-Tkinter GUI
 High-score tracking
-Timer-based scoring
 Leaderboard
+Timer-based scoring
 Sound effects
 Multiple rounds
-Advanced statistics
+Advanced game statistics
+Improved GUI themes
+Difficulty-based scoring
 👩‍💻 Author
 
 Shreya D.
