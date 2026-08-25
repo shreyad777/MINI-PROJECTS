@@ -2,47 +2,47 @@
 
 ## 1. Overview
 
-The Number Guessing Game is a Python console application where the computer generates a random number and the player attempts to guess it.
+The Number Guessing Game is a Python application where the computer generates a random number and the player attempts to guess it.
 
-Version 2 introduces:
+The project contains:
 
-- Difficulty levels
-- Maximum attempts
-- Score calculation
-- Replay functionality
+- Console version
+- Tkinter GUI version
+
+The application supports difficulty levels, scoring, attempt limits, input validation, and replay functionality.
 
 ## 2. Random Number Generation
 
-The `random` module generates the secret number.
+The `random` module generates the secret number:
 
 ```python
 number = random.randint(minimum, maximum)
-The range depends on the selected difficulty.
+The minimum and maximum values depend on the selected difficulty.
 
 3. Difficulty Levels
 
-The player can select one of three difficulty levels.
+The game provides three difficulty levels.
 
-Easy
-Range: 1 - 50
-Attempts: 10
-Medium
-Range: 1 - 100
-Attempts: 10
-Hard
-Range: 1 - 200
-Attempts: 10
+Difficulty	Range	Attempts
+Easy	1–50	10
+Medium	1–100	10
+Hard	1–200	10
 
-The choose_difficulty() function returns the selected range.
+The choose_difficulty() function is responsible for selecting the appropriate range.
 
 4. Attempts
 
-Each valid guess increases the attempts counter:
+The attempts counter begins at zero:
+
+attempts = 0
+
+Each valid guess increases the counter:
 
 attempts += 1
 
-The player has a maximum of 10 attempts.
+The maximum number of attempts is:
 
+max_attempts = 10
 5. Guess Comparison
 
 The player's guess is compared with the generated number.
@@ -66,7 +66,7 @@ The player wins and receives a score.
 
 6. Score System
 
-The score is calculated based on the number of attempts used.
+The score is calculated using:
 
 score = max_attempts - attempts + 1
 
@@ -74,49 +74,63 @@ For example, if the player wins in 3 attempts:
 
 10 - 3 + 1 = 8
 
-Therefore, the score is:
+The score is therefore 8.
 
-8
 7. Input Validation
 
-The program handles non-numeric input using exception handling.
+The application handles invalid input using try-except.
 
 try:
     guess = int(input())
 except ValueError:
     print("Please enter a valid number.")
 
-The program also checks whether the entered number is within the selected range.
+The program also checks whether the guess is within the selected range.
 
 8. Replay System
 
-After each game, the player is asked:
+After completing a game, the console version asks:
 
 Do you want to play again? (y/n):
 
-If the player enters y, a new game starts.
+Entering y starts another game.
 
-If the player enters n, the program exits.
+Entering n exits the application.
 
-9. Program Flow
+9. GUI Version
+
+The GUI is built using Python's Tkinter library.
+
+The GUI contains:
+
+Difficulty selector
+Start Game button
+Guess input field
+Guess button
+Result display
+Attempts counter
+Score display
+New Game button
+Error and information popups
+10. GUI Game Flow
 START
   |
   v
-Choose Difficulty
+Select Difficulty
+  |
+  v
+Start Game
   |
   v
 Generate Random Number
   |
   v
-Set Attempts = 0
-  |
-  v
-Ask for Guess
+Enter Guess
   |
   v
 Validate Input
   |
-  +---- Invalid ------> Ask Again
+  +---- Invalid ------> Show Error
   |
   v
 Increase Attempts
@@ -137,25 +151,33 @@ Compare Guess
       Display Result
           |
           v
-      Play Again?
-       /       \
-      Yes       No
-       |         |
-       v         v
-   New Game     END
-10. Technologies
+         END
+11. Error Handling
+
+The GUI displays an error message when the user enters invalid input.
+
+Example:
+
+Invalid Input
+
+Please enter a valid number.
+
+It also displays a warning if the number is outside the selected range.
+
+12. Technologies
 Python
+Tkinter
 Random module
 Functions
 Loops
 Conditional statements
 Exception handling
-User input
-11. Future Improvements
-Tkinter graphical interface
+GUI programming
+13. Future Improvements
 High-score tracking
 Leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
-Game statistics
+Advanced statistics
+Improved GUI themes
