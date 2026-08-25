@@ -1,238 +1,161 @@
-\# Number Guessing Game - Working Principle
+# Number Guessing Game - Working Principle
 
+## 1. Overview
 
+The Number Guessing Game is a Python console application where the computer generates a random number and the player attempts to guess it.
 
-\## 1. Overview
+Version 2 introduces:
 
+- Difficulty levels
+- Maximum attempts
+- Score calculation
+- Replay functionality
 
+## 2. Random Number Generation
 
-The Number Guessing Game is a simple Python console application where the computer generates a random number between 1 and 100.
-
-
-
-The player has to guess the number. The program provides hints after every guess until the correct number is found.
-
-
-
-\## 2. Random Number Generation
-
-
-
-The `random` module is used to generate the secret number.
-
-
+The `random` module generates the secret number.
 
 ```python
+number = random.randint(minimum, maximum)
+The range depends on the selected difficulty.
 
-number = random.randint(1, 100)
+3. Difficulty Levels
 
-This generates a random integer between 1 and 100.
+The player can select one of three difficulty levels.
 
+Easy
+Range: 1 - 50
+Attempts: 10
+Medium
+Range: 1 - 100
+Attempts: 10
+Hard
+Range: 1 - 200
+Attempts: 10
 
+The choose_difficulty() function returns the selected range.
 
-3\. User Input
+4. Attempts
 
-
-
-The player enters a guess using:
-
-
-
-guess = int(input("Enter your guess: "))
-
-
-
-The input is converted into an integer.
-
-
-
-4\. Guess Comparison
-
-
-
-The player's guess is compared with the randomly generated number.
-
-
-
-Too Low
-
-
-
-If:
-
-
-
-guess < number
-
-
-
-The program displays:
-
-
-
-Too low! Try again.
-
-Too High
-
-
-
-If:
-
-
-
-guess > number
-
-
-
-The program displays:
-
-
-
-Too high! Try again.
-
-Correct Guess
-
-
-
-If:
-
-
-
-guess == number
-
-
-
-The player wins and the program displays the number of attempts.
-
-
-
-5\. Attempts Counter
-
-
-
-The number of attempts is stored using a variable:
-
-
-
-attempts = 0
-
-
-
-After every valid guess:
-
-
+Each valid guess increases the attempts counter:
 
 attempts += 1
 
+The player has a maximum of 10 attempts.
 
+5. Guess Comparison
 
-When the correct number is guessed, the total attempts are displayed.
+The player's guess is compared with the generated number.
 
+Too Low
+guess < number
 
+Output:
 
-6\. Error Handling
+Too low! Try again.
+Too High
+guess > number
 
+Output:
 
+Too high! Try again.
+Correct
+guess == number
 
-The program handles invalid input using try-except.
+The player wins and receives a score.
 
+6. Score System
 
+The score is calculated based on the number of attempts used.
+
+score = max_attempts - attempts + 1
+
+For example, if the player wins in 3 attempts:
+
+10 - 3 + 1 = 8
+
+Therefore, the score is:
+
+8
+7. Input Validation
+
+The program handles non-numeric input using exception handling.
 
 try:
-
-&#x20;   guess = int(input("Enter your guess: "))
-
+    guess = int(input())
 except ValueError:
+    print("Please enter a valid number.")
 
-&#x20;   print("Please enter a valid number.")
+The program also checks whether the entered number is within the selected range.
 
+8. Replay System
 
+After each game, the player is asked:
 
-This prevents the program from crashing when the user enters text instead of a number.
+Do you want to play again? (y/n):
 
+If the player enters y, a new game starts.
 
+If the player enters n, the program exits.
 
-7\. Program Flow
-
+9. Program Flow
 START
-
-&#x20; |
-
-&#x20; v
-
+  |
+  v
+Choose Difficulty
+  |
+  v
 Generate Random Number
-
-&#x20; |
-
-&#x20; v
-
-Ask User for Guess
-
-&#x20; |
-
-&#x20; v
-
+  |
+  v
+Set Attempts = 0
+  |
+  v
+Ask for Guess
+  |
+  v
 Validate Input
-
-&#x20; |
-
-&#x20; +---- Invalid ----> Ask Again
-
-&#x20; |
-
-&#x20; v
-
+  |
+  +---- Invalid ------> Ask Again
+  |
+  v
 Increase Attempts
-
-&#x20; |
-
-&#x20; v
-
+  |
+  v
 Compare Guess
-
-&#x20; |
-
-&#x20; +---- Too Low ----> Try Again
-
-&#x20; |
-
-&#x20; +---- Too High ---> Try Again
-
-&#x20; |
-
-&#x20; +---- Correct ----> Display Attempts
-
-&#x20;                        |
-
-&#x20;                        v
-
-&#x20;                       END
-
-8\. Technologies Used
-
+  |
+  +---- Too Low ------> Try Again
+  |
+  +---- Too High -----> Try Again
+  |
+  +---- Correct
+          |
+          v
+      Calculate Score
+          |
+          v
+      Display Result
+          |
+          v
+      Play Again?
+       /       \
+      Yes       No
+       |         |
+       v         v
+   New Game     END
+10. Technologies
 Python
-
 Random module
-
+Functions
+Loops
 Conditional statements
-
-While loop
-
 Exception handling
-
 User input
-
-9\. Future Improvements
-
-Add difficulty levels
-
-Add a scoring system
-
-Add replay functionality
-
-Add maximum attempts
-
-Create a Tkinter GUI
-
-Add high-score tracking
-
+11. Future Improvements
+Tkinter graphical interface
+High-score tracking
+Leaderboard
+Timer-based scoring
+Sound effects
+Multiple rounds
+Game statistics

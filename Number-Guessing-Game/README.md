@@ -1,6 +1,6 @@
 # 🎯 Number Guessing Game
 
-A simple Python game where the player tries to guess a randomly generated number between 1 and 100.
+A Python-based number guessing game where the player tries to find a randomly generated number using hints, difficulty levels, scoring, and replay functionality.
 
 ## ✨ Features
 
@@ -10,18 +10,38 @@ A simple Python game where the player tries to guess a randomly generated number
 - ⬇️ Too-low hints
 - 🎯 Attempts counter
 - ⚠️ Invalid input handling
+- 🟢 Easy, Medium, and Hard difficulty levels
+- 🏆 Score system
+- 🔄 Replay option
+- 🔒 Maximum attempt limit
+
+## 🎮 Difficulty Levels
+
+| Difficulty | Number Range | Attempts |
+|---|---:|---:|
+| Easy | 1–50 | 10 |
+| Medium | 1–100 | 10 |
+| Hard | 1–200 | 10 |
+
+## 🏆 Scoring System
+
+The score depends on the number of attempts used.
+
+The fewer attempts used, the higher the score.
 
 ## 🛠️ Technologies
 
 - Python
 - Random module
+- Functions
 - Loops
 - Conditional statements
 - Exception handling
+- User input
 
 ## 🚀 How to Run
 
-Make sure Python is installed:
+Check Python:
 
 ```bash
 python --version
@@ -29,30 +49,43 @@ Run the game:
 
 python number_guessing_game.py
 🎮 How to Play
-The computer generates a random number between 1 and 100.
+Start the game.
+Select a difficulty level.
+The computer generates a random number.
 Enter your guess.
-The game tells you whether your guess is too high or too low.
-Continue guessing until you find the correct number.
-The number of attempts is displayed when you win.
+Use the hints to adjust your next guess.
+Try to find the number within 10 attempts.
+Your score is displayed when you win.
+Choose whether to play again.
 📋 Example
 ==============================
-     NUMBER GUESSING GAME
+      NUMBER GUESSING GAME
 ==============================
 
-I have selected a number between 1 and 100.
-Try to guess it!
+Select a difficulty level.
 
-Enter your guess: 50
+Choose Difficulty
+1. Easy
+2. Medium
+3. Hard
+
+Enter your choice: 1
+
+I have selected a number between 1 and 50.
+You have 10 attempts.
+
+Attempt 1: 25
 Too high! Try again.
 
-Enter your guess: 25
+Attempt 2: 12
 Too low! Try again.
 
-Enter your guess: 37
+Attempt 3: 18
 
 🎉 Congratulations!
 
 You guessed the number in 3 attempts.
+Your score: 8
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -64,12 +97,13 @@ Number-Guessing-Game/
 └── Documentation/
     └── working.md
 🔮 Future Enhancements
-Difficulty levels
-Score system
-Replay option
-Maximum attempt limit
 Tkinter GUI
 High-score tracking
+Timer-based scoring
+Leaderboard
+Sound effects
+Multiple rounds
+Advanced statistics
 👩‍💻 Author
 
 Shreya D.
