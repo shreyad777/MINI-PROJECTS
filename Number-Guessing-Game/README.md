@@ -1,6 +1,6 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, replay functionality, attempt limits, and game statistics.
+A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, replay functionality, game statistics, and permanent statistics storage using JSON.
 
 ## ✨ Features
 
@@ -28,6 +28,7 @@ A Python-based number guessing game with a console version and a Tkinter graphic
 - Games won counter
 - Games lost counter
 - Best score tracking
+- Permanent statistics storage
 - New Game button
 - Error and information popups
 
@@ -56,16 +57,35 @@ Games Won
 Games Lost
 Best Score
 
-Statistics are maintained while the application is running.
+Statistics are stored permanently using a JSON file.
+
+This means the statistics remain available even after the application is closed.
+
+💾 Data Storage
+
+The project uses:
+
+game_data.json
+
+to store:
+
+Number of games played
+Number of games won
+Number of games lost
+Best score
+
+The file is excluded from Git using .gitignore so personal game statistics are not uploaded to GitHub.
 
 🛠️ Technologies
 Python
 Tkinter
+JSON
 Random module
 Functions
 Loops
 Conditional statements
 Exception handling
+File handling
 GUI programming
 🚀 How to Run
 Console Version
@@ -76,8 +96,8 @@ python number_guessing_gui.py
 No external Python packages are required.
 
 🎮 How to Play
-Run the game.
-Select a difficulty level.
+Run the GUI version.
+Select Easy, Medium, or Hard.
 Click Start Game.
 Enter your guess.
 Click GUESS.
@@ -85,7 +105,7 @@ Follow the high/low hints.
 Try to find the number within 10 attempts.
 Your score is displayed when you win.
 Game statistics are updated automatically.
-Click New Game to start another round.
+Close and reopen the application to see that your statistics are preserved.
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -98,7 +118,6 @@ Number-Guessing-Game/
 └── Documentation/
     └── working.md
 🔮 Future Enhancements
-Permanent high-score storage
 Leaderboard
 Timer-based scoring
 Sound effects
@@ -106,7 +125,8 @@ Multiple rounds
 Advanced statistics
 Improved GUI themes
 Difficulty-based scoring
-SQLite database for game history
+SQLite database for detailed game history
+Player profiles
 👩‍💻 Author
 
 Shreya D.
