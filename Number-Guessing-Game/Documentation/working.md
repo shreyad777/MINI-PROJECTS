@@ -13,6 +13,7 @@ The project contains:
 - Game statistics
 - Permanent JSON storage
 - Player personalization
+- Game history
 
 ## 2. Player Name
 
@@ -22,43 +23,30 @@ The program reads the name using:
 
 ```python
 player_name = name_entry.get().strip()
-If no name is entered, the application displays a warning:
 
-Name Required
+If no name is entered, the program displays a warning.
 
-Please enter your name before starting the game.
-3. Random Number Generation
+3. Difficulty Levels
 
-The random module generates the secret number:
+The player can select:
 
-secret_number = random.randint(minimum, maximum)
-
-The range depends on the selected difficulty.
-
-4. Difficulty Levels
 Difficulty	Range	Attempts
 Easy	1–50	10
 Medium	1–100	10
 Hard	1–200	10
 
-The set_difficulty() function determines the selected range.
+The selected difficulty determines the range of the random number.
 
-5. Attempts
+4. Random Number Generation
 
-The attempts counter starts at zero:
+The secret number is generated using Python's random module:
 
-attempts = 0
+secret_number = random.randint(minimum, maximum)
+5. Guessing Process
 
-Every valid guess increases the counter:
+The player enters a number into the GUI.
 
-attempts += 1
-
-The maximum number of attempts is:
-
-max_attempts = 10
-6. Guess Comparison
-
-The player's guess is compared with the secret number.
+The program compares the guess with the secret number.
 
 Too Low
 guess < secret_number
@@ -75,19 +63,32 @@ Too high! Try again.
 Correct
 guess == secret_number
 
-The player wins and receives a score.
+The player wins and the score is calculated.
 
-7. Score System
+6. Attempts
 
-The score is calculated using:
+Each valid guess increases the attempts counter:
+
+attempts += 1
+
+The maximum number of attempts is:
+
+max_attempts = 10
+7. Score Calculation
+
+The score is calculated as:
 
 score = max_attempts - attempts + 1
 
 For example:
 
-10 - 3 + 1 = 8
+Maximum attempts = 10
+Attempts used    = 3
 
-Therefore, winning in 3 attempts gives a score of 8.
+Score = 10 - 3 + 1
+Score = 8
+
+A lost game receives a score of 0.
 
 8. Game Statistics
 
@@ -98,79 +99,95 @@ games_won
 games_lost
 best_score
 
-These values are displayed in the GUI.
+These values are displayed in the main GUI.
 
-9. JSON Data Storage
+9. Game History
 
-The game uses JSON for permanent statistics storage.
+Version 7 introduces individual game history.
 
-The data file is:
+Each completed game is stored as a dictionary:
 
-game_data.json
+game_record = {
+    "player": player_name,
+    "difficulty": difficulty,
+    "result": result,
+    "attempts": attempts,
+    "score": final_score
+}
 
-Example:
+The record is added to:
+
+game_history
+10. Example Game History
+
+A history record may look like:
 
 {
-    "games_played": 5,
-    "games_won": 4,
-    "games_lost": 1,
-    "best_score": 9
+    "player": "Shreya",
+    "difficulty": "Medium",
+    "result": "Won",
+    "attempts": 3,
+    "score": 8
 }
-10. Loading Statistics
+11. Saving History
 
-When the application starts, it checks whether the JSON file exists.
-
-The load_statistics() function reads the saved information:
-
-with open(DATA_FILE, "r") as file:
-    data = json.load(file)
-
-The stored values are loaded into the program.
-
-11. Saving Statistics
-
-After a game is completed, the save_statistics() function stores the updated information:
+The statistics and history are saved using JSON:
 
 with open(DATA_FILE, "w") as file:
     json.dump(data, file, indent=4)
 
-This allows statistics to remain available after the program is closed.
+The data is stored in:
 
-12. Personalized Messages
+game_data.json
+12. Loading History
 
-The player's name is used in game messages.
+When the program starts, it reads the JSON file:
 
-Example:
+with open(DATA_FILE, "r") as file:
+    data = json.load(file)
 
-Welcome, Shreya!
-Guess a number between 1 and 100.
+The previous statistics and game history are restored.
 
-After winning:
+Therefore, the information remains available after restarting the application.
 
-Congratulations, Shreya!
+13. History Window
 
-This provides a more personalized user experience.
+The History button opens a separate Tkinter window.
 
-13. GUI Components
+The window displays:
 
-The Tkinter interface contains:
+Player name
+Difficulty
+Result
+Attempts
+Score
+
+The newest game is displayed first.
+
+A scrollbar is provided when many games are stored.
+
+14. GUI Components
+
+The application contains:
 
 Application title
-Player name field
+Player name input
 Difficulty selector
 Start Game button
-Guess input field
+Guess input
 Guess button
 Result display
 Attempts counter
 Score display
 Statistics display
 New Game button
-14. Program Flow
+History button
+History window
+15. Program Flow
 START
   |
   v
-Load Saved Statistics
+Load Statistics and History
   |
   v
 Enter Player Name
@@ -205,40 +222,49 @@ Compare Guess
   +---- Too High -----> Try Again
   |
   +---- Correct
+  |       |
+  |       v
+  |   Calculate Score
+  |       |
+  |       v
+  |   Update Statistics
+  |       |
+  |       v
+  |   Add History
+  |
+  +---- Maximum Attempts
           |
           v
-      Calculate Score
+       Record Loss
           |
           v
-      Update Statistics
+       Add History
           |
           v
-      Save JSON Data
-          |
-          v
-      Display Result
+       Save JSON
           |
           v
          END
-15. Error Handling
+16. Error Handling
 
 The program handles:
 
-Empty player name
+Empty player names
 Invalid numeric input
 Numbers outside the selected range
-Invalid JSON data
+Invalid JSON files
 File access errors
+17. Data Security
 
-This prevents common input and file-related errors from crashing the application.
+The file:
 
-16. Git Security
+game_data.json
 
-The game_data.json file is included in .gitignore.
+is included in .gitignore.
 
-Therefore, personal game statistics are not uploaded to GitHub.
+This prevents personal game statistics and history from being uploaded to GitHub.
 
-17. Technologies
+18. Technologies
 Python
 Tkinter
 JSON
@@ -249,7 +275,10 @@ Conditional statements
 Exception handling
 File handling
 GUI programming
-18. Future Improvements
+19. Future Improvements
+
+Possible future features include:
+
 Leaderboard
 Timer-based scoring
 Sound effects
@@ -258,4 +287,6 @@ Player profiles
 SQLite database
 Online leaderboard
 Advanced statistics
+Export history
+Delete history option
 Improved GUI themes
