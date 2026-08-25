@@ -26,9 +26,11 @@ games_played = 0
 games_won = 0
 games_lost = 0
 
+game_history = []
+
 
 # ---------------------------------
-# Load Statistics
+# Load Statistics and History
 # ---------------------------------
 
 def load_statistics():
@@ -44,18 +46,19 @@ def load_statistics():
                 data.get("games_played", 0),
                 data.get("games_won", 0),
                 data.get("games_lost", 0),
-                data.get("best_score", 0)
+                data.get("best_score", 0),
+                data.get("game_history", [])
             )
 
         except (json.JSONDecodeError, OSError):
 
-            return 0, 0, 0, 0
+            return 0, 0, 0, 0, []
 
-    return 0, 0, 0, 0
+    return 0, 0, 0, 0, []
 
 
 # ---------------------------------
-# Save Statistics
+# Save Statistics and History
 # ---------------------------------
 
 def save_statistics():
@@ -64,7 +67,8 @@ def save_statistics():
         "games_played": games_played,
         "games_won": games_won,
         "games_lost": games_lost,
-        "best_score": best_score
+        "best_score": best_score,
+        "game_history": game_history
     }
 
     try:
@@ -74,11 +78,17 @@ def save_statistics():
 
     except OSError:
 
-        print("Unable to save game statistics.")
+        print("Unable to save game data.")
 
 
-# Load saved statistics when program starts
-games_played, games_won, games_lost, best_score = load_statistics()
+# Load saved data
+(
+    games_played,
+    games_won,
+    games_lost,
+    best_score,
+    game_history
+) = load_statistics()
 
 
 # ---------------------------------
@@ -158,6 +168,15 @@ def start_new_game():
     global attempts
     global score
 
+    if not player_name:
+
+        messagebox.showwarning(
+            "Start Game",
+            "Please enter your name and click Start Game first."
+        )
+
+        return
+
     secret_number = random.randint(
         minimum,
         maximum
@@ -188,6 +207,146 @@ def start_new_game():
 
 
 # ---------------------------------
+# Add Game to History
+# ---------------------------------
+
+def add_history(result, final_score):
+
+    difficulty = difficulty_var.get()
+
+    game_record = {
+        "player": player_name,
+        "difficulty": difficulty,
+        "result": result,
+        "attempts": attempts,
+        "score": final_score
+    }
+
+    game_history.append(game_record)
+
+    save_statistics()
+
+
+# ---------------------------------
+# Show Game History
+# ---------------------------------
+
+def show_history():
+
+    history_window = tk.Toplevel(root)
+
+    history_window.title(
+        "Game History"
+    )
+
+    history_window.geometry(
+        "650x500"
+    )
+
+    title = tk.Label(
+        history_window,
+        text="📜 Game History",
+        font=("Arial", 20, "bold")
+    )
+
+    title.pack(
+        pady=15
+    )
+
+    if not game_history:
+
+        tk.Label(
+            history_window,
+            text="No games played yet.",
+            font=("Arial", 13)
+        ).pack(
+            pady=30
+        )
+
+        return
+
+    history_frame = tk.Frame(
+        history_window
+    )
+
+    history_frame.pack(
+        fill="both",
+        expand=True,
+        padx=15,
+        pady=10
+    )
+
+    scrollbar = tk.Scrollbar(
+        history_frame
+    )
+
+    scrollbar.pack(
+        side="right",
+        fill="y"
+    )
+
+    history_text = tk.Text(
+        history_frame,
+        font=("Courier New", 11),
+        yscrollcommand=scrollbar.set,
+        wrap="none"
+    )
+
+    history_text.pack(
+        fill="both",
+        expand=True
+    )
+
+    scrollbar.config(
+        command=history_text.yview
+    )
+
+    for index, game in enumerate(
+        reversed(game_history),
+        start=1
+    ):
+
+        history_text.insert(
+            tk.END,
+            f"Game {index}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            f"Player     : {game['player']}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            f"Difficulty : {game['difficulty']}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            f"Result     : {game['result']}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            f"Attempts   : {game['attempts']}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            f"Score      : {game['score']}\n"
+        )
+
+        history_text.insert(
+            tk.END,
+            "-" * 50 + "\n\n"
+        )
+
+    history_text.config(
+        state="disabled"
+    )
+
+
+# ---------------------------------
 # Check Guess
 # ---------------------------------
 
@@ -200,7 +359,6 @@ def check_guess():
     global games_won
     global games_lost
 
-    # Check whether player has entered a name
     if not player_name:
 
         messagebox.showwarning(
@@ -210,7 +368,6 @@ def check_guess():
 
         return
 
-    # Get user input
     try:
 
         guess = int(
@@ -226,7 +383,6 @@ def check_guess():
 
         return
 
-    # Check range
     if guess < minimum or guess > maximum:
 
         messagebox.showwarning(
@@ -236,16 +392,15 @@ def check_guess():
 
         return
 
-    # Increase attempts
     attempts += 1
 
     attempts_label.config(
         text=f"Attempts: {attempts} / {max_attempts}"
     )
 
-    # ---------------------------------
-    # Guess is Too Low
-    # ---------------------------------
+    # -----------------------------
+    # Too Low
+    # -----------------------------
 
     if guess < secret_number:
 
@@ -253,9 +408,9 @@ def check_guess():
             text="⬇️ Too low! Try again."
         )
 
-    # ---------------------------------
-    # Guess is Too High
-    # ---------------------------------
+    # -----------------------------
+    # Too High
+    # -----------------------------
 
     elif guess > secret_number:
 
@@ -263,9 +418,9 @@ def check_guess():
             text="⬆️ Too high! Try again."
         )
 
-    # ---------------------------------
-    # Correct Guess
-    # ---------------------------------
+    # -----------------------------
+    # Correct
+    # -----------------------------
 
     else:
 
@@ -274,17 +429,13 @@ def check_guess():
         games_played += 1
         games_won += 1
 
-        # Update best score
         if score > best_score:
 
             best_score = score
 
-        # Save statistics
-        save_statistics()
-
-        # Update GUI
-        score_label.config(
-            text=f"Score: {score}"
+        add_history(
+            "Won",
+            score
         )
 
         update_statistics()
@@ -296,26 +447,33 @@ def check_guess():
             )
         )
 
+        score_label.config(
+            text=f"Score: {score}"
+        )
+
         messagebox.showinfo(
             "Congratulations!",
             f"Well done, {player_name}!\n\n"
-            f"You guessed the number in {attempts} attempts.\n"
-            f"Your score: {score}\n"
-            f"Best score: {best_score}"
+            f"Attempts: {attempts}\n"
+            f"Score: {score}\n"
+            f"Best Score: {best_score}"
         )
 
         return
 
-    # ---------------------------------
-    # Maximum Attempts Reached
-    # ---------------------------------
+    # -----------------------------
+    # Game Lost
+    # -----------------------------
 
     if attempts >= max_attempts:
 
         games_played += 1
         games_lost += 1
 
-        save_statistics()
+        add_history(
+            "Lost",
+            0
+        )
 
         update_statistics()
 
@@ -345,7 +503,7 @@ root.title(
 )
 
 root.geometry(
-    "600x750"
+    "600x820"
 )
 
 root.resizable(
@@ -396,7 +554,6 @@ name_frame.pack(
     pady=10
 )
 
-
 tk.Label(
     name_frame,
     text="Player Name:",
@@ -405,7 +562,6 @@ tk.Label(
     side="left",
     padx=10
 )
-
 
 name_entry = tk.Entry(
     name_frame,
@@ -430,7 +586,6 @@ difficulty_frame.pack(
     pady=10
 )
 
-
 tk.Label(
     difficulty_frame,
     text="Difficulty:",
@@ -440,11 +595,9 @@ tk.Label(
     padx=10
 )
 
-
 difficulty_var = tk.StringVar(
     value="Medium"
 )
-
 
 difficulty_menu = tk.OptionMenu(
     difficulty_frame,
@@ -461,11 +614,6 @@ difficulty_menu.config(
 difficulty_menu.pack(
     side="left"
 )
-
-
-# ---------------------------------
-# Start Game Button
-# ---------------------------------
 
 tk.Button(
     difficulty_frame,
@@ -529,4 +677,109 @@ guess_button.pack(
 
 # ---------------------------------
 # Result
-#
+# ---------------------------------
+
+result_label = tk.Label(
+    root,
+    text="Enter your name and start the game.",
+    font=("Arial", 13, "bold"),
+    wraplength=500,
+    justify="center"
+)
+
+result_label.pack(
+    pady=15
+)
+
+
+# ---------------------------------
+# Attempts
+# ---------------------------------
+
+attempts_label = tk.Label(
+    root,
+    text="Attempts: 0 / 10",
+    font=("Arial", 12)
+)
+
+attempts_label.pack(
+    pady=5
+)
+
+
+# ---------------------------------
+# Score
+# ---------------------------------
+
+score_label = tk.Label(
+    root,
+    text="Score: 0",
+    font=("Arial", 12, "bold")
+)
+
+score_label.pack(
+    pady=5
+)
+
+
+# ---------------------------------
+# Statistics
+# ---------------------------------
+
+statistics_label = tk.Label(
+    root,
+    text=(
+        f"Games Played: {games_played}\n"
+        f"Games Won: {games_won}\n"
+        f"Games Lost: {games_lost}\n"
+        f"Best Score: {best_score}"
+    ),
+    font=("Arial", 12),
+    justify="center"
+)
+
+statistics_label.pack(
+    pady=15
+)
+
+
+# ---------------------------------
+# Buttons
+# ---------------------------------
+
+button_frame = tk.Frame(
+    root
+)
+
+button_frame.pack(
+    pady=15
+)
+
+tk.Button(
+    button_frame,
+    text="🔄 New Game",
+    font=("Arial", 11, "bold"),
+    command=start_new_game,
+    width=15
+).pack(
+    side="left",
+    padx=10
+)
+
+tk.Button(
+    button_frame,
+    text="📜 History",
+    font=("Arial", 11, "bold"),
+    command=show_history,
+    width=15
+).pack(
+    side="left",
+    padx=10
+)
+
+
+# ---------------------------------
+# Start Application
+# ---------------------------------
+
+root.mainloop()	
