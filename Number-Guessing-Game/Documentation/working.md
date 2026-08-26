@@ -366,3 +366,115 @@ Export history
 Dark mode
 Custom themes
 User authentication
+
+23. Dark Mode
+
+Version 10 introduces a theme-switching system.
+
+The application supports two themes:
+
+```text
+🌙 Dark Mode
+☀️ Light Mode
+
+The user can switch between themes using the theme button.
+
+24. Theme System
+
+The application defines separate colors for light and dark themes.
+
+Light Theme
+LIGHT_BG = "#f4f6f8"
+LIGHT_FG = "#1f2937"
+LIGHT_FRAME = "#ffffff"
+LIGHT_BUTTON = "#2563eb"
+Dark Theme
+DARK_BG = "#111827"
+DARK_FG = "#f9fafb"
+DARK_FRAME = "#1f2937"
+DARK_BUTTON = "#374151"
+25. Theme Switching
+
+The theme is controlled using:
+
+dark_mode = False
+
+When the user clicks the theme button:
+
+def toggle_dark_mode():
+    global dark_mode
+    dark_mode = not dark_mode
+    apply_theme()
+
+The value changes between:
+
+False → Light Mode
+True  → Dark Mode
+26. Applying the Theme
+
+The apply_theme() function updates:
+
+Main window
+Frames
+Labels
+Buttons
+Input fields
+Statistics
+Game area
+Footer
+
+This allows the entire interface to change without restarting the application.
+
+27. Theme-Aware History
+
+The Game History window also uses the currently selected theme.
+
+If Dark Mode is active, the history window uses dark colors.
+
+If Light Mode is active, it uses light colors.
+
+28. Version 10 Improvements
+
+Version 10 adds:
+
+🌙 Dark Mode
+☀️ Light Mode
+Theme switching
+Theme-aware buttons
+Theme-aware input fields
+Theme-aware labels
+Theme-aware history window
+Improved visual customization
+29. Updated Feature Flow
+START
+  |
+  v
+Load Data
+  |
+  v
+Display Dashboard
+  |
+  v
+Select Theme
+  |
+  +---- Light Mode
+  |
+  +---- Dark Mode
+  |
+  v
+Enter Player Name
+  |
+  v
+Select Difficulty
+  |
+  v
+Play Game
+  |
+  v
+Statistics
+  |
+  v
+History
+  |
+  v
+Reset Data
