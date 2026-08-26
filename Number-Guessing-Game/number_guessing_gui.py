@@ -5,9 +5,11 @@ import json
 import os
 
 
-# ---------------------------------
-# Game Variables
-# ---------------------------------
+# ==========================================
+# DATA
+# ==========================================
+
+DATA_FILE = "game_data.json"
 
 secret_number = 0
 minimum = 1
@@ -17,23 +19,21 @@ attempts = 0
 max_attempts = 10
 score = 0
 
-DATA_FILE = "game_data.json"
-
 player_name = ""
 
-best_score = 0
 games_played = 0
 games_won = 0
 games_lost = 0
+best_score = 0
 
 game_history = []
 
 
-# ---------------------------------
-# Load Statistics and History
-# ---------------------------------
+# ==========================================
+# LOAD DATA
+# ==========================================
 
-def load_statistics():
+def load_data():
 
     if os.path.exists(DATA_FILE):
 
@@ -57,11 +57,20 @@ def load_statistics():
     return 0, 0, 0, 0, []
 
 
-# ---------------------------------
-# Save Statistics and History
-# ---------------------------------
+(
+    games_played,
+    games_won,
+    games_lost,
+    best_score,
+    game_history
+) = load_data()
 
-def save_statistics():
+
+# ==========================================
+# SAVE DATA
+# ==========================================
+
+def save_data():
 
     data = {
         "games_played": games_played,
@@ -81,35 +90,32 @@ def save_statistics():
         print("Unable to save game data.")
 
 
-# Load saved data
-(
-    games_played,
-    games_won,
-    games_lost,
-    best_score,
-    game_history
-) = load_statistics()
+# ==========================================
+# UPDATE DASHBOARD
+# ==========================================
 
+def update_dashboard():
 
-# ---------------------------------
-# Update Statistics Display
-# ---------------------------------
+    played_value.config(
+        text=str(games_played)
+    )
 
-def update_statistics():
+    won_value.config(
+        text=str(games_won)
+    )
 
-    statistics_label.config(
-        text=(
-            f"Games Played: {games_played}\n"
-            f"Games Won: {games_won}\n"
-            f"Games Lost: {games_lost}\n"
-            f"Best Score: {best_score}"
-        )
+    lost_value.config(
+        text=str(games_lost)
+    )
+
+    best_value.config(
+        text=str(best_score)
     )
 
 
-# ---------------------------------
-# Start Player Game
-# ---------------------------------
+# ==========================================
+# START PLAYER GAME
+# ==========================================
 
 def start_player_game():
 
@@ -129,9 +135,9 @@ def start_player_game():
     set_difficulty()
 
 
-# ---------------------------------
-# Difficulty Selection
-# ---------------------------------
+# ==========================================
+# SET DIFFICULTY
+# ==========================================
 
 def set_difficulty():
 
@@ -150,7 +156,7 @@ def set_difficulty():
         minimum = 1
         maximum = 100
 
-    elif difficulty == "Hard":
+    else:
 
         minimum = 1
         maximum = 200
@@ -158,9 +164,9 @@ def set_difficulty():
     start_new_game()
 
 
-# ---------------------------------
-# Start New Game
-# ---------------------------------
+# ==========================================
+# START NEW GAME
+# ==========================================
 
 def start_new_game():
 
@@ -197,18 +203,18 @@ def start_new_game():
         )
     )
 
-    attempts_label.config(
-        text=f"Attempts: 0 / {max_attempts}"
+    attempts_value.config(
+        text=f"0 / {max_attempts}"
     )
 
-    score_label.config(
-        text="Score: 0"
+    score_value.config(
+        text="0"
     )
 
 
-# ---------------------------------
-# Add Game to History
-# ---------------------------------
+# ==========================================
+# ADD HISTORY
+# ==========================================
 
 def add_history(result, final_score):
 
@@ -222,14 +228,16 @@ def add_history(result, final_score):
         "score": final_score
     }
 
-    game_history.append(game_record)
+    game_history.append(
+        game_record
+    )
 
-    save_statistics()
+    save_data()
 
 
-# ---------------------------------
-# Show Game History
-# ---------------------------------
+# ==========================================
+# SHOW HISTORY
+# ==========================================
 
 def show_history():
 
@@ -240,17 +248,20 @@ def show_history():
     )
 
     history_window.geometry(
-        "650x500"
+        "700x550"
     )
 
-    title = tk.Label(
+    history_window.resizable(
+        False,
+        False
+    )
+
+    tk.Label(
         history_window,
         text="📜 Game History",
-        font=("Arial", 20, "bold")
-    )
-
-    title.pack(
-        pady=15
+        font=("Segoe UI", 22, "bold")
+    ).pack(
+        pady=20
     )
 
     if not game_history:
@@ -258,26 +269,26 @@ def show_history():
         tk.Label(
             history_window,
             text="No games played yet.",
-            font=("Arial", 13)
+            font=("Segoe UI", 13)
         ).pack(
-            pady=30
+            pady=50
         )
 
         return
 
-    history_frame = tk.Frame(
+    frame = tk.Frame(
         history_window
     )
 
-    history_frame.pack(
+    frame.pack(
         fill="both",
         expand=True,
-        padx=15,
+        padx=20,
         pady=10
     )
 
     scrollbar = tk.Scrollbar(
-        history_frame
+        frame
     )
 
     scrollbar.pack(
@@ -286,8 +297,8 @@ def show_history():
     )
 
     history_text = tk.Text(
-        history_frame,
-        font=("Courier New", 11),
+        frame,
+        font=("Consolas", 11),
         yscrollcommand=scrollbar.set,
         wrap="none"
     )
@@ -308,7 +319,7 @@ def show_history():
 
         history_text.insert(
             tk.END,
-            f"Game {index}\n"
+            f"GAME {index}\n"
         )
 
         history_text.insert(
@@ -338,7 +349,7 @@ def show_history():
 
         history_text.insert(
             tk.END,
-            "-" * 50 + "\n\n"
+            "-" * 55 + "\n\n"
         )
 
     history_text.config(
@@ -346,9 +357,9 @@ def show_history():
     )
 
 
-# ---------------------------------
-# Check Guess
-# ---------------------------------
+# ==========================================
+# CHECK GUESS
+# ==========================================
 
 def check_guess():
 
@@ -394,13 +405,9 @@ def check_guess():
 
     attempts += 1
 
-    attempts_label.config(
-        text=f"Attempts: {attempts} / {max_attempts}"
+    attempts_value.config(
+        text=f"{attempts} / {max_attempts}"
     )
-
-    # -----------------------------
-    # Too Low
-    # -----------------------------
 
     if guess < secret_number:
 
@@ -408,19 +415,11 @@ def check_guess():
             text="⬇️ Too low! Try again."
         )
 
-    # -----------------------------
-    # Too High
-    # -----------------------------
-
     elif guess > secret_number:
 
         result_label.config(
             text="⬆️ Too high! Try again."
         )
-
-    # -----------------------------
-    # Correct
-    # -----------------------------
 
     else:
 
@@ -433,37 +432,33 @@ def check_guess():
 
             best_score = score
 
+        score_value.config(
+            text=str(score)
+        )
+
         add_history(
             "Won",
             score
         )
 
-        update_statistics()
+        update_dashboard()
 
         result_label.config(
             text=(
                 f"🎉 Congratulations, {player_name}!\n"
-                f"The number was {secret_number}."
+                f"You found the number!"
             )
         )
 
-        score_label.config(
-            text=f"Score: {score}"
-        )
-
         messagebox.showinfo(
-            "Congratulations!",
-            f"Well done, {player_name}!\n\n"
+            "You Won!",
+            f"Congratulations, {player_name}!\n\n"
             f"Attempts: {attempts}\n"
             f"Score: {score}\n"
             f"Best Score: {best_score}"
         )
 
         return
-
-    # -----------------------------
-    # Game Lost
-    # -----------------------------
 
     if attempts >= max_attempts:
 
@@ -475,35 +470,34 @@ def check_guess():
             0
         )
 
-        update_statistics()
+        update_dashboard()
 
         result_label.config(
             text=(
-                f"❌ Game Over, {player_name}!\n"
+                f"❌ Game Over!\n"
                 f"The number was {secret_number}."
             )
         )
 
         messagebox.showinfo(
             "Game Over",
-            f"Sorry, {player_name}!\n\n"
-            f"You used all {max_attempts} attempts.\n"
+            f"Better luck next time, {player_name}!\n\n"
             f"The number was {secret_number}."
         )
 
 
-# ---------------------------------
-# Main Window
-# ---------------------------------
+# ==========================================
+# MAIN WINDOW
+# ==========================================
 
 root = tk.Tk()
 
 root.title(
-    "Number Guessing Game"
+    "Number Guessing Game | Dashboard"
 )
 
 root.geometry(
-    "600x820"
+    "900x750"
 )
 
 root.resizable(
@@ -512,95 +506,100 @@ root.resizable(
 )
 
 
-# ---------------------------------
-# Title
-# ---------------------------------
+# ==========================================
+# HEADER
+# ==========================================
 
-title_label = tk.Label(
+header = tk.Frame(
     root,
-    text="🎯 Number Guessing Game",
-    font=("Arial", 25, "bold")
+    padx=30,
+    pady=20
 )
 
-title_label.pack(
-    pady=(25, 5)
-)
-
-
-# ---------------------------------
-# Subtitle
-# ---------------------------------
-
-subtitle_label = tk.Label(
-    root,
-    text="Enter your name and start guessing!",
-    font=("Arial", 12)
-)
-
-subtitle_label.pack(
-    pady=(0, 15)
-)
-
-
-# ---------------------------------
-# Player Name
-# ---------------------------------
-
-name_frame = tk.Frame(
-    root
-)
-
-name_frame.pack(
-    pady=10
+header.pack(
+    fill="x"
 )
 
 tk.Label(
-    name_frame,
-    text="Player Name:",
-    font=("Arial", 12, "bold")
+    header,
+    text="🎯 Number Guessing Game",
+    font=("Segoe UI", 26, "bold")
 ).pack(
-    side="left",
-    padx=10
-)
-
-name_entry = tk.Entry(
-    name_frame,
-    font=("Arial", 12),
-    width=20
-)
-
-name_entry.pack(
     side="left"
 )
 
-
-# ---------------------------------
-# Difficulty
-# ---------------------------------
-
-difficulty_frame = tk.Frame(
-    root
-)
-
-difficulty_frame.pack(
+tk.Label(
+    header,
+    text="Challenge yourself. Beat your best score.",
+    font=("Segoe UI", 11)
+).pack(
+    side="right",
     pady=10
 )
 
+
+# ==========================================
+# PLAYER SECTION
+# ==========================================
+
+player_frame = tk.LabelFrame(
+    root,
+    text="  👤 Player Setup  ",
+    font=("Segoe UI", 12, "bold"),
+    padx=20,
+    pady=15
+)
+
+player_frame.pack(
+    fill="x",
+    padx=30,
+    pady=10
+)
+
+
 tk.Label(
-    difficulty_frame,
-    text="Difficulty:",
-    font=("Arial", 12, "bold")
-).pack(
-    side="left",
+    player_frame,
+    text="Player Name:",
+    font=("Segoe UI", 11, "bold")
+).grid(
+    row=0,
+    column=0,
+    padx=10,
+    pady=5
+)
+
+
+name_entry = tk.Entry(
+    player_frame,
+    font=("Segoe UI", 11),
+    width=22
+)
+
+name_entry.grid(
+    row=0,
+    column=1,
     padx=10
 )
+
+
+tk.Label(
+    player_frame,
+    text="Difficulty:",
+    font=("Segoe UI", 11, "bold")
+).grid(
+    row=0,
+    column=2,
+    padx=10
+)
+
 
 difficulty_var = tk.StringVar(
     value="Medium"
 )
 
+
 difficulty_menu = tk.OptionMenu(
-    difficulty_frame,
+    player_frame,
     difficulty_var,
     "Easy",
     "Medium",
@@ -608,48 +607,152 @@ difficulty_menu = tk.OptionMenu(
 )
 
 difficulty_menu.config(
-    font=("Arial", 11)
+    font=("Segoe UI", 10),
+    width=10
 )
 
-difficulty_menu.pack(
-    side="left"
-)
-
-tk.Button(
-    difficulty_frame,
-    text="Start Game",
-    font=("Arial", 11, "bold"),
-    command=start_player_game
-).pack(
-    side="left",
+difficulty_menu.grid(
+    row=0,
+    column=3,
     padx=10
 )
 
 
-# ---------------------------------
-# Instructions
-# ---------------------------------
+tk.Button(
+    player_frame,
+    text="START GAME",
+    font=("Segoe UI", 10, "bold"),
+    command=start_player_game,
+    padx=15,
+    pady=5
+).grid(
+    row=0,
+    column=4,
+    padx=15
+)
 
-instruction_label = tk.Label(
+
+# ==========================================
+# STATISTICS DASHBOARD
+# ==========================================
+
+stats_frame = tk.LabelFrame(
     root,
-    text="Enter your guess below:",
-    font=("Arial", 12)
+    text="  📊 Your Statistics  ",
+    font=("Segoe UI", 12, "bold"),
+    padx=15,
+    pady=15
 )
 
-instruction_label.pack(
-    pady=(20, 5)
+stats_frame.pack(
+    fill="x",
+    padx=30,
+    pady=10
 )
 
 
-# ---------------------------------
-# Guess Entry
-# ---------------------------------
+def create_stat_card(
+    parent,
+    title,
+    value,
+    column
+):
+
+    frame = tk.Frame(
+        parent,
+        padx=25,
+        pady=10
+    )
+
+    frame.grid(
+        row=0,
+        column=column,
+        padx=8
+    )
+
+    tk.Label(
+        frame,
+        text=title,
+        font=("Segoe UI", 10)
+    ).pack()
+
+    value_label = tk.Label(
+        frame,
+        text=str(value),
+        font=("Segoe UI", 22, "bold")
+    )
+
+    value_label.pack()
+
+    return value_label
+
+
+played_value = create_stat_card(
+    stats_frame,
+    "Games Played",
+    games_played,
+    0
+)
+
+won_value = create_stat_card(
+    stats_frame,
+    "Games Won",
+    games_won,
+    1
+)
+
+lost_value = create_stat_card(
+    stats_frame,
+    "Games Lost",
+    games_lost,
+    2
+)
+
+best_value = create_stat_card(
+    stats_frame,
+    "Best Score",
+    best_score,
+    3
+)
+
+
+# ==========================================
+# GAME AREA
+# ==========================================
+
+game_frame = tk.LabelFrame(
+    root,
+    text="  🎮 Current Game  ",
+    font=("Segoe UI", 12, "bold"),
+    padx=30,
+    pady=20
+)
+
+game_frame.pack(
+    fill="x",
+    padx=30,
+    pady=10
+)
+
+
+result_label = tk.Label(
+    game_frame,
+    text="Enter your name and start a game.",
+    font=("Segoe UI", 14, "bold"),
+    wraplength=700,
+    justify="center"
+)
+
+result_label.pack(
+    pady=10
+)
+
 
 guess_entry = tk.Entry(
-    root,
-    font=("Arial", 20),
+    game_frame,
+    font=("Segoe UI", 20),
     justify="center",
-    width=15
+    width=12
 )
 
 guess_entry.pack(
@@ -657,129 +760,135 @@ guess_entry.pack(
 )
 
 
-# ---------------------------------
-# Guess Button
-# ---------------------------------
-
-guess_button = tk.Button(
-    root,
+tk.Button(
+    game_frame,
     text="GUESS",
-    font=("Arial", 14, "bold"),
+    font=("Segoe UI", 12, "bold"),
+    command=check_guess,
     width=15,
-    height=2,
-    command=check_guess
-)
-
-guess_button.pack(
+    pady=8
+).pack(
     pady=10
 )
 
 
-# ---------------------------------
-# Result
-# ---------------------------------
+# ==========================================
+# CURRENT GAME INFO
+# ==========================================
 
-result_label = tk.Label(
-    root,
-    text="Enter your name and start the game.",
-    font=("Arial", 13, "bold"),
-    wraplength=500,
-    justify="center"
+info_frame = tk.Frame(
+    game_frame
 )
 
-result_label.pack(
-    pady=15
+info_frame.pack(
+    pady=10
 )
 
 
-# ---------------------------------
-# Attempts
-# ---------------------------------
-
-attempts_label = tk.Label(
-    root,
-    text="Attempts: 0 / 10",
-    font=("Arial", 12)
-)
-
-attempts_label.pack(
-    pady=5
+tk.Label(
+    info_frame,
+    text="Attempts",
+    font=("Segoe UI", 10)
+).grid(
+    row=0,
+    column=0,
+    padx=40
 )
 
 
-# ---------------------------------
-# Score
-# ---------------------------------
-
-score_label = tk.Label(
-    root,
-    text="Score: 0",
-    font=("Arial", 12, "bold")
-)
-
-score_label.pack(
-    pady=5
+tk.Label(
+    info_frame,
+    text="Score",
+    font=("Segoe UI", 10)
+).grid(
+    row=0,
+    column=1,
+    padx=40
 )
 
 
-# ---------------------------------
-# Statistics
-# ---------------------------------
-
-statistics_label = tk.Label(
-    root,
-    text=(
-        f"Games Played: {games_played}\n"
-        f"Games Won: {games_won}\n"
-        f"Games Lost: {games_lost}\n"
-        f"Best Score: {best_score}"
-    ),
-    font=("Arial", 12),
-    justify="center"
+attempts_value = tk.Label(
+    info_frame,
+    text="0 / 10",
+    font=("Segoe UI", 16, "bold")
 )
 
-statistics_label.pack(
-    pady=15
+attempts_value.grid(
+    row=1,
+    column=0,
+    padx=40
 )
 
 
-# ---------------------------------
-# Buttons
-# ---------------------------------
+score_value = tk.Label(
+    info_frame,
+    text="0",
+    font=("Segoe UI", 16, "bold")
+)
 
-button_frame = tk.Frame(
+score_value.grid(
+    row=1,
+    column=1,
+    padx=40
+)
+
+
+# ==========================================
+# ACTION BUTTONS
+# ==========================================
+
+action_frame = tk.Frame(
     root
 )
 
-button_frame.pack(
+action_frame.pack(
     pady=15
 )
 
+
 tk.Button(
-    button_frame,
-    text="🔄 New Game",
-    font=("Arial", 11, "bold"),
+    action_frame,
+    text="🔄 NEW GAME",
+    font=("Segoe UI", 10, "bold"),
     command=start_new_game,
-    width=15
-).pack(
-    side="left",
+    width=18,
+    pady=8
+).grid(
+    row=0,
+    column=0,
     padx=10
 )
+
 
 tk.Button(
-    button_frame,
-    text="📜 History",
-    font=("Arial", 11, "bold"),
+    action_frame,
+    text="📜 GAME HISTORY",
+    font=("Segoe UI", 10, "bold"),
     command=show_history,
-    width=15
-).pack(
-    side="left",
+    width=18,
+    pady=8
+).grid(
+    row=0,
+    column=1,
     padx=10
 )
 
 
-# ---------------------------------
-# Start Application
-# ---------------------------------
+# ==========================================
+# FOOTER
+# ==========================================
 
-root.mainloop()	
+tk.Label(
+    root,
+    text="Python • Tkinter • JSON",
+    font=("Segoe UI", 9)
+).pack(
+    pady=5
+)
+
+
+# ==========================================
+# START APPLICATION
+# ==========================================
+
+root.mainloop()
