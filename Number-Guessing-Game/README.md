@@ -1,8 +1,6 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game featuring a console version and a professional Tkinter graphical interface.
-
-The application combines gameplay, difficulty levels, scoring, player personalization, statistics, permanent JSON storage, and game history in one project.
+A Python-based number guessing game featuring a professional Tkinter graphical interface, multiple difficulty levels, scoring, player personalization, statistics, persistent game history, and data management.
 
 ---
 
@@ -24,9 +22,9 @@ The application combines gameplay, difficulty levels, scoring, player personaliz
 - Personalized game messages
 - Player-specific game history
 
-### 📊 Dashboard
+### 📊 Professional Dashboard
 
-The GUI provides a professional dashboard displaying:
+The GUI provides:
 
 - Games Played
 - Games Won
@@ -47,11 +45,23 @@ Each record contains:
 - Attempts
 - Score
 
-### 💾 Permanent Storage
+### 💾 Persistent Storage
 
-Game statistics and history are stored using JSON.
+Game statistics and history are stored using JSON and remain available after restarting the application.
 
-Data remains available after closing and reopening the application.
+### 🗑️ Reset Game Data
+
+Version 9 introduces a **Reset Game Data** feature.
+
+The user can permanently clear:
+
+- Games Played
+- Games Won
+- Games Lost
+- Best Score
+- Game History
+
+A confirmation dialog prevents accidental deletion.
 
 ---
 
@@ -91,7 +101,7 @@ Games Won
 Games Lost
 Best Score
 
-These statistics are automatically updated after every completed game.
+The dashboard automatically updates after every completed game.
 
 📜 Game History
 
@@ -105,7 +115,21 @@ Result     : Won
 Attempts   : 3
 Score      : 8
 
-The newest completed game is displayed first.
+The newest completed game appears first.
+
+🗑️ Reset Game Data
+
+The RESET DATA button allows the user to clear all stored game information.
+
+Before deletion, the application displays a confirmation dialog:
+
+Are you sure you want to delete all game statistics and history?
+
+This action cannot be undone.
+
+If the user selects No, the data remains unchanged.
+
+If the user selects Yes, the statistics and history are cleared and the JSON file is updated.
 
 💾 Data Storage
 
@@ -113,7 +137,7 @@ The application uses:
 
 game_data.json
 
-Example structure:
+Example:
 
 {
     "games_played": 2,
@@ -131,13 +155,11 @@ Example structure:
     ]
 }
 
-The data file is included in .gitignore to prevent personal game statistics from being uploaded to GitHub.
+The game_data.json file is included in .gitignore so personal game data is not uploaded to GitHub.
 
-🖥️ Professional Dashboard
+🖥️ Dashboard Layout
 
-Version 8 introduces a redesigned dashboard interface.
-
-The interface is organized into:
+The application is organized into:
 
 Header
    ↓
@@ -151,8 +173,11 @@ Game Actions
    ↓
 Footer
 
-This makes the application easier to understand and use.
+The action section provides:
 
+🔄 NEW GAME
+📜 GAME HISTORY
+🗑️ RESET DATA
 🛠️ Technologies
 Python
 Tkinter
@@ -183,8 +208,9 @@ Follow the hints.
 Try to find the number within 10 attempts.
 Check your score.
 View your statistics.
-Open GAME HISTORY to see previous games.
+Open GAME HISTORY to view previous games.
 Use NEW GAME to start another round.
+Use RESET DATA when you want to clear stored statistics and history.
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -206,9 +232,9 @@ Number-Guessing-Game/
 🌐 Online leaderboard
 📈 Advanced analytics
 📤 Export game history
-🗑️ Delete history
 🌙 Dark mode
 🎨 Custom themes
+🔐 User authentication
 👩‍💻 Author
 
 Shreya D.
