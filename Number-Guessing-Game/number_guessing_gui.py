@@ -30,6 +30,23 @@ game_history = []
 
 
 # ==========================================
+# THEME SETTINGS
+# ==========================================
+
+dark_mode = False
+
+LIGHT_BG = "#f4f6f8"
+LIGHT_FG = "#1f2937"
+LIGHT_FRAME = "#ffffff"
+LIGHT_BUTTON = "#2563eb"
+
+DARK_BG = "#111827"
+DARK_FG = "#f9fafb"
+DARK_FRAME = "#1f2937"
+DARK_BUTTON = "#374151"
+
+
+# ==========================================
 # LOAD DATA
 # ==========================================
 
@@ -238,37 +255,7 @@ def add_history(result, final_score):
 # ==========================================
 # SHOW HISTORY
 # ==========================================
-def reset_data():
 
-    global games_played
-    global games_won
-    global games_lost
-    global best_score
-    global game_history
-
-    confirmation = messagebox.askyesno(
-        "Reset Game Data",
-        "Are you sure you want to delete all game statistics and history?\n\n"
-        "This action cannot be undone."
-    )
-
-    if not confirmation:
-        return
-
-    games_played = 0
-    games_won = 0
-    games_lost = 0
-    best_score = 0
-    game_history = []
-
-    save_data()
-
-    update_dashboard()
-
-    messagebox.showinfo(
-        "Data Reset",
-        "All game statistics and history have been cleared."
-    )
 def show_history():
 
     history_window = tk.Toplevel(root)
@@ -286,11 +273,19 @@ def show_history():
         False
     )
 
-    tk.Label(
+    history_window.configure(
+        bg=DARK_BG if dark_mode else LIGHT_BG
+    )
+
+    history_title = tk.Label(
         history_window,
         text="📜 Game History",
-        font=("Segoe UI", 22, "bold")
-    ).pack(
+        font=("Segoe UI", 22, "bold"),
+        bg=DARK_BG if dark_mode else LIGHT_BG,
+        fg=DARK_FG if dark_mode else LIGHT_FG
+    )
+
+    history_title.pack(
         pady=20
     )
 
@@ -299,7 +294,9 @@ def show_history():
         tk.Label(
             history_window,
             text="No games played yet.",
-            font=("Segoe UI", 13)
+            font=("Segoe UI", 13),
+            bg=DARK_BG if dark_mode else LIGHT_BG,
+            fg=DARK_FG if dark_mode else LIGHT_FG
         ).pack(
             pady=50
         )
@@ -307,7 +304,8 @@ def show_history():
         return
 
     frame = tk.Frame(
-        history_window
+        history_window,
+        bg=DARK_FRAME if dark_mode else LIGHT_FRAME
     )
 
     frame.pack(
@@ -330,7 +328,10 @@ def show_history():
         frame,
         font=("Consolas", 11),
         yscrollcommand=scrollbar.set,
-        wrap="none"
+        wrap="none",
+        bg=DARK_FRAME if dark_mode else LIGHT_FRAME,
+        fg=DARK_FG if dark_mode else LIGHT_FG,
+        insertbackground=DARK_FG if dark_mode else LIGHT_FG
     )
 
     history_text.pack(
@@ -384,6 +385,56 @@ def show_history():
 
     history_text.config(
         state="disabled"
+    )
+
+
+# ==========================================
+# RESET DATA
+# ==========================================
+
+def reset_data():
+
+    global games_played
+    global games_won
+    global games_lost
+    global best_score
+    global game_history
+
+    confirmation = messagebox.askyesno(
+        "Reset Game Data",
+        "Are you sure you want to delete all game statistics and history?\n\n"
+        "This action cannot be undone."
+    )
+
+    if not confirmation:
+
+        return
+
+    games_played = 0
+    games_won = 0
+    games_lost = 0
+    best_score = 0
+    game_history = []
+
+    save_data()
+
+    update_dashboard()
+
+    result_label.config(
+        text="All game data has been cleared."
+    )
+
+    attempts_value.config(
+        text="0 / 10"
+    )
+
+    score_value.config(
+        text="0"
+    )
+
+    messagebox.showinfo(
+        "Data Reset",
+        "All game statistics and history have been cleared."
     )
 
 
@@ -517,6 +568,166 @@ def check_guess():
 
 
 # ==========================================
+# TOGGLE DARK MODE
+# ==========================================
+
+def toggle_dark_mode():
+
+    global dark_mode
+
+    dark_mode = not dark_mode
+
+    apply_theme()
+
+
+# ==========================================
+# UPDATE WIDGET COLORS
+# ==========================================
+
+def update_widget_colors(
+    widget,
+    background,
+    foreground,
+    frame_background,
+    button_background
+):
+
+    for child in widget.winfo_children():
+
+        try:
+
+            if isinstance(
+                child,
+                tk.Button
+            ):
+
+                child.config(
+                    bg=button_background,
+                    fg=foreground,
+                    activebackground=button_background,
+                    activeforeground=foreground
+                )
+
+            elif isinstance(
+                child,
+                tk.Entry
+            ):
+
+                child.config(
+                    bg=frame_background,
+                    fg=foreground,
+                    insertbackground=foreground
+                )
+
+            elif isinstance(
+                child,
+                tk.Label
+            ):
+
+                child.config(
+                    bg=frame_background,
+                    fg=foreground
+                )
+
+            elif isinstance(
+                child,
+                tk.OptionMenu
+            ):
+
+                child.config(
+                    bg=button_background,
+                    fg=foreground,
+                    activebackground=button_background,
+                    activeforeground=foreground
+                )
+
+        except tk.TclError:
+
+            pass
+
+        update_widget_colors(
+            child,
+            background,
+            foreground,
+            frame_background,
+            button_background
+        )
+
+
+# ==========================================
+# APPLY THEME
+# ==========================================
+
+def apply_theme():
+
+    if dark_mode:
+
+        background = DARK_BG
+        foreground = DARK_FG
+        frame_background = DARK_FRAME
+        button_background = DARK_BUTTON
+
+        theme_button.config(
+            text="☀️ LIGHT MODE"
+        )
+
+    else:
+
+        background = LIGHT_BG
+        foreground = LIGHT_FG
+        frame_background = LIGHT_FRAME
+        button_background = LIGHT_BUTTON
+
+        theme_button.config(
+            text="🌙 DARK MODE"
+        )
+
+    root.config(
+        bg=background
+    )
+
+    header.config(
+        bg=background
+    )
+
+    player_frame.config(
+        bg=frame_background,
+        fg=foreground
+    )
+
+    stats_frame.config(
+        bg=frame_background,
+        fg=foreground
+    )
+
+    game_frame.config(
+        bg=frame_background,
+        fg=foreground
+    )
+
+    action_frame.config(
+        bg=background
+    )
+
+    info_frame.config(
+        bg=frame_background
+    )
+
+    footer_label.config(
+        bg=background,
+        fg=foreground
+    )
+
+    update_widget_colors(
+        root,
+        background,
+        foreground,
+        frame_background,
+        button_background
+    )
+
+
+# ==========================================
 # MAIN WINDOW
 # ==========================================
 
@@ -527,7 +738,7 @@ root.title(
 )
 
 root.geometry(
-    "900x750"
+    "950x780"
 )
 
 root.resizable(
@@ -550,19 +761,25 @@ header.pack(
     fill="x"
 )
 
-tk.Label(
+
+title_label = tk.Label(
     header,
     text="🎯 Number Guessing Game",
     font=("Segoe UI", 26, "bold")
-).pack(
+)
+
+title_label.pack(
     side="left"
 )
 
-tk.Label(
+
+subtitle_label = tk.Label(
     header,
     text="Challenge yourself. Beat your best score.",
     font=("Segoe UI", 11)
-).pack(
+)
+
+subtitle_label.pack(
     side="right",
     pady=10
 )
@@ -587,11 +804,13 @@ player_frame.pack(
 )
 
 
-tk.Label(
+name_label = tk.Label(
     player_frame,
     text="Player Name:",
     font=("Segoe UI", 11, "bold")
-).grid(
+)
+
+name_label.grid(
     row=0,
     column=0,
     padx=10,
@@ -612,11 +831,13 @@ name_entry.grid(
 )
 
 
-tk.Label(
+difficulty_label = tk.Label(
     player_frame,
     text="Difficulty:",
     font=("Segoe UI", 11, "bold")
-).grid(
+)
+
+difficulty_label.grid(
     row=0,
     column=2,
     padx=10
@@ -646,27 +867,18 @@ difficulty_menu.grid(
     column=3,
     padx=10
 )
-tk.Button(
-    player_frame,
-    text="🗑️ RESET DATA",
-    font=("Segoe UI", 10, "bold"),
-    command=reset_data,
-    width=18,
-    pady=8
-).grid(
-    row=0,
-    column=2,
-    padx=10
-)
 
-tk.Button(
+
+start_button = tk.Button(
     player_frame,
     text="START GAME",
     font=("Segoe UI", 10, "bold"),
     command=start_player_game,
     padx=15,
     pady=5
-).grid(
+)
+
+start_button.grid(
     row=0,
     column=4,
     padx=15
@@ -711,11 +923,13 @@ def create_stat_card(
         padx=8
     )
 
-    tk.Label(
+    title_label = tk.Label(
         frame,
         text=title,
         font=("Segoe UI", 10)
-    ).pack()
+    )
+
+    title_label.pack()
 
     value_label = tk.Label(
         frame,
@@ -801,14 +1015,16 @@ guess_entry.pack(
 )
 
 
-tk.Button(
+guess_button = tk.Button(
     game_frame,
     text="GUESS",
     font=("Segoe UI", 12, "bold"),
     command=check_guess,
     width=15,
     pady=8
-).pack(
+)
+
+guess_button.pack(
     pady=10
 )
 
@@ -826,22 +1042,26 @@ info_frame.pack(
 )
 
 
-tk.Label(
+attempts_title = tk.Label(
     info_frame,
     text="Attempts",
     font=("Segoe UI", 10)
-).grid(
+)
+
+attempts_title.grid(
     row=0,
     column=0,
     padx=40
 )
 
 
-tk.Label(
+score_title = tk.Label(
     info_frame,
     text="Score",
     font=("Segoe UI", 10)
-).grid(
+)
+
+score_title.grid(
     row=0,
     column=1,
     padx=40
@@ -887,31 +1107,67 @@ action_frame.pack(
 )
 
 
-tk.Button(
+new_game_button = tk.Button(
     action_frame,
     text="🔄 NEW GAME",
     font=("Segoe UI", 10, "bold"),
     command=start_new_game,
     width=18,
     pady=8
-).grid(
+)
+
+new_game_button.grid(
     row=0,
     column=0,
-    padx=10
+    padx=8
 )
 
 
-tk.Button(
+history_button = tk.Button(
     action_frame,
     text="📜 GAME HISTORY",
     font=("Segoe UI", 10, "bold"),
     command=show_history,
     width=18,
     pady=8
-).grid(
+)
+
+history_button.grid(
     row=0,
     column=1,
-    padx=10
+    padx=8
+)
+
+
+reset_button = tk.Button(
+    action_frame,
+    text="🗑️ RESET DATA",
+    font=("Segoe UI", 10, "bold"),
+    command=reset_data,
+    width=18,
+    pady=8
+)
+
+reset_button.grid(
+    row=0,
+    column=2,
+    padx=8
+)
+
+
+theme_button = tk.Button(
+    action_frame,
+    text="🌙 DARK MODE",
+    font=("Segoe UI", 10, "bold"),
+    command=toggle_dark_mode,
+    width=18,
+    pady=8
+)
+
+theme_button.grid(
+    row=0,
+    column=3,
+    padx=8
 )
 
 
@@ -919,11 +1175,13 @@ tk.Button(
 # FOOTER
 # ==========================================
 
-tk.Label(
+footer_label = tk.Label(
     root,
     text="Python • Tkinter • JSON",
     font=("Segoe UI", 9)
-).pack(
+)
+
+footer_label.pack(
     pady=5
 )
 
@@ -931,5 +1189,7 @@ tk.Label(
 # ==========================================
 # START APPLICATION
 # ==========================================
+
+apply_theme()
 
 root.mainloop()
