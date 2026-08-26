@@ -1,42 +1,61 @@
 # 🎯 Number Guessing Game
 
-A Python-based number guessing game with a console version and a Tkinter graphical interface. The project includes difficulty levels, scoring, player personalization, game statistics, permanent JSON storage, and game history.
+A Python-based number guessing game featuring a console version and a professional Tkinter graphical interface.
+
+The application combines gameplay, difficulty levels, scoring, player personalization, statistics, permanent JSON storage, and game history in one project.
+
+---
 
 ## ✨ Features
 
-### Console Version
+### 🎮 Game Features
 
 - Random number generation
-- User input
-- Too-high and too-low hints
-- Attempts counter
-- Input validation
 - Easy, Medium, and Hard difficulty levels
-- Score system
-- Replay option
+- High/low guessing hints
 - Maximum attempt limit
+- Automatic score calculation
+- Input validation
+- Win and loss detection
 
-### GUI Version
+### 👤 Player Features
 
-- Tkinter graphical interface
 - Player name input
-- Personalized welcome messages
-- Difficulty selection
-- Guess input
-- High/low hints
-- Score display
-- Attempts display
-- Games played counter
-- Games won counter
-- Games lost counter
-- Best score tracking
-- Permanent statistics storage
-- Complete game history
-- History viewer
-- New Game button
-- Error and information popups
+- Personalized game messages
+- Player-specific game history
 
-## 🎮 Difficulty Levels
+### 📊 Dashboard
+
+The GUI provides a professional dashboard displaying:
+
+- Games Played
+- Games Won
+- Games Lost
+- Best Score
+- Current Attempts
+- Current Score
+
+### 📜 Game History
+
+Every completed game is stored and can be viewed through the **Game History** window.
+
+Each record contains:
+
+- Player name
+- Difficulty
+- Result
+- Attempts
+- Score
+
+### 💾 Permanent Storage
+
+Game statistics and history are stored using JSON.
+
+Data remains available after closing and reopening the application.
+
+---
+
+## 🎚️ Difficulty Levels
 
 | Difficulty | Number Range | Attempts |
 |---|---:|---:|
@@ -44,73 +63,57 @@ A Python-based number guessing game with a console version and a Tkinter graphic
 | Medium | 1–100 | 10 |
 | Hard | 1–200 | 10 |
 
-## 🏆 Scoring System
+---
 
-The score depends on the number of attempts used.
+## 🏆 Scoring
+
+The score is calculated using:
 
 ```text
 Score = Maximum Attempts - Attempts Used + 1
-Using fewer attempts results in a higher score.
 
-For a lost game, the score is recorded as:
+Example:
 
-0
-📊 Game Statistics
+Maximum Attempts = 10
+Attempts Used    = 3
 
-The GUI tracks:
+Score = 10 - 3 + 1
+Score = 8
+
+A lost game receives a score of 0.
+
+📊 Statistics
+
+The application tracks:
 
 Games Played
 Games Won
 Games Lost
 Best Score
 
-Statistics remain available after restarting the application.
+These statistics are automatically updated after every completed game.
 
 📜 Game History
 
-Every completed game is stored in the game history.
-
-Each record contains:
-
-Player name
-Difficulty level
-Game result
-Number of attempts
-Score
-
-The History button opens a separate window where previous games can be viewed.
-
 Example:
 
-Game 1
+GAME 1
+
 Player     : Shreya
 Difficulty : Medium
 Result     : Won
 Attempts   : 3
 Score      : 8
 
-The newest game is displayed first.
-
-👤 Player Personalization
-
-The player enters their name before starting a game.
-
-Example:
-
-Welcome, Shreya!
-Guess a number between 1 and 100.
-
-A player name is required before starting a game.
+The newest completed game is displayed first.
 
 💾 Data Storage
 
-Game information is stored using:
+The application uses:
 
 game_data.json
 
-The file contains statistics and game history.
-
-Example:
+Example structure:
 
 {
     "games_played": 2,
@@ -128,18 +131,38 @@ Example:
     ]
 }
 
-The game_data.json file is included in .gitignore so personal game data is not uploaded to GitHub.
+The data file is included in .gitignore to prevent personal game statistics from being uploaded to GitHub.
+
+🖥️ Professional Dashboard
+
+Version 8 introduces a redesigned dashboard interface.
+
+The interface is organized into:
+
+Header
+   ↓
+Player Setup
+   ↓
+Statistics Dashboard
+   ↓
+Current Game
+   ↓
+Game Actions
+   ↓
+Footer
+
+This makes the application easier to understand and use.
 
 🛠️ Technologies
 Python
 Tkinter
 JSON
 Random module
+File handling
+Exception handling
 Functions
 Loops
 Conditional statements
-Exception handling
-File handling
 GUI programming
 🚀 How to Run
 Console Version
@@ -150,17 +173,18 @@ python number_guessing_gui.py
 No external Python packages are required.
 
 🎮 How to Play
-Run the GUI version.
+Run the GUI application.
 Enter your player name.
-Select Easy, Medium, or Hard.
-Click Start Game.
+Select a difficulty level.
+Click START GAME.
 Enter your guess.
 Click GUESS.
-Follow the high/low hints.
+Follow the hints.
 Try to find the number within 10 attempts.
-Check your score and statistics.
-Click New Game to play again.
-Click History to view previous games.
+Check your score.
+View your statistics.
+Open GAME HISTORY to see previous games.
+Use NEW GAME to start another round.
 📂 Project Structure
 Number-Guessing-Game/
 │
@@ -173,17 +197,18 @@ Number-Guessing-Game/
 └── Documentation/
     └── working.md
 🔮 Future Enhancements
-Leaderboard
-Timer-based scoring
-Sound effects
-Multiple rounds
-Player profiles
-SQLite database
-Online leaderboard
-Advanced statistics
-Improved GUI themes
-Export game history
-Delete history option
+🏆 Global leaderboard
+⏱️ Timer-based scoring
+🔊 Sound effects
+🎮 Multiple rounds
+👤 Player profiles
+🗄️ SQLite database
+🌐 Online leaderboard
+📈 Advanced analytics
+📤 Export game history
+🗑️ Delete history
+🌙 Dark mode
+🎨 Custom themes
 👩‍💻 Author
 
 Shreya D.
