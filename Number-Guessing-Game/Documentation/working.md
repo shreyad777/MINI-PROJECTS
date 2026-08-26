@@ -2,81 +2,135 @@
 
 ## 1. Overview
 
-The Number Guessing Game is a Python application where the computer generates a random number and the player attempts to guess it.
+The Number Guessing Game is a Python application that generates a random number and challenges the player to identify it.
 
-The project contains:
+Version 8 introduces a professional dashboard interface while maintaining all previous functionality.
 
-- Console version
-- Tkinter GUI version
+The application includes:
+
+- Console gameplay
+- Tkinter GUI
 - Difficulty levels
-- Score calculation
-- Game statistics
-- Permanent JSON storage
 - Player personalization
+- Score calculation
+- Statistics
 - Game history
+- JSON persistence
+- Professional dashboard layout
 
-## 2. Player Name
+---
 
-Before starting a game, the player enters their name.
+## 2. Application Architecture
 
-The program reads the name using:
+The application follows this general flow:
 
-```python
+```text
+User
+ ↓
+Player Setup
+ ↓
+Difficulty Selection
+ ↓
+Game Initialization
+ ↓
+Random Number Generation
+ ↓
+Player Guess
+ ↓
+Input Validation
+ ↓
+Guess Comparison
+ ↓
+Win / Loss
+ ↓
+Score Calculation
+ ↓
+Statistics Update
+ ↓
+Game History
+ ↓
+JSON Storage
+3. Player Setup
+
+The player enters their name.
+
+The program obtains the name using:
+
 player_name = name_entry.get().strip()
 
-If no name is entered, the program displays a warning.
+If the field is empty, a warning is displayed.
 
-3. Difficulty Levels
+4. Difficulty Selection
 
-The player can select:
+The player selects one of three difficulty levels.
 
 Difficulty	Range	Attempts
 Easy	1–50	10
 Medium	1–100	10
 Hard	1–200	10
 
-The selected difficulty determines the range of the random number.
+The selected difficulty determines the random number range.
 
-4. Random Number Generation
+5. Random Number Generation
 
-The secret number is generated using Python's random module:
+The program generates the secret number using Python's random module:
 
 secret_number = random.randint(minimum, maximum)
-5. Guessing Process
 
-The player enters a number into the GUI.
+For example, in Medium mode:
 
-The program compares the guess with the secret number.
+Minimum = 1
+Maximum = 100
 
-Too Low
+The computer then generates a number between 1 and 100.
+
+6. Guess Validation
+
+The player's input is converted into an integer:
+
+guess = int(guess_entry.get())
+
+Invalid input is handled using exception handling.
+
+Numbers outside the selected range are also rejected.
+
+7. Guess Comparison
+
+The player's guess is compared with the secret number.
+
+Guess Too Low
 guess < secret_number
 
-Output:
+The application displays:
 
-Too low! Try again.
-Too High
+⬇️ Too low! Try again.
+Guess Too High
 guess > secret_number
 
-Output:
+The application displays:
 
-Too high! Try again.
-Correct
+⬆️ Too high! Try again.
+Correct Guess
 guess == secret_number
 
-The player wins and the score is calculated.
+The player wins and receives a score.
 
-6. Attempts
+8. Attempt Tracking
 
-Each valid guess increases the attempts counter:
+Every valid guess increases the attempt counter:
 
 attempts += 1
 
 The maximum number of attempts is:
 
 max_attempts = 10
-7. Score Calculation
 
-The score is calculated as:
+The dashboard displays the current value as:
+
+Attempts: 3 / 10
+9. Score Calculation
+
+The score is calculated using:
 
 score = max_attempts - attempts + 1
 
@@ -88,24 +142,62 @@ Attempts used    = 3
 Score = 10 - 3 + 1
 Score = 8
 
-A lost game receives a score of 0.
+If the player loses, the recorded score is:
 
-8. Game Statistics
+0
+10. Statistics System
 
-The application tracks:
+The application maintains four main statistics:
 
 games_played
 games_won
 games_lost
 best_score
 
-These values are displayed in the main GUI.
+After every completed game, the dashboard is updated.
 
-9. Game History
+11. Professional Dashboard
 
-Version 7 introduces individual game history.
+Version 8 reorganizes the GUI into several sections.
 
-Each completed game is stored as a dictionary:
+Header
+
+Displays:
+
+🎯 Number Guessing Game
+Player Setup
+
+Contains:
+
+Player name
+Difficulty selector
+Start Game button
+Statistics Dashboard
+
+Displays:
+
+Games Played
+Games Won
+Games Lost
+Best Score
+Current Game
+
+Contains:
+
+Game message
+Guess input
+Guess button
+Attempts
+Score
+Action Section
+
+Contains:
+
+New Game
+Game History
+12. Game History
+
+Every completed game is converted into a dictionary:
 
 game_record = {
     "player": player_name,
@@ -115,84 +207,80 @@ game_record = {
     "score": final_score
 }
 
-The record is added to:
+The dictionary is added to:
 
 game_history
-10. Example Game History
+13. JSON Storage
 
-A history record may look like:
+The application stores its data in:
 
-{
-    "player": "Shreya",
-    "difficulty": "Medium",
-    "result": "Won",
-    "attempts": 3,
-    "score": 8
-}
-11. Saving History
+game_data.json
 
-The statistics and history are saved using JSON:
+The data contains:
+
+Games Played
+Games Won
+Games Lost
+Best Score
+Game History
+
+Data is saved using:
 
 with open(DATA_FILE, "w") as file:
     json.dump(data, file, indent=4)
+14. Loading Previous Data
 
-The data is stored in:
+When the application starts, it checks whether the JSON file exists.
 
-game_data.json
-12. Loading History
-
-When the program starts, it reads the JSON file:
+If the file exists, the saved data is loaded:
 
 with open(DATA_FILE, "r") as file:
     data = json.load(file)
 
-The previous statistics and game history are restored.
+This provides persistent statistics and history.
 
-Therefore, the information remains available after restarting the application.
+15. History Window
 
-13. History Window
+Clicking:
 
-The History button opens a separate Tkinter window.
+📜 GAME HISTORY
 
-The window displays:
+opens a separate Tkinter window.
 
-Player name
-Difficulty
-Result
-Attempts
-Score
+The window displays previous games.
 
-The newest game is displayed first.
+Games are displayed in reverse order so the newest game appears first.
 
-A scrollbar is provided when many games are stored.
+A scrollbar allows the user to navigate through a large number of records.
 
-14. GUI Components
+16. Error Handling
 
-The application contains:
+The application handles:
 
-Application title
-Player name input
-Difficulty selector
-Start Game button
-Guess input
-Guess button
-Result display
-Attempts counter
-Score display
-Statistics display
-New Game button
-History button
-History window
-15. Program Flow
+Empty player names
+Invalid numbers
+Out-of-range guesses
+Invalid JSON data
+File access problems
+
+This improves reliability and prevents common user-input errors from crashing the application.
+
+17. Complete Program Flow
 START
   |
   v
-Load Statistics and History
+Load JSON Data
+  |
+  v
+Display Dashboard
   |
   v
 Enter Player Name
   |
-  +---- Empty ------> Show Warning
+  +---- Empty
+  |      |
+  |      v
+  |   Warning
   |
   v
 Select Difficulty
@@ -209,7 +297,10 @@ Enter Guess
   v
 Validate Input
   |
-  +---- Invalid ------> Show Error
+  +---- Invalid
+  |      |
+  |      v
+  |   Error Message
   |
   v
 Increase Attempts
@@ -217,9 +308,13 @@ Increase Attempts
   v
 Compare Guess
   |
-  +---- Too Low ------> Try Again
+  +---- Too Low
+  |       |
+  |       └──> Try Again
   |
-  +---- Too High -----> Try Again
+  +---- Too High
+  |       |
+  |       └──> Try Again
   |
   +---- Correct
   |       |
@@ -232,7 +327,7 @@ Compare Guess
   |       v
   |   Add History
   |
-  +---- Maximum Attempts
+  +---- 10 Attempts
           |
           v
        Record Loss
@@ -244,49 +339,67 @@ Compare Guess
        Save JSON
           |
           v
-         END
-16. Error Handling
+          END
+18. Technologies Used
+Python
 
-The program handles:
+Used for the application logic.
 
-Empty player names
-Invalid numeric input
-Numbers outside the selected range
-Invalid JSON files
-File access errors
-17. Data Security
+Tkinter
 
-The file:
+Used to create the graphical interface.
+
+JSON
+
+Used for persistent game statistics and history.
+
+Random
+
+Used to generate the secret number.
+
+File Handling
+
+Used to save and load game data.
+
+Exception Handling
+
+Used to handle invalid input and file-related errors.
+
+19. Security and Git
+
+The following file contains personal game data:
 
 game_data.json
 
-is included in .gitignore.
+It is included in .gitignore.
 
-This prevents personal game statistics and history from being uploaded to GitHub.
+Therefore, personal game history and statistics are not intended to be committed to the Git repository.
 
-18. Technologies
-Python
-Tkinter
-JSON
-Random module
-Functions
-Loops
-Conditional statements
-Exception handling
-File handling
-GUI programming
-19. Future Improvements
+20. Version 8 Improvements
 
-Possible future features include:
+Version 8 introduces:
 
-Leaderboard
+Professional dashboard layout
+Better UI organization
+Statistics cards
+Improved player setup section
+Dedicated current-game section
+Cleaner action buttons
+Improved visual hierarchy
+Better portfolio presentation
+21. Future Enhancements
+
+Future versions could include:
+
+Global leaderboard
 Timer-based scoring
 Sound effects
 Multiple rounds
 Player profiles
 SQLite database
 Online leaderboard
-Advanced statistics
+Advanced analytics
 Export history
-Delete history option
-Improved GUI themes
+Delete history
+Dark mode
+Custom themes
