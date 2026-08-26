@@ -238,7 +238,37 @@ def add_history(result, final_score):
 # ==========================================
 # SHOW HISTORY
 # ==========================================
+def reset_data():
 
+    global games_played
+    global games_won
+    global games_lost
+    global best_score
+    global game_history
+
+    confirmation = messagebox.askyesno(
+        "Reset Game Data",
+        "Are you sure you want to delete all game statistics and history?\n\n"
+        "This action cannot be undone."
+    )
+
+    if not confirmation:
+        return
+
+    games_played = 0
+    games_won = 0
+    games_lost = 0
+    best_score = 0
+    game_history = []
+
+    save_data()
+
+    update_dashboard()
+
+    messagebox.showinfo(
+        "Data Reset",
+        "All game statistics and history have been cleared."
+    )
 def show_history():
 
     history_window = tk.Toplevel(root)
@@ -616,7 +646,18 @@ difficulty_menu.grid(
     column=3,
     padx=10
 )
-
+tk.Button(
+    player_frame,
+    text="🗑️ RESET DATA",
+    font=("Segoe UI", 10, "bold"),
+    command=reset_data,
+    width=18,
+    pady=8
+).grid(
+    row=0,
+    column=2,
+    padx=10
+)
 
 tk.Button(
     player_frame,
