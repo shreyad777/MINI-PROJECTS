@@ -780,3 +780,161 @@ MM:SS formatting
 Time saved in game history
 Time shown in win/loss messages
 Improved gameplay tracking
+
+# Version 12 — Leaderboard System
+
+## 40. Leaderboard
+
+Version 12 introduces a leaderboard system that ranks the best winning performances.
+
+The leaderboard stores the player's:
+
+- Name
+- Score
+- Completion time
+- Difficulty level
+
+---
+
+## 41. Leaderboard Data Structure
+
+Each leaderboard entry is stored as a Python dictionary:
+
+```python
+entry = {
+    "player": player_name,
+    "score": final_score,
+    "time": format_time(timer_seconds),
+    "time_seconds": timer_seconds,
+    "difficulty": difficulty_var.get()
+}
+
+Multiple entries are stored inside the leaderboard list.
+
+42. Adding a Score
+
+When the player wins a game, the score is sent to:
+
+add_to_leaderboard(score)
+
+The function creates a leaderboard entry and adds it to the leaderboard list.
+
+43. Ranking Algorithm
+
+The leaderboard is sorted using:
+
+leaderboard = sorted(
+    leaderboard,
+    key=lambda entry: (
+        -entry["score"],
+        entry["time_seconds"]
+    )
+)
+
+The sorting rules are:
+
+1. Higher score → Higher position
+2. Same score → Faster time wins
+
+For example:
+
+Player A → Score: 10 → Time: 00:20
+Player B → Score: 10 → Time: 00:15
+
+Player B ranks higher because both have the same score but Player B completed the game faster.
+
+44. Top 10 Limitation
+
+The leaderboard stores only the top 10 performances:
+
+leaderboard = leaderboard[:10]
+
+This keeps the leaderboard compact and focused on the best players.
+
+45. Persistent Leaderboard
+
+Leaderboard data is stored in the existing:
+
+game_data.json
+
+The JSON structure contains:
+
+{
+    "games_played": 5,
+    "games_won": 3,
+    "games_lost": 2,
+    "best_score": 10,
+    "game_history": [],
+    "leaderboard": []
+}
+
+Therefore, leaderboard information remains available after closing and reopening the application.
+
+46. Leaderboard Interface
+
+The leaderboard is displayed in a separate Tkinter window.
+
+The interface contains:
+
+🏆 LEADERBOARD
+
+Rank | Player | Score | Time | Difficulty
+
+The top three positions are visually represented using:
+
+🥇 First
+🥈 Second
+🥉 Third
+47. Leaderboard Workflow
+Player Starts Game
+        |
+        v
+Player Makes Guesses
+        |
+        v
+Player Wins
+        |
+        v
+Calculate Score
+        |
+        v
+Stop Timer
+        |
+        v
+Create Leaderboard Entry
+        |
+        v
+Sort Leaderboard
+        |
+        v
+Keep Top 10
+        |
+        v
+Save to JSON
+        |
+        v
+Display Leaderboard
+48. Reset Integration
+
+The leaderboard is integrated with the Reset Data feature.
+
+When the player confirms a reset:
+
+leaderboard = []
+
+All leaderboard records are removed.
+
+49. Version 12 Improvements
+
+Version 12 adds:
+
+🏆 Leaderboard system
+🥇 Automatic ranking
+📊 Score-based ranking
+⏱️ Time-based tie breaking
+👤 Player tracking
+🎯 Difficulty tracking
+💾 Persistent leaderboard
+🔝 Top 10 limitation
+🌙 Dark Mode compatibility
+🗑️ Leaderboard reset functionality
