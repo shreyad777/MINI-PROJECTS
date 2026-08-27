@@ -367,6 +367,82 @@ V10	Dark / Light Mode
 V11	Real-Time Game Timer
 V12	Leaderboard System 🏆
 
+
+# Version 13 — Achievement & Badge System 🏅
+
+Version 13 introduces a gamification system that rewards players for reaching specific milestones and completing gameplay challenges.
+
+## 🏅 Achievement Features
+
+- 🏆 First Victory
+- 🔥 Winning Streak
+- ⚡ Speed Demon
+- 🎯 Perfect Guesser
+- 💯 Score Master
+- 🥇 Leaderboard Champion
+- 💾 Persistent achievement data
+- 🔓 Automatic achievement unlocking
+- 🌙 Dark Mode compatibility
+- 🗑️ Reset achievements with Reset Data
+
+## Available Achievements
+
+| Achievement | Requirement |
+|---|---|
+| 🏆 First Victory | Win your first game |
+| 🔥 Winning Streak | Win 3 games consecutively |
+| ⚡ Speed Demon | Win a game in under 15 seconds |
+| 🎯 Perfect Guesser | Find the number in one attempt |
+| 💯 Score Master | Achieve a score of 10 or higher |
+| 🥇 Leaderboard Champion | Reach #1 on the leaderboard |
+
+## Achievement Display
+
+The application now includes an:
+
+```text
+🏅 ACHIEVEMENTS
+
+button.
+
+The achievement window displays the player's progress:
+
+🏅 YOUR ACHIEVEMENTS
+
+🏆 First Victory          ✅ UNLOCKED
+🔥 Winning Streak         🔒 LOCKED
+⚡ Speed Demon            🔒 LOCKED
+🎯 Perfect Guesser        🔒 LOCKED
+💯 Score Master            🔒 LOCKED
+🥇 Leaderboard Champion  🔒 LOCKED
+
+When an achievement is unlocked, the player receives a notification.
+
+Persistent Achievement Data
+
+Achievement progress is stored in:
+
+game_data.json
+
+This means unlocked badges remain available after restarting the application.
+
+Version History
+Version	Feature
+V1	Basic Number Guessing Game
+V2	Difficulty + Score
+V3	Tkinter GUI
+V4	Statistics + Best Score
+V5	JSON Persistence
+V6	Player Personalization
+V7	Game History
+V8	Professional Dashboard
+V9	Reset / Clear Data
+V10	Dark / Light Mode
+V11	Real-Time Game Timer
+V12	Leaderboard System
+V13	Achievement & Badge System 🏅
+
+
 👩‍💻 Author
 
 Shreya D.
