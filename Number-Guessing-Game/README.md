@@ -315,6 +315,58 @@ V9	Reset / Clear Data
 V10	Dark / Light Mode
 V11	Real-Time Game Timer
 
+# Version 12 — Leaderboard System 🏆
+
+Version 12 introduces a persistent leaderboard that ranks players based on their game performance.
+
+## 🏆 Leaderboard Features
+
+- 🥇 Automatic player ranking
+- 📊 Score-based ranking
+- ⏱️ Time used as a secondary ranking factor
+- 👤 Player name tracking
+- 🎯 Difficulty tracking
+- 💾 Persistent leaderboard data
+- 🔝 Top 10 scores displayed
+- 🔄 Automatically updated after every winning game
+- 🌙 Compatible with Dark Mode
+
+## Leaderboard Ranking
+
+Players are ranked using:
+
+1. Highest score
+2. Fastest completion time when scores are equal
+
+Example:
+
+```text
+🏆 LEADERBOARD
+
+Rank   Player       Score    Time      Difficulty
+──────────────────────────────────────────────────
+🥇 1   Shreya        10      00:12     Easy
+🥈 2   Rahul          9      00:18     Medium
+🥉 3   Ananya         8      00:21     Medium
+   4   Arjun          7      00:25     Hard
+
+Only the top 10 winning results are stored.
+
+Version History
+Version	Feature
+V1	Basic Number Guessing Game
+V2	Difficulty + Score
+V3	Tkinter GUI
+V4	Statistics + Best Score
+V5	JSON Persistence
+V6	Player Personalization
+V7	Game History
+V8	Professional Dashboard
+V9	Reset / Clear Data
+V10	Dark / Light Mode
+V11	Real-Time Game Timer
+V12	Leaderboard System 🏆
+
 👩‍💻 Author
 
 Shreya D.
