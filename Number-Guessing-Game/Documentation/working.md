@@ -1165,3 +1165,163 @@ Version 13 adds:
 🔔 Achievement notifications
 🌙 Dark Mode compatibility
 🗑️ Achievement reset functionality
+
+# Version 14 — Sound Effects & Game Feedback
+
+## 66. Sound System
+
+Version 14 introduces audio feedback into the game.
+
+The system uses Python's built-in `winsound` module.
+
+```python
+import winsound
+
+No external sound files are required.
+
+67. Sound Function
+
+The central sound function is:
+
+play_sound(sound_type)
+
+It receives the type of game event and plays the corresponding sound.
+
+Example:
+
+play_sound("win")
+68. Sound Types
+
+The application supports the following sound types:
+
+correct
+high
+low
+win
+lose
+achievement
+
+Each type represents a different game event.
+
+69. Low Guess Feedback
+
+When the player's guess is lower than the secret number:
+
+play_sound("low")
+
+A low-pitch beep is played.
+
+The player also receives:
+
+⬇️ Too low! Try again.
+70. High Guess Feedback
+
+When the player's guess is higher than the secret number:
+
+play_sound("high")
+
+A higher-pitch beep is played.
+
+The interface displays:
+
+⬆️ Too high! Try again.
+71. Victory Sound
+
+When the player correctly guesses the number:
+
+play_sound("win")
+
+Multiple ascending tones are played to create a victory melody.
+
+The player then receives the victory message.
+
+72. Game Over Sound
+
+If the player reaches the maximum number of attempts:
+
+play_sound("lose")
+
+A descending sound pattern indicates that the game has ended.
+
+73. Achievement Sound
+
+When a new achievement is unlocked:
+
+play_sound("achievement")
+
+The game plays a special multi-tone notification.
+
+This provides immediate audio feedback when the player earns a badge.
+
+74. Sound Toggle
+
+Players can enable or disable audio using:
+
+🔊 SOUND ON
+
+or:
+
+🔇 SOUND OFF
+
+The toggle is controlled by:
+
+sound_enabled
+75. Sound Preference
+
+The sound setting is saved in game_data.json.
+
+Example:
+
+{
+    "sound_enabled": true
+}
+
+If the user disables sound:
+
+{
+    "sound_enabled": false
+}
+
+The setting is loaded when the application starts.
+
+76. Sound Safety Check
+
+Before playing a sound, the application checks:
+
+if not sound_enabled:
+    return
+
+Therefore, no sound is played when the user has disabled audio.
+
+77. V14 Workflow
+Player Performs Action
+          |
+          v
+Game Detects Event
+          |
+          v
+play_sound()
+          |
+          v
+sound_enabled?
+      /       \
+    YES        NO
+     |          |
+     v          v
+ Play Sound   Continue
+     |
+     v
+Visual Feedback
+78. V14 Improvements
+
+Version 14 adds:
+
+🔊 Audio feedback
+⬆️ High-guess sound
+⬇️ Low-guess sound
+🎉 Victory sound
+❌ Game-over sound
+🏅 Achievement sound
+🔇 Sound toggle
+💾 Persistent sound preference
+🖥️ Built-in Windows audio support
