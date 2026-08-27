@@ -625,3 +625,158 @@ Timer reset
 Elapsed-time formatting
 Timer in game history
 Improved gameplay tracking
+
+# Version 11 — Real-Time Game Timer
+
+## 30. Game Timer
+
+Version 11 adds a real-time timer to the Number Guessing Game.
+
+The timer measures the amount of time taken by the player to complete a game.
+
+---
+
+## 31. Timer Variables
+
+The application uses three timer variables:
+
+```python
+game_active = False
+timer_seconds = 0
+timer_job = None
+game_active
+
+Determines whether a game is currently running.
+
+timer_seconds
+
+Stores the number of seconds elapsed.
+
+timer_job
+
+Stores the Tkinter scheduled callback.
+
+32. Timer Formatting
+
+The timer is converted into a MM:SS format using:
+
+def format_time(seconds):
+
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+
+    return f"{minutes:02d}:{remaining_seconds:02d}"
+
+Examples:
+
+0 seconds    → 00:00
+5 seconds    → 00:05
+60 seconds   → 01:00
+125 seconds  → 02:05
+33. Starting the Timer
+
+When a new game starts, the timer is reset:
+
+timer_seconds = 0
+game_active = True
+
+The display is reset to:
+
+00:00
+
+The timer then schedules an update every 1000 milliseconds.
+
+34. Updating the Timer
+
+Tkinter's after() method is used:
+
+timer_job = root.after(
+    1000,
+    update_timer
+)
+
+Every second:
+
+timer_seconds += 1
+
+The updated time is displayed to the user.
+
+35. Stopping the Timer
+
+When the player wins or loses:
+
+stop_timer()
+
+is called.
+
+The timer is marked inactive:
+
+game_active = False
+
+The scheduled Tkinter callback is also cancelled.
+
+36. Timer and Game Results
+
+When a player wins, the completion time is displayed:
+
+Attempts: 3
+Score: 8
+Time: 00:14
+
+When the player loses after reaching the maximum attempts, the timer is also stopped and displayed.
+
+37. Saving Time in Game History
+
+Each completed game now stores its time:
+
+game_record = {
+    "player": player_name,
+    "difficulty": difficulty,
+    "result": result,
+    "attempts": attempts,
+    "score": final_score,
+    "time": format_time(timer_seconds)
+}
+
+This allows the player to review how quickly previous games were completed.
+
+38. Timer Workflow
+START GAME
+     |
+     v
+Reset Timer
+     |
+     v
+00:00
+     |
+     v
+Start Timer
+     |
+     v
+Update Every Second
+     |
+     +------------------+
+     |                  |
+     v                  v
+Wrong Guess        Correct Guess
+     |                  |
+     v                  v
+Continue Timer      Stop Timer
+                        |
+                        v
+                   Save Time
+                        |
+                        v
+                  Game History
+39. Version 11 Improvements
+
+Version 11 adds:
+
+⏱️ Real-time timer
+Automatic timer start
+Automatic timer stop
+Timer reset
+MM:SS formatting
+Time saved in game history
+Time shown in win/loss messages
+Improved gameplay tracking
