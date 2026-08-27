@@ -3,6 +3,7 @@ from tkinter import messagebox
 import random
 import json
 import os
+import time
 
 
 # ==========================================
@@ -27,6 +28,10 @@ games_lost = 0
 best_score = 0
 
 game_history = []
+
+game_active = False
+timer_seconds = 0
+timer_job = None
 
 
 # ==========================================
@@ -131,6 +136,85 @@ def update_dashboard():
 
 
 # ==========================================
+# FORMAT TIMER
+# ==========================================
+
+def format_time(seconds):
+
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+
+    return f"{minutes:02d}:{remaining_seconds:02d}"
+
+
+# ==========================================
+# TIMER
+# ==========================================
+
+def update_timer():
+
+    global timer_seconds
+    global timer_job
+
+    if not game_active:
+        return
+
+    timer_seconds += 1
+
+    timer_value.config(
+        text=format_time(timer_seconds)
+    )
+
+    timer_job = root.after(
+        1000,
+        update_timer
+    )
+
+
+def start_timer():
+
+    global game_active
+    global timer_seconds
+    global timer_job
+
+    if timer_job is not None:
+
+        try:
+            root.after_cancel(timer_job)
+        except tk.TclError:
+            pass
+
+    timer_seconds = 0
+    game_active = True
+
+    timer_value.config(
+        text="00:00"
+    )
+
+    timer_job = root.after(
+        1000,
+        update_timer
+    )
+
+
+def stop_timer():
+
+    global game_active
+    global timer_job
+
+    game_active = False
+
+    if timer_job is not None:
+
+        try:
+            root.after_cancel(timer_job)
+        except tk.TclError:
+            pass
+
+        timer_job = None
+
+
+# ==========================================
 # START PLAYER GAME
 # ==========================================
 
@@ -200,6 +284,8 @@ def start_new_game():
 
         return
 
+    stop_timer()
+
     secret_number = random.randint(
         minimum,
         maximum
@@ -228,6 +314,8 @@ def start_new_game():
         text="0"
     )
 
+    start_timer()
+
 
 # ==========================================
 # ADD HISTORY
@@ -242,7 +330,8 @@ def add_history(result, final_score):
         "difficulty": difficulty,
         "result": result,
         "attempts": attempts,
-        "score": final_score
+        "score": final_score,
+        "time": format_time(timer_seconds)
     }
 
     game_history.append(
@@ -265,7 +354,7 @@ def show_history():
     )
 
     history_window.geometry(
-        "700x550"
+        "750x600"
     )
 
     history_window.resizable(
@@ -380,6 +469,11 @@ def show_history():
 
         history_text.insert(
             tk.END,
+            f"Time       : {game.get('time', '00:00')}\n"
+        )
+
+        history_text.insert(
+            tk.END,
             "-" * 55 + "\n\n"
         )
 
@@ -410,6 +504,8 @@ def reset_data():
 
         return
 
+    stop_timer()
+
     games_played = 0
     games_won = 0
     games_lost = 0
@@ -430,6 +526,10 @@ def reset_data():
 
     score_value.config(
         text="0"
+    )
+
+    timer_value.config(
+        text="00:00"
     )
 
     messagebox.showinfo(
@@ -456,6 +556,15 @@ def check_guess():
         messagebox.showwarning(
             "Start Game",
             "Please enter your name and start a game first."
+        )
+
+        return
+
+    if not game_active:
+
+        messagebox.showwarning(
+            "No Active Game",
+            "Please click NEW GAME to start a game."
         )
 
         return
@@ -506,6 +615,8 @@ def check_guess():
 
         score = max_attempts - attempts + 1
 
+        stop_timer()
+
         games_played += 1
         games_won += 1
 
@@ -536,12 +647,15 @@ def check_guess():
             f"Congratulations, {player_name}!\n\n"
             f"Attempts: {attempts}\n"
             f"Score: {score}\n"
+            f"Time: {format_time(timer_seconds)}\n"
             f"Best Score: {best_score}"
         )
 
         return
 
     if attempts >= max_attempts:
+
+        stop_timer()
 
         games_played += 1
         games_lost += 1
@@ -563,7 +677,8 @@ def check_guess():
         messagebox.showinfo(
             "Game Over",
             f"Better luck next time, {player_name}!\n\n"
-            f"The number was {secret_number}."
+            f"The number was {secret_number}.\n"
+            f"Time: {format_time(timer_seconds)}"
         )
 
 
@@ -738,7 +853,7 @@ root.title(
 )
 
 root.geometry(
-    "950x780"
+    "950x820"
 )
 
 root.resizable(
@@ -1051,7 +1166,7 @@ attempts_title = tk.Label(
 attempts_title.grid(
     row=0,
     column=0,
-    padx=40
+    padx=35
 )
 
 
@@ -1064,7 +1179,20 @@ score_title = tk.Label(
 score_title.grid(
     row=0,
     column=1,
-    padx=40
+    padx=35
+)
+
+
+timer_title = tk.Label(
+    info_frame,
+    text="Time",
+    font=("Segoe UI", 10)
+)
+
+timer_title.grid(
+    row=0,
+    column=2,
+    padx=35
 )
 
 
@@ -1077,7 +1205,7 @@ attempts_value = tk.Label(
 attempts_value.grid(
     row=1,
     column=0,
-    padx=40
+    padx=35
 )
 
 
@@ -1090,7 +1218,20 @@ score_value = tk.Label(
 score_value.grid(
     row=1,
     column=1,
-    padx=40
+    padx=35
+)
+
+
+timer_value = tk.Label(
+    info_frame,
+    text="00:00",
+    font=("Segoe UI", 16, "bold")
+)
+
+timer_value.grid(
+    row=1,
+    column=2,
+    padx=35
 )
 
 
@@ -1119,7 +1260,7 @@ new_game_button = tk.Button(
 new_game_button.grid(
     row=0,
     column=0,
-    padx=8
+    padx=6
 )
 
 
@@ -1135,7 +1276,7 @@ history_button = tk.Button(
 history_button.grid(
     row=0,
     column=1,
-    padx=8
+    padx=6
 )
 
 
@@ -1151,7 +1292,7 @@ reset_button = tk.Button(
 reset_button.grid(
     row=0,
     column=2,
-    padx=8
+    padx=6
 )
 
 
@@ -1167,7 +1308,7 @@ theme_button = tk.Button(
 theme_button.grid(
     row=0,
     column=3,
-    padx=8
+    padx=6
 )
 
 
@@ -1177,7 +1318,7 @@ theme_button.grid(
 
 footer_label = tk.Label(
     root,
-    text="Python • Tkinter • JSON",
+    text="Python • Tkinter • JSON • Real-Time Timer",
     font=("Segoe UI", 9)
 )
 

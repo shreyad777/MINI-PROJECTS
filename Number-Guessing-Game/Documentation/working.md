@@ -478,3 +478,150 @@ History
   |
   v
 Reset Data
+
+## 30. Game Timer
+
+Version 11 introduces a real-time game timer.
+
+The timer measures how long the player takes to complete a game.
+
+---
+
+## 31. Timer Variables
+
+The application uses:
+
+```python
+game_active = False
+timer_seconds = 0
+timer_job = None
+game_active
+
+Determines whether a game is currently running.
+
+timer_seconds
+
+Stores the number of seconds elapsed.
+
+timer_job
+
+Stores the Tkinter scheduled timer task.
+
+32. Timer Formatting
+
+The timer is displayed using the format_time() function:
+
+def format_time(seconds):
+
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+
+    return f"{minutes:02d}:{remaining_seconds:02d}"
+
+For example:
+
+0 seconds   → 00:00
+5 seconds   → 00:05
+60 seconds  → 01:00
+125 seconds → 02:05
+33. Starting the Timer
+
+When a new game begins:
+
+start_timer()
+
+The timer is reset:
+
+00:00
+
+and the game becomes active.
+
+34. Updating the Timer
+
+Tkinter's after() method is used to execute the timer update every second:
+
+timer_job = root.after(
+    1000,
+    update_timer
+)
+
+The value 1000 represents 1000 milliseconds, which equals one second.
+
+The timer then increments:
+
+timer_seconds += 1
+35. Stopping the Timer
+
+When the player wins or loses:
+
+stop_timer()
+
+is called.
+
+This sets:
+
+game_active = False
+
+and cancels the scheduled timer update.
+
+36. Timer in Game History
+
+Version 11 stores the completion time with every game:
+
+game_record = {
+    "player": player_name,
+    "difficulty": difficulty,
+    "result": result,
+    "attempts": attempts,
+    "score": final_score,
+    "time": format_time(timer_seconds)
+}
+
+This makes game history more informative.
+
+37. Complete Timer Flow
+START GAME
+     |
+     v
+Reset Timer
+     |
+     v
+00:00
+     |
+     v
+Start Timer
+     |
+     v
+Update Every Second
+     |
+     +------ Wrong Guess ------+
+     |                         |
+     |                         v
+     |                    Continue
+     |
+     +------ Correct ----------+
+     |                         |
+     |                         v
+     |                    Stop Timer
+     |
+     +------ 10 Attempts ------+
+                               |
+                               v
+                          Stop Timer
+                               |
+                               v
+                         Save Time
+                               |
+                               v
+                         Game History
+38. Version 11 Improvements
+
+Version 11 adds:
+
+⏱️ Real-time timer
+Automatic timer start
+Automatic timer stop
+Timer reset
+Elapsed-time formatting
+Timer in game history
+Improved gameplay tracking
