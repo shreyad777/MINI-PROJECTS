@@ -28,17 +28,20 @@ best_score = 0
 
 game_history = []
 
-# Timer variables
+# V11 Timer
 game_active = False
 timer_seconds = 0
 timer_job = None
+
+# V12 Leaderboard
+leaderboard = []
 
 # Theme
 dark_mode = False
 
 
 # ==========================================
-# THEME SETTINGS
+# THEME
 # ==========================================
 
 LIGHT_BG = "#f4f6f8"
@@ -53,7 +56,7 @@ DARK_BUTTON = "#374151"
 
 
 # ==========================================
-# LOAD SAVED DATA
+# LOAD DATA
 # ==========================================
 
 def load_data():
@@ -70,14 +73,15 @@ def load_data():
                 data.get("games_won", 0),
                 data.get("games_lost", 0),
                 data.get("best_score", 0),
-                data.get("game_history", [])
+                data.get("game_history", []),
+                data.get("leaderboard", [])
             )
 
         except (json.JSONDecodeError, OSError):
 
-            return 0, 0, 0, 0, []
+            return 0, 0, 0, 0, [], []
 
-    return 0, 0, 0, 0, []
+    return 0, 0, 0, 0, [], []
 
 
 (
@@ -85,7 +89,8 @@ def load_data():
     games_won,
     games_lost,
     best_score,
-    game_history
+    game_history,
+    leaderboard
 ) = load_data()
 
 
@@ -100,7 +105,8 @@ def save_data():
         "games_won": games_won,
         "games_lost": games_lost,
         "best_score": best_score,
-        "game_history": game_history
+        "game_history": game_history,
+        "leaderboard": leaderboard
     }
 
     try:
@@ -114,7 +120,7 @@ def save_data():
 
 
 # ==========================================
-# UPDATE STATISTICS
+# DASHBOARD
 # ==========================================
 
 def update_dashboard():
@@ -137,7 +143,7 @@ def update_dashboard():
 
 
 # ==========================================
-# FORMAT TIMER
+# TIMER
 # ==========================================
 
 def format_time(seconds):
@@ -147,10 +153,6 @@ def format_time(seconds):
 
     return f"{minutes:02d}:{remaining_seconds:02d}"
 
-
-# ==========================================
-# TIMER UPDATE
-# ==========================================
 
 def update_timer():
 
@@ -172,17 +174,12 @@ def update_timer():
     )
 
 
-# ==========================================
-# START TIMER
-# ==========================================
-
 def start_timer():
 
     global game_active
     global timer_seconds
     global timer_job
 
-    # Cancel previous timer
     if timer_job is not None:
 
         try:
@@ -204,10 +201,6 @@ def start_timer():
     )
 
 
-# ==========================================
-# STOP TIMER
-# ==========================================
-
 def stop_timer():
 
     global game_active
@@ -227,7 +220,7 @@ def stop_timer():
 
 
 # ==========================================
-# START PLAYER GAME
+# PLAYER GAME
 # ==========================================
 
 def start_player_game():
@@ -249,7 +242,7 @@ def start_player_game():
 
 
 # ==========================================
-# SET DIFFICULTY
+# DIFFICULTY
 # ==========================================
 
 def set_difficulty():
@@ -278,7 +271,7 @@ def set_difficulty():
 
 
 # ==========================================
-# START NEW GAME
+# NEW GAME
 # ==========================================
 
 def start_new_game():
@@ -334,7 +327,197 @@ def start_new_game():
 
 
 # ==========================================
-# ADD GAME HISTORY
+# LEADERBOARD
+# ==========================================
+
+def update_leaderboard():
+
+    global leaderboard
+
+    leaderboard = sorted(
+        leaderboard,
+        key=lambda entry: (
+            -entry["score"],
+            entry["time_seconds"]
+        )
+    )
+
+    # Keep top 10
+    leaderboard = leaderboard[:10]
+
+    save_data()
+
+
+def add_to_leaderboard(final_score):
+
+    if final_score <= 0:
+        return
+
+    entry = {
+        "player": player_name,
+        "score": final_score,
+        "time": format_time(timer_seconds),
+        "time_seconds": timer_seconds,
+        "difficulty": difficulty_var.get()
+    }
+
+    leaderboard.append(entry)
+
+    update_leaderboard()
+
+
+def show_leaderboard():
+
+    leaderboard_window = tk.Toplevel(root)
+
+    leaderboard_window.title(
+        "🏆 Leaderboard"
+    )
+
+    leaderboard_window.geometry(
+        "800x600"
+    )
+
+    leaderboard_window.resizable(
+        False,
+        False
+    )
+
+    background = DARK_BG if dark_mode else LIGHT_BG
+    foreground = DARK_FG if dark_mode else LIGHT_FG
+    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
+
+    leaderboard_window.config(
+        bg=background
+    )
+
+    title = tk.Label(
+        leaderboard_window,
+        text="🏆 LEADERBOARD",
+        font=("Segoe UI", 24, "bold"),
+        bg=background,
+        fg=foreground
+    )
+
+    title.pack(
+        pady=20
+    )
+
+    subtitle = tk.Label(
+        leaderboard_window,
+        text="Top 10 Players",
+        font=("Segoe UI", 11),
+        bg=background,
+        fg=foreground
+    )
+
+    subtitle.pack(
+        pady=(0, 15)
+    )
+
+    table_frame = tk.Frame(
+        leaderboard_window,
+        bg=frame_background
+    )
+
+    table_frame.pack(
+        padx=25,
+        pady=10,
+        fill="both",
+        expand=True
+    )
+
+    headers = [
+        "Rank",
+        "Player",
+        "Score",
+        "Time",
+        "Difficulty"
+    ]
+
+    for column, header in enumerate(headers):
+
+        label = tk.Label(
+            table_frame,
+            text=header,
+            font=("Segoe UI", 11, "bold"),
+            bg=frame_background,
+            fg=foreground,
+            width=15
+        )
+
+        label.grid(
+            row=0,
+            column=column,
+            padx=5,
+            pady=12
+        )
+
+    if not leaderboard:
+
+        empty_label = tk.Label(
+            table_frame,
+            text="No winning games yet.",
+            font=("Segoe UI", 13),
+            bg=frame_background,
+            fg=foreground
+        )
+
+        empty_label.grid(
+            row=1,
+            column=0,
+            columnspan=5,
+            pady=50
+        )
+
+    else:
+
+        for index, entry in enumerate(
+            leaderboard,
+            start=1
+        ):
+
+            if index == 1:
+                rank = "🥇 1"
+
+            elif index == 2:
+                rank = "🥈 2"
+
+            elif index == 3:
+                rank = "🥉 3"
+
+            else:
+                rank = str(index)
+
+            values = [
+                rank,
+                entry["player"],
+                str(entry["score"]),
+                entry["time"],
+                entry["difficulty"]
+            ]
+
+            for column, value in enumerate(values):
+
+                label = tk.Label(
+                    table_frame,
+                    text=value,
+                    font=("Segoe UI", 11),
+                    bg=frame_background,
+                    fg=foreground,
+                    width=15
+                )
+
+                label.grid(
+                    row=index,
+                    column=column,
+                    padx=5,
+                    pady=8
+                )
+
+
+# ==========================================
+# GAME HISTORY
 # ==========================================
 
 def add_history(result, final_score):
@@ -357,10 +540,6 @@ def add_history(result, final_score):
     save_data()
 
 
-# ==========================================
-# SHOW GAME HISTORY
-# ==========================================
-
 def show_history():
 
     history_window = tk.Toplevel(root)
@@ -378,16 +557,20 @@ def show_history():
         False
     )
 
+    background = DARK_BG if dark_mode else LIGHT_BG
+    foreground = DARK_FG if dark_mode else LIGHT_FG
+    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
+
     history_window.configure(
-        bg=DARK_BG if dark_mode else LIGHT_BG
+        bg=background
     )
 
     history_title = tk.Label(
         history_window,
         text="📜 Game History",
         font=("Segoe UI", 22, "bold"),
-        bg=DARK_BG if dark_mode else LIGHT_BG,
-        fg=DARK_FG if dark_mode else LIGHT_FG
+        bg=background,
+        fg=foreground
     )
 
     history_title.pack(
@@ -400,8 +583,8 @@ def show_history():
             history_window,
             text="No games played yet.",
             font=("Segoe UI", 13),
-            bg=DARK_BG if dark_mode else LIGHT_BG,
-            fg=DARK_FG if dark_mode else LIGHT_FG
+            bg=background,
+            fg=foreground
         ).pack(
             pady=50
         )
@@ -410,7 +593,7 @@ def show_history():
 
     frame = tk.Frame(
         history_window,
-        bg=DARK_FRAME if dark_mode else LIGHT_FRAME
+        bg=frame_background
     )
 
     frame.pack(
@@ -434,9 +617,9 @@ def show_history():
         font=("Consolas", 11),
         yscrollcommand=scrollbar.set,
         wrap="none",
-        bg=DARK_FRAME if dark_mode else LIGHT_FRAME,
-        fg=DARK_FG if dark_mode else LIGHT_FG,
-        insertbackground=DARK_FG if dark_mode else LIGHT_FG
+        bg=frame_background,
+        fg=foreground,
+        insertbackground=foreground
     )
 
     history_text.pack(
@@ -509,11 +692,12 @@ def reset_data():
     global games_lost
     global best_score
     global game_history
+    global leaderboard
 
     confirmation = messagebox.askyesno(
         "Reset Game Data",
-        "Are you sure you want to delete all game statistics and history?\n\n"
-        "This action cannot be undone."
+        "Are you sure you want to delete all game statistics,\n"
+        "history and leaderboard data?"
     )
 
     if not confirmation:
@@ -525,7 +709,9 @@ def reset_data():
     games_won = 0
     games_lost = 0
     best_score = 0
+
     game_history = []
+    leaderboard = []
 
     save_data()
 
@@ -549,7 +735,7 @@ def reset_data():
 
     messagebox.showinfo(
         "Data Reset",
-        "All game statistics and history have been cleared."
+        "Statistics, history and leaderboard have been cleared."
     )
 
 
@@ -648,6 +834,10 @@ def check_guess():
             score
         )
 
+        add_to_leaderboard(
+            score
+        )
+
         update_dashboard()
 
         result_label.config(
@@ -663,7 +853,8 @@ def check_guess():
             f"Attempts: {attempts}\n"
             f"Score: {score}\n"
             f"Time: {format_time(timer_seconds)}\n"
-            f"Best Score: {best_score}"
+            f"Best Score: {best_score}\n\n"
+            f"🏆 Your score has been added to the leaderboard!"
         )
 
         return
@@ -698,7 +889,7 @@ def check_guess():
 
 
 # ==========================================
-# DARK / LIGHT MODE
+# DARK MODE
 # ==========================================
 
 def toggle_dark_mode():
@@ -709,10 +900,6 @@ def toggle_dark_mode():
 
     apply_theme()
 
-
-# ==========================================
-# UPDATE WIDGET COLORS
-# ==========================================
 
 def update_widget_colors(
     widget,
@@ -770,10 +957,6 @@ def update_widget_colors(
             button_background
         )
 
-
-# ==========================================
-# APPLY THEME
-# ==========================================
 
 def apply_theme():
 
@@ -851,11 +1034,11 @@ def apply_theme():
 root = tk.Tk()
 
 root.title(
-    "Number Guessing Game | Dashboard"
+    "Number Guessing Game | V12"
 )
 
 root.geometry(
-    "950x820"
+    "1050x850"
 )
 
 root.resizable(
@@ -892,7 +1075,7 @@ title_label.pack(
 
 subtitle_label = tk.Label(
     header,
-    text="Challenge yourself. Beat your best score.",
+    text="Challenge yourself. Beat the leaderboard.",
     font=("Segoe UI", 11)
 )
 
@@ -1003,7 +1186,7 @@ start_button.grid(
 
 
 # ==========================================
-# STATISTICS DASHBOARD
+# STATISTICS
 # ==========================================
 
 stats_frame = tk.LabelFrame(
@@ -1262,7 +1445,7 @@ new_game_button = tk.Button(
 new_game_button.grid(
     row=0,
     column=0,
-    padx=6
+    padx=5
 )
 
 
@@ -1278,7 +1461,23 @@ history_button = tk.Button(
 history_button.grid(
     row=0,
     column=1,
-    padx=6
+    padx=5
+)
+
+
+leaderboard_button = tk.Button(
+    action_frame,
+    text="🏆 LEADERBOARD",
+    font=("Segoe UI", 10, "bold"),
+    command=show_leaderboard,
+    width=18,
+    pady=8
+)
+
+leaderboard_button.grid(
+    row=0,
+    column=2,
+    padx=5
 )
 
 
@@ -1293,8 +1492,8 @@ reset_button = tk.Button(
 
 reset_button.grid(
     row=0,
-    column=2,
-    padx=6
+    column=3,
+    padx=5
 )
 
 
@@ -1309,8 +1508,8 @@ theme_button = tk.Button(
 
 theme_button.grid(
     row=0,
-    column=3,
-    padx=6
+    column=4,
+    padx=5
 )
 
 
@@ -1320,7 +1519,7 @@ theme_button.grid(
 
 footer_label = tk.Label(
     root,
-    text="Python • Tkinter • JSON • Real-Time Timer",
+    text="Python • Tkinter • JSON • Timer • Leaderboard",
     font=("Segoe UI", 9)
 )
 
@@ -1330,7 +1529,7 @@ footer_label.pack(
 
 
 # ==========================================
-# START APPLICATION
+# START
 # ==========================================
 
 apply_theme()
