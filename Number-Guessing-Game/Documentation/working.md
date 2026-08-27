@@ -938,3 +938,230 @@ Version 12 adds:
 🔝 Top 10 limitation
 🌙 Dark Mode compatibility
 🗑️ Leaderboard reset functionality
+
+# Version 13 — Achievement & Badge System
+
+## 50. Achievement System
+
+Version 13 introduces an achievement system that rewards players for completing specific challenges.
+
+The system makes the game more engaging by adding progression and rewards.
+
+---
+
+## 51. Achievement List
+
+The application currently contains six achievements:
+
+| Achievement | Requirement |
+|---|---|
+| First Victory | Win at least one game |
+| Winning Streak | Win 3 consecutive games |
+| Speed Demon | Win in under 15 seconds |
+| Perfect Guesser | Win in one attempt |
+| Score Master | Achieve a score of 10 or higher |
+| Leaderboard Champion | Reach first position |
+
+---
+
+## 52. Achievement Data Structure
+
+Achievements are stored using a Python dictionary:
+
+```python
+achievements = {
+    "First Victory": False,
+    "Winning Streak": False,
+    "Speed Demon": False,
+    "Perfect Guesser": False,
+    "Score Master": False,
+    "Leaderboard Champion": False
+}
+
+The value indicates whether the achievement has been unlocked.
+
+False → Locked
+True  → Unlocked
+53. Unlocking Achievements
+
+The function:
+
+unlock_achievement(name)
+
+checks whether an achievement has already been unlocked.
+
+If it has not been unlocked, its value changes to:
+
+True
+
+The updated data is then saved to the JSON file.
+
+54. First Victory
+
+The First Victory achievement is unlocked when:
+
+games_won >= 1
+
+This means the player receives the badge after winning their first game.
+
+55. Winning Streak
+
+The application maintains:
+
+winning_streak
+
+After every successful game:
+
+winning_streak += 1
+
+When the player loses:
+
+winning_streak = 0
+
+The achievement is unlocked when:
+
+winning_streak >= 3
+56. Speed Demon
+
+The Speed Demon achievement rewards fast gameplay.
+
+The condition is:
+
+timer_seconds < 15
+
+If the player wins within 15 seconds, the achievement is unlocked.
+
+57. Perfect Guesser
+
+The Perfect Guesser achievement is unlocked when the player finds the number on their first attempt.
+
+The condition is:
+
+attempts == 1
+58. Score Master
+
+The Score Master achievement is based on the player's score.
+
+The condition is:
+
+final_score >= 10
+
+This rewards players who achieve a high score.
+
+59. Leaderboard Champion
+
+The Leaderboard Champion achievement checks the player's position after the leaderboard is updated.
+
+The player must occupy the first position.
+
+The leaderboard is sorted by:
+
+Highest Score
+      ↓
+Fastest Time
+
+The player at position #1 receives the achievement.
+
+60. Achievement Notification
+
+When a new achievement is unlocked, the game displays:
+
+🏅 NEW ACHIEVEMENTS!
+
+🏆 First Victory
+
+This gives immediate feedback to the player.
+
+61. Achievement Interface
+
+Players can access achievements through:
+
+🏅 ACHIEVEMENTS
+
+The interface displays:
+
+🏆 First Victory
+Win your first game.
+✅ UNLOCKED
+
+or:
+
+🔒 Winning Streak
+Win 3 games consecutively.
+🔒 LOCKED
+62. Achievement Persistence
+
+Achievement information is stored in:
+
+game_data.json
+
+Example:
+
+{
+    "achievements": {
+        "First Victory": true,
+        "Winning Streak": false,
+        "Speed Demon": false,
+        "Perfect Guesser": false,
+        "Score Master": false,
+        "Leaderboard Champion": false
+    }
+}
+
+The data is loaded when the application starts.
+
+Therefore, unlocked achievements remain available after restarting the program.
+
+63. Reset Integration
+
+The Reset Data function also resets achievements.
+
+When reset is confirmed:
+
+for achievement in achievements:
+    achievements[achievement] = False
+
+This returns all achievements to the locked state.
+
+64. Achievement Workflow
+Player Completes Game
+        |
+        v
+Check Game Result
+        |
+        v
+Calculate Score + Time
+        |
+        v
+Check Achievement Conditions
+        |
+        +----------------------+
+        |                      |
+        v                      v
+Condition Met             Not Met
+        |                      |
+        v                      v
+Unlock Badge              Remains Locked
+        |
+        v
+Save to JSON
+        |
+        v
+Show Notification
+
+65. Version 13 Improvements
+
+Version 13 adds:
+
+🏅 Achievement system
+🏆 First Victory badge
+🔥 Winning Streak badge
+⚡ Speed Demon badge
+🎯 Perfect Guesser badge
+💯 Score Master badge
+🥇 Leaderboard Champion badge
+🔓 Automatic unlocking
+💾 Persistent achievement progress
+🔔 Achievement notifications
+🌙 Dark Mode compatibility
+🗑️ Achievement reset functionality
