@@ -258,6 +258,63 @@ Number-Guessing-Game/
 🌙 Dark mode
 🎨 Custom themes
 🔐 User authentication
+
+
+## Version 11 — Real-Time Game Timer ⏱️
+
+Version 11 introduces a real-time timer that tracks how long the player takes to complete each game.
+
+### Timer Features
+
+- ⏱️ Real-time elapsed-time counter
+- ▶️ Automatically starts when a game begins
+- 🔄 Resets when a new game starts
+- ⏹️ Stops when the player wins
+- ⏹️ Stops when the player loses
+- 📜 Saves the completion time in game history
+- 🌙 Compatible with Dark Mode
+
+### Timer Display
+
+```text
+Attempts       Score       Time
+0 / 10           0        00:00
+
+During gameplay:
+
+00:01
+00:02
+00:03
+...
+
+The timer uses Tkinter's after() method to update the display every second.
+
+Game History
+
+Completed games now store the time taken:
+
+GAME 1
+
+Player     : Shreya
+Difficulty : Medium
+Result     : Won
+Attempts   : 3
+Score      : 8
+Time       : 00:14
+Version History
+Version	Feature
+V1	Basic Number Guessing Game
+V2	Difficulty + Score
+V3	Tkinter GUI
+V4	Statistics + Best Score
+V5	JSON Persistence
+V6	Player Personalization
+V7	Game History
+V8	Professional Dashboard
+V9	Reset / Clear Data
+V10	Dark / Light Mode
+V11	Real-Time Game Timer
+
 👩‍💻 Author
 
 Shreya D.
