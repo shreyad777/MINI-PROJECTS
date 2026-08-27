@@ -442,6 +442,89 @@ V11	Real-Time Game Timer
 V12	Leaderboard System
 V13	Achievement & Badge System 🏅
 
+# Version 14 — Sound Effects & Game Feedback 🔊
+
+Version 14 adds an interactive sound system to the Number Guessing Game.
+
+## 🔊 Sound Features
+
+- ⬇️ Low-pitch feedback for guesses below the target
+- ⬆️ High-pitch feedback for guesses above the target
+- 🎉 Victory sound when the number is guessed
+- ❌ Game-over sound when attempts are exhausted
+- 🏅 Achievement-unlocked sound
+- 🔊 Sound ON/OFF control
+- 💾 Sound preference is saved automatically
+
+## Sound Control
+
+The main dashboard contains:
+
+```text
+🔊 SOUND ON
+
+Clicking the button changes it to:
+
+🔇 SOUND OFF
+
+When sound is disabled, gameplay continues normally without audio feedback.
+
+Sound Mapping
+Event	Audio Feedback
+Guess too low	Low beep
+Guess too high	High beep
+Correct guess	Victory melody
+Game over	Game-over melody
+Achievement unlocked	Achievement melody
+Enable sound	Confirmation beep
+Technology
+
+V14 uses Python's built-in:
+
+winsound
+
+This provides lightweight audio feedback without requiring external audio files.
+
+Persistent Sound Preference
+
+The sound setting is stored in:
+
+game_data.json
+
+Example:
+
+{
+    "sound_enabled": true
+}
+
+Therefore, the user's sound preference remains available after restarting the application.
+
+V14 Architecture
+Player Action
+      |
+      v
+Game Event
+      |
+      v
+play_sound()
+      |
+      v
+Sound Enabled?
+   /       \
+ YES        NO
+  |          |
+  v          v
+winsound    No Audio
+  |
+  v
+User Feedback
+Version History
+Version	Feature
+V11	Real-Time Game Timer
+V12	Leaderboard System
+V13	Achievement & Badge System
+V14	Sound Effects & Game Feedback 🔊
+
 
 👩‍💻 Author
 
