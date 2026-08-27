@@ -3,7 +3,6 @@ from tkinter import messagebox
 import random
 import json
 import os
-import time
 
 
 # ==========================================
@@ -29,16 +28,18 @@ best_score = 0
 
 game_history = []
 
+# Timer variables
 game_active = False
 timer_seconds = 0
 timer_job = None
+
+# Theme
+dark_mode = False
 
 
 # ==========================================
 # THEME SETTINGS
 # ==========================================
-
-dark_mode = False
 
 LIGHT_BG = "#f4f6f8"
 LIGHT_FG = "#1f2937"
@@ -52,7 +53,7 @@ DARK_BUTTON = "#374151"
 
 
 # ==========================================
-# LOAD DATA
+# LOAD SAVED DATA
 # ==========================================
 
 def load_data():
@@ -113,7 +114,7 @@ def save_data():
 
 
 # ==========================================
-# UPDATE DASHBOARD
+# UPDATE STATISTICS
 # ==========================================
 
 def update_dashboard():
@@ -148,7 +149,7 @@ def format_time(seconds):
 
 
 # ==========================================
-# TIMER
+# TIMER UPDATE
 # ==========================================
 
 def update_timer():
@@ -171,16 +172,22 @@ def update_timer():
     )
 
 
+# ==========================================
+# START TIMER
+# ==========================================
+
 def start_timer():
 
     global game_active
     global timer_seconds
     global timer_job
 
+    # Cancel previous timer
     if timer_job is not None:
 
         try:
             root.after_cancel(timer_job)
+
         except tk.TclError:
             pass
 
@@ -197,6 +204,10 @@ def start_timer():
     )
 
 
+# ==========================================
+# STOP TIMER
+# ==========================================
+
 def stop_timer():
 
     global game_active
@@ -208,6 +219,7 @@ def stop_timer():
 
         try:
             root.after_cancel(timer_job)
+
         except tk.TclError:
             pass
 
@@ -314,11 +326,15 @@ def start_new_game():
         text="0"
     )
 
+    timer_value.config(
+        text="00:00"
+    )
+
     start_timer()
 
 
 # ==========================================
-# ADD HISTORY
+# ADD GAME HISTORY
 # ==========================================
 
 def add_history(result, final_score):
@@ -342,7 +358,7 @@ def add_history(result, final_score):
 
 
 # ==========================================
-# SHOW HISTORY
+# SHOW GAME HISTORY
 # ==========================================
 
 def show_history():
@@ -501,7 +517,6 @@ def reset_data():
     )
 
     if not confirmation:
-
         return
 
     stop_timer()
@@ -683,7 +698,7 @@ def check_guess():
 
 
 # ==========================================
-# TOGGLE DARK MODE
+# DARK / LIGHT MODE
 # ==========================================
 
 def toggle_dark_mode():
@@ -711,10 +726,7 @@ def update_widget_colors(
 
         try:
 
-            if isinstance(
-                child,
-                tk.Button
-            ):
+            if isinstance(child, tk.Button):
 
                 child.config(
                     bg=button_background,
@@ -723,10 +735,7 @@ def update_widget_colors(
                     activeforeground=foreground
                 )
 
-            elif isinstance(
-                child,
-                tk.Entry
-            ):
+            elif isinstance(child, tk.Entry):
 
                 child.config(
                     bg=frame_background,
@@ -734,20 +743,14 @@ def update_widget_colors(
                     insertbackground=foreground
                 )
 
-            elif isinstance(
-                child,
-                tk.Label
-            ):
+            elif isinstance(child, tk.Label):
 
                 child.config(
                     bg=frame_background,
                     fg=foreground
                 )
 
-            elif isinstance(
-                child,
-                tk.OptionMenu
-            ):
+            elif isinstance(child, tk.OptionMenu):
 
                 child.config(
                     bg=button_background,
@@ -757,7 +760,6 @@ def update_widget_colors(
                 )
 
         except tk.TclError:
-
             pass
 
         update_widget_colors(
@@ -901,7 +903,7 @@ subtitle_label.pack(
 
 
 # ==========================================
-# PLAYER SECTION
+# PLAYER SETUP
 # ==========================================
 
 player_frame = tk.LabelFrame(
@@ -1145,7 +1147,7 @@ guess_button.pack(
 
 
 # ==========================================
-# CURRENT GAME INFO
+# GAME INFORMATION
 # ==========================================
 
 info_frame = tk.Frame(
