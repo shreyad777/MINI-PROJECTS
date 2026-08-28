@@ -1599,3 +1599,236 @@ Accuracy
 Score
 Leaderboard competition
 Achievements
+
+# Version 16 — Player Profiles & Statistics
+
+## 98. Player Profile
+
+V16 introduces a player profile system.
+
+The profile provides a complete overview of the player's performance.
+
+---
+
+## 99. Player Statistics
+
+The following statistics are tracked:
+
+- Games played
+- Games won
+- Games lost
+- Win rate
+- Best score
+- Winning streak
+- Fastest win
+- Average score
+- Average attempts
+- Highest difficulty
+
+---
+
+## 100. Win Rate
+
+Win rate is calculated using:
+
+```text
+Win Rate =
+Games Won / Games Played × 100
+
+For example:
+
+Games Played = 20
+Games Won = 15
+
+Win Rate = 15 / 20 × 100
+         = 75%
+101. Average Score
+
+Average score is calculated using the scores from completed winning games.
+
+Average Score =
+Total Winning Score / Games Won
+102. Average Attempts
+
+The system calculates the average number of attempts used across all games.
+
+Average Attempts =
+Total Attempts / Games Played
+103. Fastest Win
+
+The application stores the shortest time taken by the player to successfully complete a game.
+
+Example:
+
+Fastest Win = 00:08
+
+If a later game is completed in 6 seconds, the fastest time becomes:
+
+00:06
+104. Winning Streak
+
+A winning streak counts consecutive victories.
+
+Example:
+
+Win → Win → Win
+
+Winning Streak = 3
+
+When the player loses:
+
+Winning Streak = 0
+105. Highest Difficulty
+
+The system records the highest difficulty successfully completed.
+
+Difficulty levels are:
+
+Easy   → Level 1
+Medium → Level 2
+Hard   → Level 3
+
+Therefore:
+
+Easy + Medium → Medium
+
+Easy + Medium + Hard → Hard
+106. Difficulty Statistics
+
+V16 tracks statistics independently for each difficulty.
+
+Example:
+
+Easy
+Played: 10
+Won: 8
+Lost: 2
+
+Medium
+Played: 7
+Won: 5
+Lost: 2
+
+Hard
+Played: 3
+Won: 1
+Lost: 2
+107. Player Profile Dashboard
+
+The profile window displays the player's statistics in a structured dashboard.
+
+PLAYER PROFILE
+       ↓
+Basic Statistics
+       ↓
+Performance Statistics
+       ↓
+Speed Statistics
+       ↓
+Difficulty Statistics
+108. Persistent Statistics
+
+All player statistics are saved inside:
+
+game_data.json
+
+The data survives application restarts.
+
+109. V16 Data Flow
+Player
+   ↓
+Start Game
+   ↓
+Select Difficulty
+   ↓
+Play Game
+   ↓
+Win / Lose
+   ↓
+Calculate Statistics
+   ↓
+Update Profile
+   ↓
+Update Leaderboard
+   ↓
+Update Achievements
+   ↓
+Save to JSON
+110. V16 Architecture
+                 NUMBER GUESSING GAME
+                         │
+             ┌───────────┴───────────┐
+             ↓                       ↓
+       Player Profile          Game Engine
+             │                       │
+             ↓                       ↓
+        Statistics              Difficulty
+             │                       │
+             ↓                       ↓
+       Performance              Scoring
+             │                       │
+             └───────────┬───────────┘
+                         ↓
+                  Persistent Data
+                         ↓
+                   game_data.json
+111. V16 Testing
+
+The following tests were performed:
+
+Player Test
+Enter player name.
+Start game.
+Complete game.
+Open player profile.
+Statistics Test
+Verify games played.
+Verify games won.
+Verify games lost.
+Verify win rate.
+Verify best score.
+Performance Test
+Verify winning streak.
+Verify fastest win.
+Verify average score.
+Verify average attempts.
+Difficulty Test
+Play Easy.
+Play Medium.
+Play Hard.
+Verify individual difficulty statistics.
+Persistence Test
+Close application.
+Restart application.
+Open player profile.
+Verify previous statistics remain.
+Integration Test
+Leaderboard continues working.
+Achievements continue working.
+Game history continues working.
+Timer continues working.
+Sound continues working.
+Dark mode continues working.
+112. V16 Result
+
+V16 converts the Number Guessing Game from a simple guessing application into a personalized gaming platform.
+
+The application now provides:
+
+Player Identity
+       +
+Gameplay
+       +
+Difficulty
+       +
+Scoring
+       +
+Statistics
+       +
+Achievements
+       +
+Leaderboard
+       +
+History
+
+This creates a more complete and engaging user experience.
