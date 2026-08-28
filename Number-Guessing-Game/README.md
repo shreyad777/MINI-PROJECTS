@@ -526,6 +526,108 @@ V13	Achievement & Badge System
 V14	Sound Effects & Game Feedback 🔊
 
 
+
+# Version 15 — Dynamic Difficulty & Scoring 🎯
+
+Version 15 introduces a dynamic difficulty system and an improved scoring mechanism.
+
+## 🎮 Difficulty Modes
+
+The player can choose between three difficulty levels:
+
+| Difficulty | Number Range | Attempts | Score Multiplier |
+|---|---:|---:|---:|
+| 🟢 Easy | 1–50 | 12 | 1× |
+| 🟡 Medium | 1–100 | 10 | 2× |
+| 🔴 Hard | 1–200 | 8 | 3× |
+
+## 💯 Dynamic Scoring
+
+The score depends on:
+
+- Selected difficulty
+- Remaining attempts
+- Time taken
+
+Harder difficulty provides a higher score multiplier.
+
+## ⚡ Time Bonus
+
+Players can receive an additional time bonus:
+
+| Completion Time | Bonus |
+|---|---:|
+| ≤ 10 seconds | +5 |
+| ≤ 20 seconds | +3 |
+| ≤ 30 seconds | +1 |
+| > 30 seconds | +0 |
+
+## 🏆 Score Calculation
+
+The basic score is calculated using:
+
+```text
+Remaining Attempts × Difficulty Multiplier
+
+The final score is:
+
+Final Score = Base Score + Time Bonus
+🔄 V15 Gameplay Flow
+Player
+   ↓
+Enter Name
+   ↓
+Select Difficulty
+   ↓
+Difficulty Settings
+   ↓
+Generate Random Number
+   ↓
+Start Timer
+   ↓
+Player Makes Guess
+   ↓
+Correct?
+ ┌───────┴───────┐
+YES              NO
+ ↓                ↓
+Calculate        Hint
+Score            ↓
+ ↓             Attempts
+Update           ↓
+Leaderboard     Attempts?
+ ↓             /      \
+Achievement   YES       NO
+              ↓          ↓
+           Game Over   Continue
+🔊 Existing Features
+
+V15 retains all previous features:
+
+⏱️ Real-time game timer
+🏆 Leaderboard
+🏅 Achievement system
+🔊 Sound effects
+🔇 Sound toggle
+🌙 Dark mode
+📜 Game history
+💾 Persistent JSON storage
+🆕 V15 Improvements
+🎚️ Three difficulty levels
+🎯 Dynamic number ranges
+💯 Difficulty-based scoring
+⚡ Time-based bonus points
+🏆 More competitive leaderboard
+📊 Difficulty recorded in game history
+🔄 Existing V11–V14 features preserved
+Version History
+Version	Feature
+V11	Real-Time Game Timer
+V12	Leaderboard System
+V13	Achievement & Badge System
+V14	Sound Effects & Game Feedback
+V15	Dynamic Difficulty & Scoring
+
 👩‍💻 Author
 
 Shreya D.
