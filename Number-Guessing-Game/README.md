@@ -628,6 +628,80 @@ V13	Achievement & Badge System
 V14	Sound Effects & Game Feedback
 V15	Dynamic Difficulty & Scoring
 
+
+# Version 16 — Player Profiles & Statistics 👤📊
+
+V16 transforms the game into a personalized player-based application by introducing player profiles and detailed gameplay statistics.
+
+## 👤 Player Profile
+
+Each player can view:
+
+- Player name
+- Games played
+- Games won
+- Games lost
+- Win rate
+- Best score
+- Winning streak
+- Fastest winning time
+- Average score
+- Average attempts
+- Highest difficulty completed
+
+## 📊 Difficulty Statistics
+
+Statistics are tracked separately for:
+
+- 🟢 Easy
+- 🟡 Medium
+- 🔴 Hard
+
+Each difficulty records:
+
+- Games played
+- Games won
+- Games lost
+- Win rate
+- Average score
+- Total attempts
+
+## 💾 Persistent Player Data
+
+Player statistics are automatically stored in:
+
+```text
+game_data.json
+
+This means statistics remain available even after closing and reopening the application.
+
+🏆 V16 Features
+👤 Player profiles
+📊 Detailed statistics
+🎯 Difficulty-based statistics
+📈 Win-rate calculation
+💯 Average score
+⚡ Fastest win tracking
+🔥 Winning streak tracking
+🏆 Best score tracking
+🔴 Highest difficulty tracking
+💾 Persistent JSON storage
+🏅 Existing achievement system
+🏆 Existing leaderboard
+📜 Existing game history
+⏱️ Existing timer
+🔊 Existing sound system
+🌙 Existing dark mode
+Version History
+Version	Feature
+V11	Real-Time Game Timer
+V12	Leaderboard System
+V13	Achievement & Badge System
+V14	Sound Effects
+V15	Dynamic Difficulty & Scoring
+V16	Player Profiles & Statistics
+
+
 👩‍💻 Author
 
 Shreya D.
