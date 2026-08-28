@@ -1325,3 +1325,277 @@ Version 14 adds:
 🔇 Sound toggle
 💾 Persistent sound preference
 🖥️ Built-in Windows audio support
+
+# Version 15 — Dynamic Difficulty & Scoring
+
+## 79. Difficulty System
+
+V15 introduces three selectable difficulty levels.
+
+The difficulty determines:
+
+- Number range
+- Maximum attempts
+- Score multiplier
+
+---
+
+## 80. Easy Mode
+
+Easy mode uses:
+
+```text
+Range: 1–50
+Attempts: 12
+Multiplier: 1×
+
+This mode is designed for beginners.
+
+81. Medium Mode
+
+Medium mode uses:
+
+Range: 1–100
+Attempts: 10
+Multiplier: 2×
+
+This is the default difficulty.
+
+82. Hard Mode
+
+Hard mode uses:
+
+Range: 1–200
+Attempts: 8
+Multiplier: 3×
+
+Hard mode provides a greater challenge while rewarding the player with more points.
+
+83. Difficulty Configuration
+
+The difficulty settings are stored in:
+
+DIFFICULTY_SETTINGS
+
+The configuration contains:
+
+{
+    "minimum": 1,
+    "maximum": 100,
+    "attempts": 10,
+    "multiplier": 2
+}
+
+This allows the game settings to be changed from one central location.
+
+84. Selecting Difficulty
+
+The player selects the difficulty using the dropdown menu.
+
+Easy
+Medium
+Hard
+
+When the player starts the game, the selected difficulty determines the game configuration.
+
+85. Random Number Generation
+
+After selecting the difficulty, the game generates a random number using:
+
+random.randint(
+    minimum,
+    maximum
+)
+
+Therefore, the generated number always remains inside the selected difficulty range.
+
+86. Dynamic Attempt Limit
+
+The maximum number of attempts changes according to difficulty.
+
+Easy   → 12 attempts
+Medium → 10 attempts
+Hard   → 8 attempts
+
+This makes higher difficulty levels more challenging.
+
+87. Difficulty Multiplier
+
+Each difficulty has a different score multiplier.
+
+Easy   → 1×
+Medium → 2×
+Hard   → 3×
+
+The multiplier is stored in:
+
+current_multiplier
+88. Base Score
+
+The base score is calculated from the number of attempts remaining.
+
+remaining_attempts = (
+    max_attempts - attempts + 1
+)
+
+The base score is then calculated as:
+
+base_score = (
+    remaining_attempts * current_multiplier
+)
+89. Time Bonus
+
+V15 adds a time-based bonus.
+
+≤ 10 seconds → +5
+≤ 20 seconds → +3
+≤ 30 seconds → +1
+> 30 seconds → +0
+
+This rewards players who solve the game quickly.
+
+90. Final Score
+
+The final score is calculated using:
+
+Final Score
+=
+Base Score
++
+Time Bonus
+
+This combines difficulty, accuracy and speed into one score.
+
+91. Example
+
+Suppose a player chooses Hard mode.
+
+Maximum Attempts = 8
+Multiplier = 3×
+Attempts Used = 2
+Time = 12 seconds
+
+Remaining attempts:
+
+8 - 2 + 1 = 7
+
+Base score:
+
+7 × 3 = 21
+
+Time bonus:
+
++3
+
+Final score:
+
+21 + 3 = 24
+92. Difficulty and Leaderboard
+
+The selected difficulty is stored with every leaderboard entry.
+
+Example:
+
+{
+    "player": "Player",
+    "score": 24,
+    "time": "00:12",
+    "difficulty": "Hard"
+}
+
+This allows players to compare scores across different difficulty levels.
+
+93. Difficulty and History
+
+Game history also stores the selected difficulty.
+
+Example:
+
+{
+    "player": "Player",
+    "difficulty": "Hard",
+    "result": "Won",
+    "attempts": 2,
+    "score": 24,
+    "time": "00:12"
+}
+94. V15 Architecture
+Difficulty Selection
+        ↓
+Load Difficulty Settings
+        ↓
+Set Range
+        ↓
+Set Attempts
+        ↓
+Set Multiplier
+        ↓
+Generate Number
+        ↓
+Start Timer
+        ↓
+Gameplay
+        ↓
+Calculate Score
+        ↓
+Add Time Bonus
+        ↓
+Update Leaderboard
+        ↓
+Update Achievements
+        ↓
+Save Data
+95. V15 Integration
+
+V15 does not remove previous features.
+
+The current application integrates:
+
+V11 → Timer
+V12 → Leaderboard
+V13 → Achievements
+V14 → Sound
+V15 → Difficulty + Dynamic Scoring
+
+The project now combines all five systems into one application.
+
+96. V15 Testing
+
+The following tests should be performed:
+
+Easy Mode
+Range: 1–50
+Attempts: 12
+Multiplier: 1×
+Medium Mode
+Range: 1–100
+Attempts: 10
+Multiplier: 2×
+Hard Mode
+Range: 1–200
+Attempts: 8
+Multiplier: 3×
+Additional Tests
+Verify invalid input handling.
+Verify numbers outside the selected range are rejected.
+Verify timer starts with a new game.
+Verify timer stops after winning.
+Verify timer stops after losing.
+Verify score changes according to difficulty.
+Verify time bonus is applied.
+Verify leaderboard stores difficulty.
+Verify history stores difficulty.
+Verify sound continues to work.
+Verify achievements continue to work.
+Verify dark mode continues to work.
+Verify JSON data remains persistent.
+97. V15 Result
+
+Version 15 transforms the basic number guessing game into a more competitive system by combining:
+
+Difficulty
+Speed
+Accuracy
+Score
+Leaderboard competition
+Achievements
