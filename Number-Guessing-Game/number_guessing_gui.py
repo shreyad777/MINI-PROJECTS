@@ -7,13 +7,16 @@ import winsound
 
 
 # ============================================================
-# NUMBER GUESSING GAME - V17
-# MULTI-PLAYER MODE
+# NUMBER GUESSING GAME - V18
+# CUSTOM GAME MODES
 # ============================================================
 
 DATA_FILE = "game_data.json"
 
-# ---------------- GAME VARIABLES ----------------
+
+# ============================================================
+# GLOBAL VARIABLES
+# ============================================================
 
 secret_number = 0
 minimum = 1
@@ -46,7 +49,17 @@ current_multiplier = 2
 fastest_win = None
 highest_difficulty = "None"
 
-# ---------------- MULTIPLAYER VARIABLES ----------------
+difficulty_name = "Medium"
+
+# V18
+game_mode = "Classic Mode"
+time_limit = 30
+mode_streak = 0
+
+
+# ============================================================
+# MULTIPLAYER VARIABLES
+# ============================================================
 
 multiplayer_mode = False
 multiplayer_players = []
@@ -58,42 +71,9 @@ multiplayer_secret = 0
 multiplayer_attempts = 0
 multiplayer_game_active = False
 
-difficulty_statistics = {
-    "Easy": {
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "total_score": 0,
-        "total_attempts": 0
-    },
-    "Medium": {
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "total_score": 0,
-        "total_attempts": 0
-    },
-    "Hard": {
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "total_score": 0,
-        "total_attempts": 0
-    }
-}
-
-achievements = {
-    "First Victory": False,
-    "Winning Streak": False,
-    "Speed Demon": False,
-    "Perfect Guesser": False,
-    "Score Master": False,
-    "Leaderboard Champion": False
-}
-
 
 # ============================================================
-# DIFFICULTY
+# DIFFICULTY SETTINGS
 # ============================================================
 
 DIFFICULTY_SETTINGS = {
@@ -103,18 +83,80 @@ DIFFICULTY_SETTINGS = {
         "attempts": 12,
         "multiplier": 1
     },
+
     "Medium": {
         "minimum": 1,
         "maximum": 100,
         "attempts": 10,
         "multiplier": 2
     },
+
     "Hard": {
         "minimum": 1,
         "maximum": 200,
         "attempts": 8,
         "multiplier": 3
     }
+}
+
+
+# ============================================================
+# GAME MODE SETTINGS
+# ============================================================
+
+GAME_MODES = [
+    "Classic Mode",
+    "Time Challenge",
+    "Sudden Death",
+    "Streak Mode"
+]
+
+
+# ============================================================
+# DIFFICULTY STATISTICS
+# ============================================================
+
+difficulty_statistics = {
+    "Easy": {
+        "played": 0,
+        "won": 0,
+        "lost": 0,
+        "total_score": 0,
+        "total_attempts": 0
+    },
+
+    "Medium": {
+        "played": 0,
+        "won": 0,
+        "lost": 0,
+        "total_score": 0,
+        "total_attempts": 0
+    },
+
+    "Hard": {
+        "played": 0,
+        "won": 0,
+        "lost": 0,
+        "total_score": 0,
+        "total_attempts": 0
+    }
+}
+
+
+# ============================================================
+# ACHIEVEMENTS
+# ============================================================
+
+achievements = {
+    "First Victory": False,
+    "Winning Streak": False,
+    "Speed Demon": False,
+    "Perfect Guesser": False,
+    "Score Master": False,
+    "Leaderboard Champion": False,
+    "Time Challenger": False,
+    "Sudden Death Survivor": False,
+    "Streak Master": False
 }
 
 
@@ -143,6 +185,7 @@ def play_sound(sound_type):
         return
 
     try:
+
         if sound_type == "correct":
             winsound.Beep(1000, 150)
 
@@ -153,15 +196,18 @@ def play_sound(sound_type):
             winsound.Beep(300, 120)
 
         elif sound_type == "win":
+
             winsound.Beep(1000, 150)
             winsound.Beep(1300, 150)
             winsound.Beep(1600, 200)
 
         elif sound_type == "lose":
+
             winsound.Beep(500, 200)
             winsound.Beep(300, 300)
 
         elif sound_type == "achievement":
+
             winsound.Beep(1000, 100)
             winsound.Beep(1300, 100)
             winsound.Beep(1600, 200)
@@ -187,12 +233,13 @@ def update_sound_button():
 
     if sound_enabled:
         sound_button.config(text="🔊 SOUND ON")
+
     else:
         sound_button.config(text="🔇 SOUND OFF")
 
 
 # ============================================================
-# DATA
+# DATA LOADING
 # ============================================================
 
 def load_data():
@@ -218,18 +265,51 @@ def load_data():
         global difficulty_statistics
         global achievements
 
-        games_played = data.get("games_played", 0)
-        games_won = data.get("games_won", 0)
-        games_lost = data.get("games_lost", 0)
-        best_score = data.get("best_score", 0)
-        winning_streak = data.get("winning_streak", 0)
+        games_played = data.get(
+            "games_played",
+            0
+        )
 
-        game_history = data.get("game_history", [])
-        leaderboard = data.get("leaderboard", [])
+        games_won = data.get(
+            "games_won",
+            0
+        )
 
-        sound_enabled = data.get("sound_enabled", True)
+        games_lost = data.get(
+            "games_lost",
+            0
+        )
 
-        fastest_win = data.get("fastest_win", None)
+        best_score = data.get(
+            "best_score",
+            0
+        )
+
+        winning_streak = data.get(
+            "winning_streak",
+            0
+        )
+
+        game_history = data.get(
+            "game_history",
+            []
+        )
+
+        leaderboard = data.get(
+            "leaderboard",
+            []
+        )
+
+        sound_enabled = data.get(
+            "sound_enabled",
+            True
+        )
+
+        fastest_win = data.get(
+            "fastest_win",
+            None
+        )
+
         highest_difficulty = data.get(
             "highest_difficulty",
             "None"
@@ -243,7 +323,10 @@ def load_data():
         for difficulty in difficulty_statistics:
 
             if difficulty in saved_statistics:
-                difficulty_statistics[difficulty].update(
+
+                difficulty_statistics[
+                    difficulty
+                ].update(
                     saved_statistics[difficulty]
                 )
 
@@ -255,36 +338,65 @@ def load_data():
         for achievement in achievements:
 
             if achievement in saved_achievements:
-                achievements[achievement] = (
-                    saved_achievements[achievement]
-                )
+
+                achievements[
+                    achievement
+                ] = saved_achievements[
+                    achievement
+                ]
 
     except (json.JSONDecodeError, OSError):
 
         print("Unable to load saved data.")
 
 
+# ============================================================
+# SAVE DATA
+# ============================================================
+
 def save_data():
 
     data = {
+
         "games_played": games_played,
+
         "games_won": games_won,
+
         "games_lost": games_lost,
+
         "best_score": best_score,
+
         "winning_streak": winning_streak,
+
         "game_history": game_history,
+
         "leaderboard": leaderboard,
+
         "sound_enabled": sound_enabled,
+
         "fastest_win": fastest_win,
+
         "highest_difficulty": highest_difficulty,
-        "difficulty_statistics": difficulty_statistics,
-        "achievements": achievements
+
+        "difficulty_statistics":
+            difficulty_statistics,
+
+        "achievements":
+            achievements
     }
 
     try:
 
-        with open(DATA_FILE, "w") as file:
-            json.dump(data, file, indent=4)
+        with open(
+            DATA_FILE,
+            "w"
+        ) as file:
+
+            json.dump(
+                data,
+                file,
+                indent=4
+            )
 
     except OSError:
 
@@ -300,10 +412,21 @@ load_data()
 
 def update_dashboard():
 
-    played_value.config(text=str(games_played))
-    won_value.config(text=str(games_won))
-    lost_value.config(text=str(games_lost))
-    best_value.config(text=str(best_score))
+    played_value.config(
+        text=str(games_played)
+    )
+
+    won_value.config(
+        text=str(games_won)
+    )
+
+    lost_value.config(
+        text=str(games_lost)
+    )
+
+    best_value.config(
+        text=str(best_score)
+    )
 
 
 # ============================================================
@@ -316,14 +439,20 @@ def set_difficulty():
     global maximum
     global max_attempts
     global current_multiplier
+    global difficulty_name
 
-    difficulty = difficulty_var.get()
+    difficulty_name = difficulty_var.get()
 
-    settings = DIFFICULTY_SETTINGS[difficulty]
+    settings = DIFFICULTY_SETTINGS[
+        difficulty_name
+    ]
 
     minimum = settings["minimum"]
+
     maximum = settings["maximum"]
+
     max_attempts = settings["attempts"]
+
     current_multiplier = settings["multiplier"]
 
     start_new_game()
@@ -336,9 +465,13 @@ def set_difficulty():
 def format_time(seconds):
 
     minutes = seconds // 60
+
     remaining_seconds = seconds % 60
 
-    return f"{minutes:02d}:{remaining_seconds:02d}"
+    return (
+        f"{minutes:02d}:"
+        f"{remaining_seconds:02d}"
+    )
 
 
 def update_timer():
@@ -355,6 +488,17 @@ def update_timer():
         text=format_time(timer_seconds)
     )
 
+    # V18 TIME CHALLENGE
+
+    if (
+        game_mode == "Time Challenge"
+        and timer_seconds >= time_limit
+    ):
+
+        time_challenge_failed()
+
+        return
+
     timer_job = root.after(
         1000,
         update_timer
@@ -370,14 +514,21 @@ def start_timer():
     if timer_job is not None:
 
         try:
-            root.after_cancel(timer_job)
+
+            root.after_cancel(
+                timer_job
+            )
+
         except tk.TclError:
             pass
 
     timer_seconds = 0
+
     game_active = True
 
-    timer_value.config(text="00:00")
+    timer_value.config(
+        text="00:00"
+    )
 
     timer_job = root.after(
         1000,
@@ -395,7 +546,11 @@ def stop_timer():
     if timer_job is not None:
 
         try:
-            root.after_cancel(timer_job)
+
+            root.after_cancel(
+                timer_job
+            )
+
         except tk.TclError:
             pass
 
@@ -403,7 +558,7 @@ def stop_timer():
 
 
 # ============================================================
-# SINGLE PLAYER
+# PLAYER START
 # ============================================================
 
 def start_player_game():
@@ -411,7 +566,9 @@ def start_player_game():
     global player_name
     global multiplayer_mode
 
-    player_name = name_entry.get().strip()
+    player_name = (
+        name_entry.get().strip()
+    )
 
     if not player_name:
 
@@ -427,12 +584,16 @@ def start_player_game():
     set_difficulty()
 
 
+# ============================================================
+# START NEW GAME
+# ============================================================
+
 def start_new_game():
 
     global secret_number
     global attempts
     global score
-    global multiplayer_mode
+    global mode_streak
 
     if multiplayer_mode:
         return
@@ -441,7 +602,7 @@ def start_new_game():
 
         messagebox.showwarning(
             "Start Game",
-            "Please enter your name first."
+            "Enter your name first."
         )
 
         return
@@ -454,20 +615,49 @@ def start_new_game():
     )
 
     attempts = 0
+
     score = 0
+
+    mode_streak = 0
 
     guess_entry.delete(
         0,
         tk.END
     )
 
-    difficulty = difficulty_var.get()
+    mode_text = game_mode
+
+    if game_mode == "Time Challenge":
+
+        mode_description = (
+            f"You have {time_limit} seconds!"
+        )
+
+    elif game_mode == "Sudden Death":
+
+        mode_description = (
+            "ONE wrong guess = GAME OVER!"
+        )
+
+    elif game_mode == "Streak Mode":
+
+        mode_description = (
+            "Build the longest winning streak!"
+        )
+
+    else:
+
+        mode_description = (
+            "Guess the hidden number!"
+        )
 
     result_label.config(
         text=(
-            f"Welcome, {player_name}!\n"
-            f"{difficulty} Mode\n"
-            f"Guess a number between "
+            f"Welcome, {player_name}!\n\n"
+            f"🎮 {mode_text}\n"
+            f"📊 {difficulty_name}\n\n"
+            f"{mode_description}\n\n"
+            f"Guess between "
             f"{minimum} and {maximum}."
         )
     )
@@ -476,7 +666,9 @@ def start_new_game():
         text=f"0 / {max_attempts}"
     )
 
-    score_value.config(text="0")
+    score_value.config(
+        text="0"
+    )
 
     multiplier_value.config(
         text=f"{current_multiplier}×"
@@ -492,7 +684,9 @@ def start_new_game():
 def calculate_score():
 
     remaining_attempts = (
-        max_attempts - attempts + 1
+        max_attempts
+        - attempts
+        + 1
     )
 
     base_score = (
@@ -511,22 +705,57 @@ def calculate_score():
     elif timer_seconds <= 30:
         time_bonus = 1
 
-    return base_score + time_bonus
+    # V18 mode bonuses
+
+    mode_bonus = 0
+
+    if game_mode == "Time Challenge":
+        mode_bonus = 10
+
+    elif game_mode == "Sudden Death":
+        mode_bonus = 8
+
+    elif game_mode == "Streak Mode":
+        mode_bonus = mode_streak * 3
+
+    return (
+        base_score
+        + time_bonus
+        + mode_bonus
+    )
 
 
 # ============================================================
 # HISTORY
 # ============================================================
 
-def add_history(result, final_score):
+def add_history(
+    result,
+    final_score
+):
 
     record = {
-        "player": player_name,
-        "difficulty": difficulty_var.get(),
-        "result": result,
-        "attempts": attempts,
-        "score": final_score,
-        "time": format_time(timer_seconds)
+
+        "player":
+            player_name,
+
+        "difficulty":
+            difficulty_name,
+
+        "mode":
+            game_mode,
+
+        "result":
+            result,
+
+        "attempts":
+            attempts,
+
+        "score":
+            final_score,
+
+        "time":
+            format_time(timer_seconds)
     }
 
     game_history.append(record)
@@ -546,7 +775,10 @@ def update_leaderboard():
         leaderboard,
         key=lambda entry: (
             -entry["score"],
-            entry.get("time_seconds", 999999)
+            entry.get(
+                "time_seconds",
+                999999
+            )
         )
     )
 
@@ -555,17 +787,32 @@ def update_leaderboard():
     save_data()
 
 
-def add_to_leaderboard(final_score):
+def add_to_leaderboard(
+    final_score
+):
 
     if final_score <= 0:
         return
 
     entry = {
-        "player": player_name,
-        "score": final_score,
-        "time": format_time(timer_seconds),
-        "time_seconds": timer_seconds,
-        "difficulty": difficulty_var.get()
+
+        "player":
+            player_name,
+
+        "score":
+            final_score,
+
+        "time":
+            format_time(timer_seconds),
+
+        "time_seconds":
+            timer_seconds,
+
+        "difficulty":
+            difficulty_name,
+
+        "mode":
+            game_mode
     }
 
     leaderboard.append(entry)
@@ -577,19 +824,44 @@ def show_leaderboard():
 
     window = tk.Toplevel(root)
 
-    window.title("🏆 Leaderboard")
-    window.geometry("800x600")
+    window.title(
+        "🏆 Leaderboard"
+    )
 
-    background = DARK_BG if dark_mode else LIGHT_BG
-    foreground = DARK_FG if dark_mode else LIGHT_FG
-    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
+    window.geometry(
+        "900x600"
+    )
 
-    window.config(bg=background)
+    background = (
+        DARK_BG
+        if dark_mode
+        else LIGHT_BG
+    )
+
+    foreground = (
+        DARK_FG
+        if dark_mode
+        else LIGHT_FG
+    )
+
+    frame_background = (
+        DARK_FRAME
+        if dark_mode
+        else LIGHT_FRAME
+    )
+
+    window.config(
+        bg=background
+    )
 
     tk.Label(
         window,
         text="🏆 LEADERBOARD",
-        font=("Segoe UI", 24, "bold"),
+        font=(
+            "Segoe UI",
+            24,
+            "bold"
+        ),
         bg=background,
         fg=foreground
     ).pack(pady=20)
@@ -611,22 +883,29 @@ def show_leaderboard():
         "Player",
         "Score",
         "Time",
-        "Difficulty"
+        "Difficulty",
+        "Mode"
     ]
 
-    for column, header in enumerate(headers):
+    for column, header in enumerate(
+        headers
+    ):
 
         tk.Label(
             table,
             text=header,
-            font=("Segoe UI", 11, "bold"),
+            font=(
+                "Segoe UI",
+                10,
+                "bold"
+            ),
             bg=frame_background,
             fg=foreground,
-            width=15
+            width=13
         ).grid(
             row=0,
             column=column,
-            padx=5,
+            padx=4,
             pady=12
         )
 
@@ -635,13 +914,16 @@ def show_leaderboard():
         tk.Label(
             table,
             text="No winning games yet.",
-            font=("Segoe UI", 13),
+            font=(
+                "Segoe UI",
+                13
+            ),
             bg=frame_background,
             fg=foreground
         ).grid(
             row=1,
             column=0,
-            columnspan=5,
+            columnspan=6,
             pady=50
         )
 
@@ -654,34 +936,52 @@ def show_leaderboard():
 
         if index == 1:
             rank = "🥇 1"
+
         elif index == 2:
             rank = "🥈 2"
+
         elif index == 3:
             rank = "🥉 3"
+
         else:
             rank = str(index)
 
         values = [
+
             rank,
+
             entry["player"],
+
             str(entry["score"]),
+
             entry["time"],
-            entry["difficulty"]
+
+            entry["difficulty"],
+
+            entry.get(
+                "mode",
+                "Classic Mode"
+            )
         ]
 
-        for column, value in enumerate(values):
+        for column, value in enumerate(
+            values
+        ):
 
             tk.Label(
                 table,
                 text=value,
-                font=("Segoe UI", 11),
+                font=(
+                    "Segoe UI",
+                    10
+                ),
                 bg=frame_background,
                 fg=foreground,
-                width=15
+                width=13
             ).grid(
                 row=index,
                 column=column,
-                padx=5,
+                padx=4,
                 pady=8
             )
 
@@ -690,57 +990,126 @@ def show_leaderboard():
 # ACHIEVEMENTS
 # ============================================================
 
-def unlock_achievement(name):
+def unlock_achievement(
+    name
+):
 
-    if achievements.get(name, False):
+    if achievements.get(
+        name,
+        False
+    ):
+
         return False
 
     achievements[name] = True
 
-    play_sound("achievement")
+    play_sound(
+        "achievement"
+    )
 
     save_data()
 
     return True
 
 
-def check_achievements(final_score):
+def check_achievements(
+    final_score
+):
 
     unlocked = []
 
     if games_won >= 1:
 
-        if unlock_achievement("First Victory"):
-            unlocked.append("🏆 First Victory")
+        if unlock_achievement(
+            "First Victory"
+        ):
+
+            unlocked.append(
+                "🏆 First Victory"
+            )
 
     if winning_streak >= 3:
 
-        if unlock_achievement("Winning Streak"):
-            unlocked.append("🔥 Winning Streak")
+        if unlock_achievement(
+            "Winning Streak"
+        ):
+
+            unlocked.append(
+                "🔥 Winning Streak"
+            )
 
     if timer_seconds < 15:
 
-        if unlock_achievement("Speed Demon"):
-            unlocked.append("⚡ Speed Demon")
+        if unlock_achievement(
+            "Speed Demon"
+        ):
+
+            unlocked.append(
+                "⚡ Speed Demon"
+            )
 
     if attempts == 1:
 
-        if unlock_achievement("Perfect Guesser"):
-            unlocked.append("🎯 Perfect Guesser")
+        if unlock_achievement(
+            "Perfect Guesser"
+        ):
+
+            unlocked.append(
+                "🎯 Perfect Guesser"
+            )
 
     if final_score >= 10:
 
-        if unlock_achievement("Score Master"):
-            unlocked.append("💯 Score Master")
+        if unlock_achievement(
+            "Score Master"
+        ):
+
+            unlocked.append(
+                "💯 Score Master"
+            )
+
+    if game_mode == "Time Challenge":
+
+        if unlock_achievement(
+            "Time Challenger"
+        ):
+
+            unlocked.append(
+                "⏱️ Time Challenger"
+            )
+
+    if game_mode == "Sudden Death":
+
+        if unlock_achievement(
+            "Sudden Death Survivor"
+        ):
+
+            unlocked.append(
+                "💀 Sudden Death Survivor"
+            )
+
+    if game_mode == "Streak Mode":
+
+        if mode_streak >= 3:
+
+            if unlock_achievement(
+                "Streak Master"
+            ):
+
+                unlocked.append(
+                    "🔥 Streak Master"
+                )
 
     update_leaderboard()
 
     if leaderboard:
 
         if (
-            leaderboard[0]["player"] == player_name
+            leaderboard[0]["player"]
+            == player_name
             and
-            leaderboard[0]["score"] == final_score
+            leaderboard[0]["score"]
+            == final_score
         ):
 
             if unlock_achievement(
@@ -780,6 +1149,7 @@ def check_single_player_guess():
     global winning_streak
     global fastest_win
     global highest_difficulty
+    global mode_streak
 
     if not player_name:
 
@@ -815,7 +1185,11 @@ def check_single_player_guess():
 
         return
 
-    if guess < minimum or guess > maximum:
+    if (
+        guess < minimum
+        or
+        guess > maximum
+    ):
 
         messagebox.showwarning(
             "Out of Range",
@@ -828,124 +1202,220 @@ def check_single_player_guess():
     attempts += 1
 
     attempts_value.config(
-        text=f"{attempts} / {max_attempts}"
+        text=(
+            f"{attempts} / "
+            f"{max_attempts}"
+        )
     )
+
+    # --------------------------------------------------------
+    # CORRECT
+    # --------------------------------------------------------
+
+    if guess == secret_number:
+
+        stop_timer()
+
+        play_sound(
+            "win"
+        )
+
+        if game_mode == "Streak Mode":
+
+            mode_streak += 1
+
+        score = calculate_score()
+
+        games_played += 1
+
+        games_won += 1
+
+        winning_streak += 1
+
+        difficulty_statistics[
+            difficulty_name
+        ]["played"] += 1
+
+        difficulty_statistics[
+            difficulty_name
+        ]["won"] += 1
+
+        difficulty_statistics[
+            difficulty_name
+        ]["total_score"] += score
+
+        difficulty_statistics[
+            difficulty_name
+        ]["total_attempts"] += attempts
+
+        if score > best_score:
+
+            best_score = score
+
+        if (
+            fastest_win is None
+            or
+            timer_seconds < fastest_win
+        ):
+
+            fastest_win = timer_seconds
+
+        add_history(
+            "Won",
+            score
+        )
+
+        add_to_leaderboard(
+            score
+        )
+
+        unlocked = check_achievements(
+            score
+        )
+
+        highest_difficulty = (
+            get_highest_difficulty()
+        )
+
+        update_dashboard()
+
+        score_value.config(
+            text=str(score)
+        )
+
+        result_label.config(
+            text=(
+                f"🎉 CONGRATULATIONS!\n\n"
+                f"You found {secret_number}!\n\n"
+                f"Mode: {game_mode}\n"
+                f"Score: {score}\n"
+                f"Attempts: {attempts}\n"
+                f"Time: "
+                f"{format_time(timer_seconds)}"
+            )
+        )
+
+        achievement_message = ""
+
+        if unlocked:
+
+            achievement_message = (
+                "\n\n🏅 NEW ACHIEVEMENTS!\n"
+                +
+                "\n".join(unlocked)
+            )
+
+        save_data()
+
+        messagebox.showinfo(
+            "🎉 You Won!",
+            f"Player: {player_name}\n\n"
+            f"Mode: {game_mode}\n"
+            f"Difficulty: "
+            f"{difficulty_name}\n"
+            f"Attempts: {attempts}\n"
+            f"Score: {score}\n"
+            f"Time: "
+            f"{format_time(timer_seconds)}\n"
+            f"Winning Streak: "
+            f"{winning_streak}"
+            f"{achievement_message}"
+        )
+
+        return
+
+    # --------------------------------------------------------
+    # SUDDEN DEATH
+    # --------------------------------------------------------
+
+    if game_mode == "Sudden Death":
+
+        sudden_death_loss(
+            guess
+        )
+
+        return
+
+    # --------------------------------------------------------
+    # NORMAL HIGH / LOW
+    # --------------------------------------------------------
 
     if guess < secret_number:
 
-        play_sound("low")
+        play_sound(
+            "low"
+        )
 
         result_label.config(
-            text="⬇️ Too low! Try again."
+            text=(
+                "⬇️ TOO LOW!\n"
+                "Try again."
+            )
         )
 
-        if attempts >= max_attempts:
-            game_over()
+    else:
 
-        return
-
-    if guess > secret_number:
-
-        play_sound("high")
+        play_sound(
+            "high"
+        )
 
         result_label.config(
-            text="⬆️ Too high! Try again."
+            text=(
+                "⬆️ TOO HIGH!\n"
+                "Try again."
+            )
         )
 
-        if attempts >= max_attempts:
-            game_over()
+    # --------------------------------------------------------
+    # MAX ATTEMPTS
+    # --------------------------------------------------------
 
-        return
+    if attempts >= max_attempts:
 
-    stop_timer()
+        game_over()
 
-    play_sound("win")
 
-    score = calculate_score()
-
-    games_played += 1
-    games_won += 1
-    winning_streak += 1
-
-    difficulty = difficulty_var.get()
-
-    difficulty_statistics[difficulty]["played"] += 1
-    difficulty_statistics[difficulty]["won"] += 1
-    difficulty_statistics[difficulty]["total_score"] += score
-    difficulty_statistics[difficulty]["total_attempts"] += attempts
-
-    if score > best_score:
-        best_score = score
-
-    if fastest_win is None or timer_seconds < fastest_win:
-        fastest_win = timer_seconds
-
-    add_history("Won", score)
-
-    add_to_leaderboard(score)
-
-    unlocked = check_achievements(score)
-
-    highest_difficulty = get_highest_difficulty()
-
-    update_dashboard()
-
-    score_value.config(text=str(score))
-
-    result_label.config(
-        text=(
-            f"🎉 Congratulations, "
-            f"{player_name}!\n"
-            f"You found the number!"
-        )
-    )
-
-    achievement_message = ""
-
-    if unlocked:
-
-        achievement_message = (
-            "\n\n🏅 NEW ACHIEVEMENTS!\n"
-            + "\n".join(unlocked)
-        )
-
-    save_data()
-
-    messagebox.showinfo(
-        "🎉 You Won!",
-        f"Player: {player_name}\n\n"
-        f"Difficulty: {difficulty}\n"
-        f"Attempts: {attempts}\n"
-        f"Score: {score}\n"
-        f"Multiplier: {current_multiplier}×\n"
-        f"Time: {format_time(timer_seconds)}\n"
-        f"Winning Streak: {winning_streak}\n"
-        f"Best Score: {best_score}"
-        f"{achievement_message}"
-    )
-
+# ============================================================
+# GAME OVER
+# ============================================================
 
 def game_over():
 
     global games_played
     global games_lost
     global winning_streak
+    global mode_streak
 
     stop_timer()
 
-    play_sound("lose")
+    play_sound(
+        "lose"
+    )
 
     games_played += 1
+
     games_lost += 1
+
     winning_streak = 0
 
-    difficulty = difficulty_var.get()
+    mode_streak = 0
 
-    difficulty_statistics[difficulty]["played"] += 1
-    difficulty_statistics[difficulty]["lost"] += 1
-    difficulty_statistics[difficulty]["total_attempts"] += attempts
+    difficulty_statistics[
+        difficulty_name
+    ]["played"] += 1
 
-    add_history("Lost", 0)
+    difficulty_statistics[
+        difficulty_name
+    ]["lost"] += 1
+
+    difficulty_statistics[
+        difficulty_name
+    ]["total_attempts"] += attempts
+
+    add_history(
+        "Lost",
+        0
+    )
 
     save_data()
 
@@ -953,16 +1423,986 @@ def game_over():
 
     result_label.config(
         text=(
-            f"❌ Game Over!\n"
-            f"The number was {secret_number}."
+            f"❌ GAME OVER!\n\n"
+            f"The number was "
+            f"{secret_number}."
         )
     )
 
     messagebox.showinfo(
         "❌ Game Over",
         f"Better luck next time!\n\n"
-        f"The number was {secret_number}."
+        f"The number was "
+        f"{secret_number}."
     )
+
+
+# ============================================================
+# TIME CHALLENGE FAILURE
+# ============================================================
+
+def time_challenge_failed():
+
+    global games_played
+    global games_lost
+    global winning_streak
+    global mode_streak
+
+    stop_timer()
+
+    play_sound(
+        "lose"
+    )
+
+    games_played += 1
+
+    games_lost += 1
+
+    winning_streak = 0
+
+    mode_streak = 0
+
+    difficulty_statistics[
+        difficulty_name
+    ]["played"] += 1
+
+    difficulty_statistics[
+        difficulty_name
+    ]["lost"] += 1
+
+    difficulty_statistics[
+        difficulty_name
+    ]["total_attempts"] += attempts
+
+    add_history(
+        "Lost - Time Expired",
+        0
+    )
+
+    save_data()
+
+    update_dashboard()
+
+    result_label.config(
+        text=(
+            "⏰ TIME'S UP!\n\n"
+            f"The number was "
+            f"{secret_number}."
+        )
+    )
+
+    messagebox.showinfo(
+        "⏰ Time Challenge",
+        "Time limit reached!\n\n"
+        f"The number was "
+        f"{secret_number}."
+    )
+
+
+# ============================================================
+# SUDDEN DEATH
+# ============================================================
+
+def sudden_death_loss(
+    guess
+):
+
+    global games_played
+    global games_lost
+    global winning_streak
+    global mode_streak
+
+    stop_timer()
+
+    play_sound(
+        "lose"
+    )
+
+    games_played += 1
+
+    games_lost += 1
+
+    winning_streak = 0
+
+    mode_streak = 0
+
+    difficulty_statistics[
+        difficulty_name
+    ]["played"] += 1
+
+    difficulty_statistics[
+        difficulty_name
+    ]["lost"] += 1
+
+    difficulty_statistics[
+        difficulty_name
+    ]["total_attempts"] += attempts
+
+    add_history(
+        "Lost - Sudden Death",
+        0
+    )
+
+    save_data()
+
+    update_dashboard()
+
+    result_label.config(
+        text=(
+            "💀 SUDDEN DEATH!\n\n"
+            "Wrong guess!\n"
+            f"The number was "
+            f"{secret_number}."
+        )
+    )
+
+    messagebox.showinfo(
+        "💀 Sudden Death",
+        "Wrong guess!\n\n"
+        "The game ends immediately.\n\n"
+        f"The number was "
+        f"{secret_number}."
+    )
+
+
+# ============================================================
+# GAME MODE SELECTION
+# ============================================================
+
+def change_game_mode():
+
+    global game_mode
+
+    game_mode = mode_var.get()
+
+    mode_description = {
+
+        "Classic Mode":
+            "Normal number guessing.",
+
+        "Time Challenge":
+            f"Guess the number within "
+            f"{time_limit} seconds.",
+
+        "Sudden Death":
+            "One wrong guess ends the game.",
+
+        "Streak Mode":
+            "Build the longest winning streak."
+    }
+
+    mode_info_label.config(
+        text=mode_description[
+            game_mode
+        ]
+    )
+
+
+# ============================================================
+# PROFILE CALCULATIONS
+# ============================================================
+
+def calculate_win_rate():
+
+    if games_played == 0:
+        return 0
+
+    return (
+        games_won
+        / games_played
+        * 100
+    )
+
+
+def calculate_average_score():
+
+    if games_won == 0:
+        return 0
+
+    total_score = 0
+
+    for game in game_history:
+
+        if game.get(
+            "result"
+        ) == "Won":
+
+            total_score += game.get(
+                "score",
+                0
+            )
+
+    return (
+        total_score
+        / games_won
+    )
+
+
+def calculate_average_attempts():
+
+    if games_played == 0:
+        return 0
+
+    total_attempts = 0
+
+    for game in game_history:
+
+        total_attempts += game.get(
+            "attempts",
+            0
+        )
+
+    return (
+        total_attempts
+        / games_played
+    )
+
+
+def get_highest_difficulty():
+
+    highest = 0
+
+    highest_name = "None"
+
+    levels = {
+        "Easy": 1,
+        "Medium": 2,
+        "Hard": 3
+    }
+
+    for difficulty, stats in (
+        difficulty_statistics.items()
+    ):
+
+        if stats["won"] > 0:
+
+            if (
+                levels[difficulty]
+                > highest
+            ):
+
+                highest = levels[
+                    difficulty
+                ]
+
+                highest_name = (
+                    difficulty
+                )
+
+    return highest_name
+
+
+# ============================================================
+# PROFILE
+# ============================================================
+
+def show_profile():
+
+    window = tk.Toplevel(
+        root
+    )
+
+    window.title(
+        "👤 Player Profile"
+    )
+
+    window.geometry(
+        "900x800"
+    )
+
+    background = (
+        DARK_BG
+        if dark_mode
+        else LIGHT_BG
+    )
+
+    foreground = (
+        DARK_FG
+        if dark_mode
+        else LIGHT_FG
+    )
+
+    frame_background = (
+        DARK_FRAME
+        if dark_mode
+        else LIGHT_FRAME
+    )
+
+    window.config(
+        bg=background
+    )
+
+    tk.Label(
+        window,
+        text="👤 PLAYER PROFILE",
+        font=(
+            "Segoe UI",
+            26,
+            "bold"
+        ),
+        bg=background,
+        fg=foreground
+    ).pack(pady=20)
+
+    tk.Label(
+        window,
+        text=(
+            f"Player: "
+            f"{player_name if player_name else 'Guest'}"
+        ),
+        font=(
+            "Segoe UI",
+            15,
+            "bold"
+        ),
+        bg=background,
+        fg=foreground
+    ).pack(pady=10)
+
+    stats = tk.Frame(
+        window,
+        bg=frame_background,
+        padx=20,
+        pady=20
+    )
+
+    stats.pack(
+        fill="x",
+        padx=30,
+        pady=10
+    )
+
+    profile_data = [
+
+        (
+            "🎮 Games Played",
+            str(games_played)
+        ),
+
+        (
+            "🏆 Games Won",
+            str(games_won)
+        ),
+
+        (
+            "❌ Games Lost",
+            str(games_lost)
+        ),
+
+        (
+            "📈 Win Rate",
+            f"{calculate_win_rate():.1f}%"
+        ),
+
+        (
+            "💯 Best Score",
+            str(best_score)
+        ),
+
+        (
+            "🔥 Winning Streak",
+            str(winning_streak)
+        ),
+
+        (
+            "⚡ Fastest Win",
+            (
+                format_time(
+                    fastest_win
+                )
+                if fastest_win is not None
+                else "N/A"
+            )
+        ),
+
+        (
+            "🎯 Average Score",
+            f"{calculate_average_score():.1f}"
+        ),
+
+        (
+            "📊 Average Attempts",
+            f"{calculate_average_attempts():.1f}"
+        ),
+
+        (
+            "🔴 Highest Difficulty",
+            get_highest_difficulty()
+        )
+    ]
+
+    for index, (
+        label,
+        value
+    ) in enumerate(profile_data):
+
+        row = index // 2
+
+        column = index % 2
+
+        card = tk.Frame(
+            stats,
+            bg=frame_background,
+            padx=20,
+            pady=12
+        )
+
+        card.grid(
+            row=row,
+            column=column,
+            sticky="ew",
+            padx=10,
+            pady=6
+        )
+
+        tk.Label(
+            card,
+            text=label,
+            font=(
+                "Segoe UI",
+                10
+            ),
+            bg=frame_background,
+            fg=foreground
+        ).pack()
+
+        tk.Label(
+            card,
+            text=value,
+            font=(
+                "Segoe UI",
+                18,
+                "bold"
+            ),
+            bg=frame_background,
+            fg=foreground
+        ).pack()
+
+    stats.grid_columnconfigure(
+        0,
+        weight=1
+    )
+
+    stats.grid_columnconfigure(
+        1,
+        weight=1
+    )
+
+    # Difficulty table
+
+    difficulty_frame = tk.LabelFrame(
+        window,
+        text="  📊 Difficulty Statistics  ",
+        font=(
+            "Segoe UI",
+            12,
+            "bold"
+        ),
+        bg=frame_background,
+        fg=foreground,
+        padx=20,
+        pady=15
+    )
+
+    difficulty_frame.pack(
+        fill="x",
+        padx=30,
+        pady=15
+    )
+
+    headers = [
+        "Difficulty",
+        "Played",
+        "Won",
+        "Lost",
+        "Win Rate",
+        "Avg Score"
+    ]
+
+    for column, header in enumerate(
+        headers
+    ):
+
+        tk.Label(
+            difficulty_frame,
+            text=header,
+            font=(
+                "Segoe UI",
+                10,
+                "bold"
+            ),
+            bg=frame_background,
+            fg=foreground,
+            width=14
+        ).grid(
+            row=0,
+            column=column,
+            padx=3,
+            pady=8
+        )
+
+    for row, difficulty in enumerate(
+        [
+            "Easy",
+            "Medium",
+            "Hard"
+        ],
+        start=1
+    ):
+
+        stats_data = (
+            difficulty_statistics[
+                difficulty
+            ]
+        )
+
+        played = stats_data[
+            "played"
+        ]
+
+        won = stats_data[
+            "won"
+        ]
+
+        lost = stats_data[
+            "lost"
+        ]
+
+        total_score = stats_data[
+            "total_score"
+        ]
+
+        if played > 0:
+
+            win_rate = (
+                won
+                / played
+                * 100
+            )
+
+        else:
+
+            win_rate = 0
+
+        if won > 0:
+
+            average_score = (
+                total_score
+                / won
+            )
+
+        else:
+
+            average_score = 0
+
+        values = [
+
+            difficulty,
+
+            str(played),
+
+            str(won),
+
+            str(lost),
+
+            f"{win_rate:.1f}%",
+
+            f"{average_score:.1f}"
+        ]
+
+        for column, value in enumerate(
+            values
+        ):
+
+            tk.Label(
+                difficulty_frame,
+                text=value,
+                font=(
+                    "Segoe UI",
+                    10
+                ),
+                bg=frame_background,
+                fg=foreground,
+                width=14
+            ).grid(
+                row=row,
+                column=column,
+                padx=3,
+                pady=6
+            )
+
+
+# ============================================================
+# HISTORY
+# ============================================================
+
+def show_history():
+
+    window = tk.Toplevel(
+        root
+    )
+
+    window.title(
+        "📜 Game History"
+    )
+
+    window.geometry(
+        "850x650"
+    )
+
+    background = (
+        DARK_BG
+        if dark_mode
+        else LIGHT_BG
+    )
+
+    foreground = (
+        DARK_FG
+        if dark_mode
+        else LIGHT_FG
+    )
+
+    frame_background = (
+        DARK_FRAME
+        if dark_mode
+        else LIGHT_FRAME
+    )
+
+    window.config(
+        bg=background
+    )
+
+    tk.Label(
+        window,
+        text="📜 GAME HISTORY",
+        font=(
+            "Segoe UI",
+            22,
+            "bold"
+        ),
+        bg=background,
+        fg=foreground
+    ).pack(pady=20)
+
+    if not game_history:
+
+        tk.Label(
+            window,
+            text="No games played yet.",
+            font=(
+                "Segoe UI",
+                13
+            ),
+            bg=background,
+            fg=foreground
+        ).pack(pady=50)
+
+        return
+
+    frame = tk.Frame(
+        window,
+        bg=frame_background
+    )
+
+    frame.pack(
+        fill="both",
+        expand=True,
+        padx=20,
+        pady=10
+    )
+
+    scrollbar = tk.Scrollbar(
+        frame
+    )
+
+    scrollbar.pack(
+        side="right",
+        fill="y"
+    )
+
+    text = tk.Text(
+        frame,
+        font=(
+            "Consolas",
+            10
+        ),
+        yscrollcommand=scrollbar.set,
+        wrap="none",
+        bg=frame_background,
+        fg=foreground,
+        insertbackground=foreground
+    )
+
+    text.pack(
+        fill="both",
+        expand=True
+    )
+
+    scrollbar.config(
+        command=text.yview
+    )
+
+    for index, game in enumerate(
+        reversed(game_history),
+        start=1
+    ):
+
+        text.insert(
+            tk.END,
+            f"GAME {index}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Player     : "
+            f"{game['player']}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Difficulty : "
+            f"{game['difficulty']}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Mode       : "
+            f"{game.get('mode', 'Classic Mode')}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Result     : "
+            f"{game['result']}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Attempts   : "
+            f"{game['attempts']}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Score      : "
+            f"{game['score']}\n"
+        )
+
+        text.insert(
+            tk.END,
+            f"Time       : "
+            f"{game.get('time', '00:00')}\n"
+        )
+
+        text.insert(
+            tk.END,
+            "-" * 60
+            + "\n\n"
+        )
+
+    text.config(
+        state="disabled"
+    )
+
+
+# ============================================================
+# ACHIEVEMENT WINDOW
+# ============================================================
+
+def show_achievements():
+
+    window = tk.Toplevel(
+        root
+    )
+
+    window.title(
+        "🏅 Achievements"
+    )
+
+    window.geometry(
+        "750x750"
+    )
+
+    background = (
+        DARK_BG
+        if dark_mode
+        else LIGHT_BG
+    )
+
+    foreground = (
+        DARK_FG
+        if dark_mode
+        else LIGHT_FG
+    )
+
+    frame_background = (
+        DARK_FRAME
+        if dark_mode
+        else LIGHT_FRAME
+    )
+
+    window.config(
+        bg=background
+    )
+
+    tk.Label(
+        window,
+        text="🏅 ACHIEVEMENTS",
+        font=(
+            "Segoe UI",
+            25,
+            "bold"
+        ),
+        bg=background,
+        fg=foreground
+    ).pack(pady=25)
+
+    badge_details = {
+
+        "First Victory":
+            "Win your first game.",
+
+        "Winning Streak":
+            "Win 3 games consecutively.",
+
+        "Speed Demon":
+            "Win in under 15 seconds.",
+
+        "Perfect Guesser":
+            "Find the number in one attempt.",
+
+        "Score Master":
+            "Achieve a score of 10 or higher.",
+
+        "Leaderboard Champion":
+            "Reach #1 on the leaderboard.",
+
+        "Time Challenger":
+            "Complete a Time Challenge.",
+
+        "Sudden Death Survivor":
+            "Survive Sudden Death mode.",
+
+        "Streak Master":
+            "Build a streak of 3 or more."
+    }
+
+    icons = {
+
+        "First Victory": "🏆",
+
+        "Winning Streak": "🔥",
+
+        "Speed Demon": "⚡",
+
+        "Perfect Guesser": "🎯",
+
+        "Score Master": "💯",
+
+        "Leaderboard Champion": "🥇",
+
+        "Time Challenger": "⏱️",
+
+        "Sudden Death Survivor": "💀",
+
+        "Streak Master": "🔥"
+    }
+
+    container = tk.Frame(
+        window,
+        bg=frame_background
+    )
+
+    container.pack(
+        padx=30,
+        pady=10,
+        fill="both",
+        expand=True
+    )
+
+    for name in achievements:
+
+        unlocked = achievements[
+            name
+        ]
+
+        if unlocked:
+
+            title = (
+                f"{icons[name]} "
+                f"{name}"
+            )
+
+            status = (
+                "✅ UNLOCKED"
+            )
+
+        else:
+
+            title = (
+                f"🔒 {name}"
+            )
+
+            status = (
+                "🔒 LOCKED"
+            )
+
+        frame = tk.Frame(
+            container,
+            bg=frame_background,
+            padx=15,
+            pady=8
+        )
+
+        frame.pack(
+            fill="x",
+            padx=20,
+            pady=5
+        )
+
+        tk.Label(
+            frame,
+            text=title,
+            font=(
+                "Segoe UI",
+                12,
+                "bold"
+            ),
+            bg=frame_background,
+            fg=foreground,
+            anchor="w"
+        ).pack(
+            fill="x"
+        )
+
+        tk.Label(
+            frame,
+            text=badge_details[name],
+            font=(
+                "Segoe UI",
+                10
+            ),
+            bg=frame_background,
+            fg=foreground,
+            anchor="w"
+        ).pack(
+            fill="x"
+        )
+
+        tk.Label(
+            frame,
+            text=status,
+            font=(
+                "Segoe UI",
+                9,
+                "bold"
+            ),
+            bg=frame_background,
+            fg=foreground,
+            anchor="w"
+        ).pack(
+            fill="x"
+        )
 
 
 # ============================================================
@@ -971,22 +2411,42 @@ def game_over():
 
 def show_multiplayer_setup():
 
-    setup = tk.Toplevel(root)
+    setup = tk.Toplevel(
+        root
+    )
 
-    setup.title("👥 Multiplayer Mode")
+    setup.title(
+        "👥 Multiplayer Mode"
+    )
 
-    setup.geometry("600x600")
+    setup.geometry(
+        "650x650"
+    )
 
-    background = DARK_BG if dark_mode else LIGHT_BG
-    foreground = DARK_FG if dark_mode else LIGHT_FG
-    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
+    background = (
+        DARK_BG
+        if dark_mode
+        else LIGHT_BG
+    )
 
-    setup.config(bg=background)
+    foreground = (
+        DARK_FG
+        if dark_mode
+        else LIGHT_FG
+    )
+
+    setup.config(
+        bg=background
+    )
 
     tk.Label(
         setup,
         text="👥 MULTIPLAYER MODE",
-        font=("Segoe UI", 25, "bold"),
+        font=(
+            "Segoe UI",
+            25,
+            "bold"
+        ),
         bg=background,
         fg=foreground
     ).pack(pady=25)
@@ -994,10 +2454,13 @@ def show_multiplayer_setup():
     tk.Label(
         setup,
         text="Enter 2–4 player names",
-        font=("Segoe UI", 12),
+        font=(
+            "Segoe UI",
+            12
+        ),
         bg=background,
         fg=foreground
-    ).pack(pady=5)
+    ).pack()
 
     entries = []
 
@@ -1015,38 +2478,62 @@ def show_multiplayer_setup():
         tk.Label(
             frame,
             text=f"Player {i + 1}:",
-            font=("Segoe UI", 11, "bold"),
+            font=(
+                "Segoe UI",
+                11,
+                "bold"
+            ),
             bg=background,
             fg=foreground,
             width=12
-        ).pack(side="left")
+        ).pack(
+            side="left"
+        )
 
         entry = tk.Entry(
             frame,
-            font=("Segoe UI", 11),
+            font=(
+                "Segoe UI",
+                11
+            ),
             width=25
         )
 
-        entry.pack(side="left")
+        entry.pack(
+            side="left"
+        )
 
-        entries.append(entry)
+        entries.append(
+            entry
+        )
 
     tk.Label(
         setup,
         text="Number of Rounds:",
-        font=("Segoe UI", 11, "bold"),
+        font=(
+            "Segoe UI",
+            11,
+            "bold"
+        ),
         bg=background,
         fg=foreground
-    ).pack(pady=(20, 5))
+    ).pack(
+        pady=(20, 5)
+    )
 
-    rounds_var = tk.IntVar(value=5)
+    rounds_var = tk.IntVar(
+        value=5
+    )
 
     rounds_spinbox = tk.Spinbox(
         setup,
         from_=1,
         to=20,
         textvariable=rounds_var,
-        font=("Segoe UI", 11),
+        font=(
+            "Segoe UI",
+            11
+        ),
         width=10
     )
 
@@ -1055,13 +2542,21 @@ def show_multiplayer_setup():
     tk.Label(
         setup,
         text="Difficulty:",
-        font=("Segoe UI", 11, "bold"),
+        font=(
+            "Segoe UI",
+            11,
+            "bold"
+        ),
         bg=background,
         fg=foreground
-    ).pack(pady=(15, 5))
+    ).pack(
+        pady=(15, 5)
+    )
 
-    multi_difficulty_var = tk.StringVar(
-        value=difficulty_var.get()
+    multi_difficulty_var = (
+        tk.StringVar(
+            value=difficulty_var.get()
+        )
     )
 
     difficulty_menu = tk.OptionMenu(
@@ -1080,7 +2575,9 @@ def show_multiplayer_setup():
 
         for entry in entries:
 
-            name = entry.get().strip()
+            name = (
+                entry.get().strip()
+            )
 
             if name:
                 names.append(name)
@@ -1089,7 +2586,7 @@ def show_multiplayer_setup():
 
             messagebox.showwarning(
                 "Players Required",
-                "Please enter at least 2 players."
+                "Enter at least 2 players."
             )
 
             return
@@ -1098,15 +2595,12 @@ def show_multiplayer_setup():
 
             messagebox.showwarning(
                 "Duplicate Names",
-                "Each player must have a unique name."
+                "Player names must be unique."
             )
 
             return
 
         rounds = rounds_var.get()
-
-        if rounds < 1:
-            rounds = 1
 
         start_multiplayer_game(
             names,
@@ -1119,15 +2613,21 @@ def show_multiplayer_setup():
     tk.Button(
         setup,
         text="🚀 START MULTIPLAYER",
-        font=("Segoe UI", 11, "bold"),
+        font=(
+            "Segoe UI",
+            11,
+            "bold"
+        ),
         command=start_multiplayer,
         padx=20,
         pady=10
-    ).pack(pady=30)
+    ).pack(
+        pady=30
+    )
 
 
 # ============================================================
-# MULTIPLAYER GAME
+# MULTIPLAYER START
 # ============================================================
 
 def start_multiplayer_game(
@@ -1165,14 +2665,31 @@ def start_multiplayer_game(
 
     current_player_index = 0
 
-    settings = DIFFICULTY_SETTINGS[difficulty]
+    settings = (
+        DIFFICULTY_SETTINGS[
+            difficulty
+        ]
+    )
 
-    minimum = settings["minimum"]
-    maximum = settings["maximum"]
-    max_attempts = settings["attempts"]
-    current_multiplier = settings["multiplier"]
+    minimum = settings[
+        "minimum"
+    ]
 
-    difficulty_var.set(difficulty)
+    maximum = settings[
+        "maximum"
+    ]
+
+    max_attempts = settings[
+        "attempts"
+    ]
+
+    current_multiplier = settings[
+        "multiplier"
+    ]
+
+    difficulty_var.set(
+        difficulty
+    )
 
     multiplayer_secret = random.randint(
         minimum,
@@ -1195,22 +2712,29 @@ def start_multiplayer_game(
     multiplayer_window()
 
 
+# ============================================================
+# MULTIPLAYER DISPLAY
+# ============================================================
+
 def update_multiplayer_display():
 
     if not multiplayer_players:
         return
 
-    current_player = multiplayer_players[
-        current_player_index
-    ]
+    current_player = (
+        multiplayer_players[
+            current_player_index
+        ]
+    )
 
     result_label.config(
         text=(
-            f"👥 Round {multiplayer_round} / "
+            f"👥 Round "
+            f"{multiplayer_round} / "
             f"{multiplayer_total_rounds}\n\n"
             f"🎮 Current Player: "
             f"{current_player}\n\n"
-            f"Guess a number between "
+            f"Guess between "
             f"{minimum} and {maximum}."
         )
     )
@@ -1246,7 +2770,6 @@ def update_multiplayer_display():
 def check_multiplayer_guess():
 
     global multiplayer_attempts
-    global current_player_index
 
     if not multiplayer_game_active:
         return
@@ -1266,7 +2789,11 @@ def check_multiplayer_guess():
 
         return
 
-    if guess < minimum or guess > maximum:
+    if (
+        guess < minimum
+        or
+        guess > maximum
+    ):
 
         messagebox.showwarning(
             "Out of Range",
@@ -1278,9 +2805,11 @@ def check_multiplayer_guess():
 
     multiplayer_attempts += 1
 
-    current_player = multiplayer_players[
-        current_player_index
-    ]
+    current_player = (
+        multiplayer_players[
+            current_player_index
+        ]
+    )
 
     attempts_value.config(
         text=(
@@ -1291,33 +2820,38 @@ def check_multiplayer_guess():
 
     if guess < multiplayer_secret:
 
-        play_sound("low")
+        play_sound(
+            "low"
+        )
 
         result_label.config(
             text=(
                 f"⬇️ {current_player}, "
-                f"your guess is too low!"
+                f"TOO LOW!"
             )
         )
 
     elif guess > multiplayer_secret:
 
-        play_sound("high")
+        play_sound(
+            "high"
+        )
 
         result_label.config(
             text=(
                 f"⬆️ {current_player}, "
-                f"your guess is too high!"
+                f"TOO HIGH!"
             )
         )
 
     else:
 
-        play_sound("win")
-
-        # More points for fewer attempts
+        play_sound(
+            "win"
+        )
 
         points = (
+
             max(
                 1,
                 max_attempts
@@ -1340,21 +2874,27 @@ def check_multiplayer_guess():
         )
 
         messagebox.showinfo(
-            "🎉 Correct Guess!",
-            f"{current_player} found the number!\n\n"
-            f"Number: {multiplayer_secret}\n"
-            f"Points earned: {points}"
+            "🎉 Correct!",
+            f"{current_player} "
+            f"found the number!\n\n"
+            f"Number: "
+            f"{multiplayer_secret}\n"
+            f"Points: {points}"
         )
 
         next_multiplayer_turn()
 
         return
 
-    if multiplayer_attempts >= max_attempts:
+    if (
+        multiplayer_attempts
+        >= max_attempts
+    ):
 
         messagebox.showinfo(
             "Round Over",
-            f"{current_player} ran out of attempts.\n\n"
+            f"{current_player} "
+            f"ran out of attempts.\n\n"
             f"The number was "
             f"{multiplayer_secret}."
         )
@@ -1380,15 +2920,19 @@ def next_multiplayer_turn():
 
     current_player_index += 1
 
-    if current_player_index >= len(
-        multiplayer_players
+    if (
+        current_player_index
+        >= len(multiplayer_players)
     ):
 
         current_player_index = 0
 
         multiplayer_round += 1
 
-    if multiplayer_round > multiplayer_total_rounds:
+    if (
+        multiplayer_round
+        > multiplayer_total_rounds
+    ):
 
         finish_multiplayer_game()
 
@@ -1405,7 +2949,7 @@ def next_multiplayer_turn():
 
 
 # ============================================================
-# MULTIPLAYER WINDOW
+# MULTIPLAYER SCOREBOARD
 # ============================================================
 
 def multiplayer_window():
@@ -1419,6 +2963,7 @@ def multiplayer_window():
             multi_score_window.destroy()
 
     except NameError:
+
         pass
 
     multi_score_window = tk.Toplevel(
@@ -1426,11 +2971,11 @@ def multiplayer_window():
     )
 
     multi_score_window.title(
-        "🏆 Live Multiplayer Scoreboard"
+        "🏆 Live Scoreboard"
     )
 
     multi_score_window.geometry(
-        "600x500"
+        "650x500"
     )
 
     background = (
@@ -1458,23 +3003,16 @@ def multiplayer_window():
     tk.Label(
         multi_score_window,
         text="🏆 LIVE SCOREBOARD",
-        font=("Segoe UI", 24, "bold"),
+        font=(
+            "Segoe UI",
+            24,
+            "bold"
+        ),
         bg=background,
         fg=foreground
     ).pack(
         pady=25
     )
-
-    tk.Label(
-        multi_score_window,
-        text=(
-            "Scores update after every "
-            "successful guess."
-        ),
-        font=("Segoe UI", 10),
-        bg=background,
-        fg=foreground
-    ).pack()
 
     table = tk.Frame(
         multi_score_window,
@@ -1501,7 +3039,11 @@ def multiplayer_window():
         tk.Label(
             table,
             text=header,
-            font=("Segoe UI", 11, "bold"),
+            font=(
+                "Segoe UI",
+                11,
+                "bold"
+            ),
             bg=frame_background,
             fg=foreground,
             width=15
@@ -1518,17 +3060,23 @@ def multiplayer_window():
         reverse=True
     )
 
-    for index, (name, player_score) in enumerate(
+    for index, (
+        name,
+        player_score
+    ) in enumerate(
         sorted_players,
         start=1
     ):
 
         if index == 1:
             rank = "🥇"
+
         elif index == 2:
             rank = "🥈"
+
         elif index == 3:
             rank = "🥉"
+
         else:
             rank = str(index)
 
@@ -1538,12 +3086,18 @@ def multiplayer_window():
             str(player_score)
         ]
 
-        for column, value in enumerate(values):
+        for column, value in enumerate(
+            values
+        ):
 
             tk.Label(
                 table,
                 text=value,
-                font=("Segoe UI", 12, "bold"),
+                font=(
+                    "Segoe UI",
+                    12,
+                    "bold"
+                ),
                 bg=frame_background,
                 fg=foreground,
                 width=15
@@ -1561,7 +3115,11 @@ def multiplayer_window():
             f"{multiplayer_round} / "
             f"{multiplayer_total_rounds}"
         ),
-        font=("Segoe UI", 11, "bold"),
+        font=(
+            "Segoe UI",
+            11,
+            "bold"
+        ),
         bg=background,
         fg=foreground
     ).pack(
@@ -1570,7 +3128,7 @@ def multiplayer_window():
 
 
 # ============================================================
-# MULTIPLAYER FINAL RESULT
+# MULTIPLAYER FINISH
 # ============================================================
 
 def finish_multiplayer_game():
@@ -1579,11 +3137,15 @@ def finish_multiplayer_game():
     global multiplayer_mode
 
     multiplayer_game_active = False
+
     multiplayer_mode = False
 
     try:
+
         multi_score_window.destroy()
+
     except:
+
         pass
 
     sorted_players = sorted(
@@ -1592,8 +3154,13 @@ def finish_multiplayer_game():
         reverse=True
     )
 
-    winner_name = sorted_players[0][0]
-    winner_score = sorted_players[0][1]
+    winner_name = (
+        sorted_players[0][0]
+    )
+
+    winner_score = (
+        sorted_players[0][1]
+    )
 
     result_text = (
         "🏆 MULTIPLAYER RESULTS\n\n"
@@ -1622,558 +3189,23 @@ def finish_multiplayer_game():
 
     result_label.config(
         text=(
-            f"🏆 Multiplayer Complete!\n"
+            "🏆 MULTIPLAYER COMPLETE!\n"
             f"Winner: {winner_name}"
         )
     )
 
-    play_sound("win")
+    play_sound(
+        "win"
+    )
 
     messagebox.showinfo(
-        "🏆 Multiplayer Results",
+        "🏆 Results",
         result_text
     )
 
 
 # ============================================================
-# PROFILE
-# ============================================================
-
-def calculate_win_rate():
-
-    if games_played == 0:
-        return 0
-
-    return games_won / games_played * 100
-
-
-def calculate_average_score():
-
-    if games_won == 0:
-        return 0
-
-    total_score = 0
-
-    for game in game_history:
-
-        if game.get("result") == "Won":
-
-            total_score += game.get(
-                "score",
-                0
-            )
-
-    return total_score / games_won
-
-
-def calculate_average_attempts():
-
-    if games_played == 0:
-        return 0
-
-    total_attempts = 0
-
-    for game in game_history:
-
-        total_attempts += game.get(
-            "attempts",
-            0
-        )
-
-    return total_attempts / games_played
-
-
-def get_highest_difficulty():
-
-    highest = 0
-    highest_name = "None"
-
-    levels = {
-        "Easy": 1,
-        "Medium": 2,
-        "Hard": 3
-    }
-
-    for difficulty, stats in difficulty_statistics.items():
-
-        if stats["won"] > 0:
-
-            if levels[difficulty] > highest:
-
-                highest = levels[difficulty]
-                highest_name = difficulty
-
-    return highest_name
-
-
-def show_profile():
-
-    window = tk.Toplevel(root)
-
-    window.title("👤 Player Profile")
-
-    window.geometry("850x750")
-
-    background = DARK_BG if dark_mode else LIGHT_BG
-    foreground = DARK_FG if dark_mode else LIGHT_FG
-    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
-
-    window.config(bg=background)
-
-    tk.Label(
-        window,
-        text="👤 PLAYER PROFILE",
-        font=("Segoe UI", 26, "bold"),
-        bg=background,
-        fg=foreground
-    ).pack(pady=20)
-
-    tk.Label(
-        window,
-        text=(
-            f"Player: "
-            f"{player_name if player_name else 'Guest'}"
-        ),
-        font=("Segoe UI", 15, "bold"),
-        bg=background,
-        fg=foreground
-    ).pack(pady=(0, 15))
-
-    stats = tk.Frame(
-        window,
-        bg=frame_background,
-        padx=20,
-        pady=20
-    )
-
-    stats.pack(
-        fill="x",
-        padx=30,
-        pady=10
-    )
-
-    profile_data = [
-        ("🎮 Games Played", str(games_played)),
-        ("🏆 Games Won", str(games_won)),
-        ("❌ Games Lost", str(games_lost)),
-        ("📈 Win Rate", f"{calculate_win_rate():.1f}%"),
-        ("💯 Best Score", str(best_score)),
-        ("🔥 Winning Streak", str(winning_streak)),
-        (
-            "⚡ Fastest Win",
-            (
-                format_time(fastest_win)
-                if fastest_win is not None
-                else "N/A"
-            )
-        ),
-        (
-            "🎯 Avg Score",
-            f"{calculate_average_score():.1f}"
-        ),
-        (
-            "📊 Avg Attempts",
-            f"{calculate_average_attempts():.1f}"
-        ),
-        (
-            "🔴 Highest Difficulty",
-            get_highest_difficulty()
-        )
-    ]
-
-    for index, (
-        label,
-        value
-    ) in enumerate(profile_data):
-
-        row = index // 2
-        column = index % 2
-
-        card = tk.Frame(
-            stats,
-            bg=frame_background,
-            padx=20,
-            pady=12
-        )
-
-        card.grid(
-            row=row,
-            column=column,
-            sticky="ew",
-            padx=10,
-            pady=6
-        )
-
-        tk.Label(
-            card,
-            text=label,
-            font=("Segoe UI", 10),
-            bg=frame_background,
-            fg=foreground
-        ).pack()
-
-        tk.Label(
-            card,
-            text=value,
-            font=("Segoe UI", 18, "bold"),
-            bg=frame_background,
-            fg=foreground
-        ).pack()
-
-    stats.grid_columnconfigure(0, weight=1)
-    stats.grid_columnconfigure(1, weight=1)
-
-    difficulty_frame = tk.LabelFrame(
-        window,
-        text="  📊 Difficulty Statistics  ",
-        font=("Segoe UI", 12, "bold"),
-        bg=frame_background,
-        fg=foreground,
-        padx=20,
-        pady=15
-    )
-
-    difficulty_frame.pack(
-        fill="x",
-        padx=30,
-        pady=15
-    )
-
-    headers = [
-        "Difficulty",
-        "Played",
-        "Won",
-        "Lost",
-        "Win Rate",
-        "Avg Score"
-    ]
-
-    for column, header in enumerate(headers):
-
-        tk.Label(
-            difficulty_frame,
-            text=header,
-            font=("Segoe UI", 10, "bold"),
-            bg=frame_background,
-            fg=foreground,
-            width=14
-        ).grid(
-            row=0,
-            column=column,
-            padx=3,
-            pady=8
-        )
-
-    for row, difficulty in enumerate(
-        ["Easy", "Medium", "Hard"],
-        start=1
-    ):
-
-        stats_data = difficulty_statistics[difficulty]
-
-        played = stats_data["played"]
-        won = stats_data["won"]
-        lost = stats_data["lost"]
-        total_score = stats_data["total_score"]
-
-        if played > 0:
-            win_rate = won / played * 100
-        else:
-            win_rate = 0
-
-        if won > 0:
-            average_score = total_score / won
-        else:
-            average_score = 0
-
-        values = [
-            difficulty,
-            str(played),
-            str(won),
-            str(lost),
-            f"{win_rate:.1f}%",
-            f"{average_score:.1f}"
-        ]
-
-        for column, value in enumerate(values):
-
-            tk.Label(
-                difficulty_frame,
-                text=value,
-                font=("Segoe UI", 10),
-                bg=frame_background,
-                fg=foreground,
-                width=14
-            ).grid(
-                row=row,
-                column=column,
-                padx=3,
-                pady=6
-            )
-
-
-# ============================================================
-# HISTORY
-# ============================================================
-
-def show_history():
-
-    window = tk.Toplevel(root)
-
-    window.title("📜 Game History")
-
-    window.geometry("750x600")
-
-    background = DARK_BG if dark_mode else LIGHT_BG
-    foreground = DARK_FG if dark_mode else LIGHT_FG
-    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
-
-    window.config(bg=background)
-
-    tk.Label(
-        window,
-        text="📜 GAME HISTORY",
-        font=("Segoe UI", 22, "bold"),
-        bg=background,
-        fg=foreground
-    ).pack(pady=20)
-
-    if not game_history:
-
-        tk.Label(
-            window,
-            text="No games played yet.",
-            font=("Segoe UI", 13),
-            bg=background,
-            fg=foreground
-        ).pack(pady=50)
-
-        return
-
-    frame = tk.Frame(
-        window,
-        bg=frame_background
-    )
-
-    frame.pack(
-        fill="both",
-        expand=True,
-        padx=20,
-        pady=10
-    )
-
-    scrollbar = tk.Scrollbar(frame)
-
-    scrollbar.pack(
-        side="right",
-        fill="y"
-    )
-
-    text = tk.Text(
-        frame,
-        font=("Consolas", 11),
-        yscrollcommand=scrollbar.set,
-        wrap="none",
-        bg=frame_background,
-        fg=foreground,
-        insertbackground=foreground
-    )
-
-    text.pack(
-        fill="both",
-        expand=True
-    )
-
-    scrollbar.config(
-        command=text.yview
-    )
-
-    for index, game in enumerate(
-        reversed(game_history),
-        start=1
-    ):
-
-        text.insert(
-            tk.END,
-            f"GAME {index}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Player     : {game['player']}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Difficulty : {game['difficulty']}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Result     : {game['result']}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Attempts   : {game['attempts']}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Score      : {game['score']}\n"
-        )
-
-        text.insert(
-            tk.END,
-            f"Time       : {game.get('time', '00:00')}\n"
-        )
-
-        text.insert(
-            tk.END,
-            "-" * 55 + "\n\n"
-        )
-
-    text.config(
-        state="disabled"
-    )
-
-
-# ============================================================
-# ACHIEVEMENT WINDOW
-# ============================================================
-
-def show_achievements():
-
-    window = tk.Toplevel(root)
-
-    window.title("🏅 Achievements")
-
-    window.geometry("700x650")
-
-    background = DARK_BG if dark_mode else LIGHT_BG
-    foreground = DARK_FG if dark_mode else LIGHT_FG
-    frame_background = DARK_FRAME if dark_mode else LIGHT_FRAME
-
-    window.config(bg=background)
-
-    tk.Label(
-        window,
-        text="🏅 ACHIEVEMENTS",
-        font=("Segoe UI", 25, "bold"),
-        bg=background,
-        fg=foreground
-    ).pack(pady=(25, 5))
-
-    tk.Label(
-        window,
-        text="Complete challenges and collect badges!",
-        font=("Segoe UI", 11),
-        bg=background,
-        fg=foreground
-    ).pack(pady=(0, 20))
-
-    container = tk.Frame(
-        window,
-        bg=frame_background
-    )
-
-    container.pack(
-        padx=30,
-        pady=10,
-        fill="both",
-        expand=True
-    )
-
-    badge_details = {
-        "First Victory":
-        "Win your first game.",
-
-        "Winning Streak":
-        "Win 3 games consecutively.",
-
-        "Speed Demon":
-        "Win in under 15 seconds.",
-
-        "Perfect Guesser":
-        "Find the number in one attempt.",
-
-        "Score Master":
-        "Achieve a score of 10 or higher.",
-
-        "Leaderboard Champion":
-        "Reach #1 on the leaderboard."
-    }
-
-    icons = {
-        "First Victory": "🏆",
-        "Winning Streak": "🔥",
-        "Speed Demon": "⚡",
-        "Perfect Guesser": "🎯",
-        "Score Master": "💯",
-        "Leaderboard Champion": "🥇"
-    }
-
-    for name in achievements:
-
-        unlocked = achievements[name]
-
-        if unlocked:
-
-            title = (
-                f"{icons[name]} {name}"
-            )
-
-            status = "✅ UNLOCKED"
-
-        else:
-
-            title = f"🔒 {name}"
-
-            status = "🔒 LOCKED"
-
-        frame = tk.Frame(
-            container,
-            bg=frame_background,
-            padx=15,
-            pady=10
-        )
-
-        frame.pack(
-            fill="x",
-            padx=20,
-            pady=6
-        )
-
-        tk.Label(
-            frame,
-            text=title,
-            font=("Segoe UI", 12, "bold"),
-            bg=frame_background,
-            fg=foreground,
-            anchor="w"
-        ).pack(fill="x")
-
-        tk.Label(
-            frame,
-            text=badge_details[name],
-            font=("Segoe UI", 10),
-            bg=frame_background,
-            fg=foreground,
-            anchor="w"
-        ).pack(fill="x")
-
-        tk.Label(
-            frame,
-            text=status,
-            font=("Segoe UI", 9, "bold"),
-            bg=frame_background,
-            fg=foreground,
-            anchor="w"
-        ).pack(fill="x")
-
-
-# ============================================================
-# RESET
+# RESET DATA
 # ============================================================
 
 def reset_data():
@@ -2190,8 +3222,9 @@ def reset_data():
 
     confirmation = messagebox.askyesno(
         "Reset Game Data",
-        "Delete all statistics, history,\n"
-        "leaderboard and achievements?"
+        "Delete all statistics,\n"
+        "history, leaderboard and "
+        "achievements?"
     )
 
     if not confirmation:
@@ -2200,41 +3233,63 @@ def reset_data():
     stop_timer()
 
     games_played = 0
+
     games_won = 0
+
     games_lost = 0
+
     best_score = 0
+
     winning_streak = 0
 
     fastest_win = None
+
     highest_difficulty = "None"
 
     game_history = []
+
     leaderboard = []
 
-    for difficulty in difficulty_statistics:
+    for difficulty in (
+        difficulty_statistics
+    ):
 
-        difficulty_statistics[difficulty] = {
+        difficulty_statistics[
+            difficulty
+        ] = {
+
             "played": 0,
+
             "won": 0,
+
             "lost": 0,
+
             "total_score": 0,
+
             "total_attempts": 0
         }
 
     for achievement in achievements:
 
-        achievements[achievement] = False
+        achievements[
+            achievement
+        ] = False
 
     save_data()
 
     update_dashboard()
 
     result_label.config(
-        text="All game data has been cleared."
+        text=(
+            "All game data "
+            "has been cleared."
+        )
     )
 
     attempts_value.config(
-        text=f"0 / {max_attempts}"
+        text=(
+            f"0 / {max_attempts}"
+        )
     )
 
     score_value.config(
@@ -2247,7 +3302,8 @@ def reset_data():
 
     messagebox.showinfo(
         "Data Reset",
-        "All game data has been cleared."
+        "All game data "
+        "has been cleared."
     )
 
 
@@ -2275,31 +3331,53 @@ def update_widget_colors(
 
         try:
 
-            if isinstance(child, tk.Button):
+            if isinstance(
+                child,
+                tk.Button
+            ):
 
                 child.config(
                     bg=button_background,
                     fg=foreground,
-                    activebackground=button_background,
-                    activeforeground=foreground
+                    activebackground=
+                    button_background,
+                    activeforeground=
+                    foreground
                 )
 
-            elif isinstance(child, tk.Entry):
+            elif isinstance(
+                child,
+                tk.Entry
+            ):
 
                 child.config(
                     bg=frame_background,
                     fg=foreground,
-                    insertbackground=foreground
+                    insertbackground=
+                    foreground
                 )
 
-            elif isinstance(child, tk.Label):
+            elif isinstance(
+                child,
+                tk.Label
+            ):
 
                 child.config(
                     bg=frame_background,
                     fg=foreground
                 )
 
+            elif isinstance(
+                child,
+                tk.Frame
+            ):
+
+                child.config(
+                    bg=frame_background
+                )
+
         except tk.TclError:
+
             pass
 
         update_widget_colors(
@@ -2315,9 +3393,16 @@ def apply_theme():
     if dark_mode:
 
         background = DARK_BG
+
         foreground = DARK_FG
-        frame_background = DARK_FRAME
-        button_background = DARK_BUTTON
+
+        frame_background = (
+            DARK_FRAME
+        )
+
+        button_background = (
+            DARK_BUTTON
+        )
 
         theme_button.config(
             text="☀️ LIGHT MODE"
@@ -2326,19 +3411,35 @@ def apply_theme():
     else:
 
         background = LIGHT_BG
+
         foreground = LIGHT_FG
-        frame_background = LIGHT_FRAME
-        button_background = LIGHT_BUTTON
+
+        frame_background = (
+            LIGHT_FRAME
+        )
+
+        button_background = (
+            LIGHT_BUTTON
+        )
 
         theme_button.config(
             text="🌙 DARK MODE"
         )
 
-    root.config(bg=background)
+    root.config(
+        bg=background
+    )
 
-    header.config(bg=background)
+    header.config(
+        bg=background
+    )
 
     player_frame.config(
+        bg=frame_background,
+        fg=foreground
+    )
+
+    mode_frame.config(
         bg=frame_background,
         fg=foreground
     )
@@ -2362,6 +3463,11 @@ def apply_theme():
         fg=foreground
     )
 
+    mode_info_label.config(
+        bg=frame_background,
+        fg=foreground
+    )
+
     update_widget_colors(
         root,
         foreground,
@@ -2379,11 +3485,11 @@ def apply_theme():
 root = tk.Tk()
 
 root.title(
-    "Number Guessing Game | V17"
+    "Number Guessing Game | V18"
 )
 
 root.geometry(
-    "1100x1100"
+    "1150x1150"
 )
 
 root.resizable(
@@ -2402,25 +3508,38 @@ header = tk.Frame(
     pady=20
 )
 
-header.pack(fill="x")
+header.pack(
+    fill="x"
+)
 
 
 title_label = tk.Label(
     header,
-    text="🎯 Number Guessing Game",
-    font=("Segoe UI", 26, "bold")
+    text=(
+        "🎯 Number Guessing Game"
+    ),
+    font=(
+        "Segoe UI",
+        26,
+        "bold"
+    )
 )
 
-title_label.pack(side="left")
+title_label.pack(
+    side="left"
+)
 
 
 subtitle_label = tk.Label(
     header,
     text=(
-        "V17 • Multiplayer • Profiles • "
-        "Statistics • Leaderboard"
+        "V18 • Custom Modes • "
+        "Multiplayer • Profiles"
     ),
-    font=("Segoe UI", 11)
+    font=(
+        "Segoe UI",
+        11
+    )
 )
 
 subtitle_label.pack(
@@ -2436,7 +3555,11 @@ subtitle_label.pack(
 player_frame = tk.LabelFrame(
     root,
     text="  👤 Player Setup  ",
-    font=("Segoe UI", 12, "bold"),
+    font=(
+        "Segoe UI",
+        12,
+        "bold"
+    ),
     padx=20,
     pady=15
 )
@@ -2451,7 +3574,11 @@ player_frame.pack(
 tk.Label(
     player_frame,
     text="Player Name:",
-    font=("Segoe UI", 11, "bold")
+    font=(
+        "Segoe UI",
+        11,
+        "bold"
+    )
 ).grid(
     row=0,
     column=0,
@@ -2462,7 +3589,10 @@ tk.Label(
 
 name_entry = tk.Entry(
     player_frame,
-    font=("Segoe UI", 11),
+    font=(
+        "Segoe UI",
+        11
+    ),
     width=20
 )
 
@@ -2476,7 +3606,11 @@ name_entry.grid(
 tk.Label(
     player_frame,
     text="Difficulty:",
-    font=("Segoe UI", 11, "bold")
+    font=(
+        "Segoe UI",
+        11,
+        "bold"
+    )
 ).grid(
     row=0,
     column=2,
@@ -2498,7 +3632,10 @@ difficulty_menu = tk.OptionMenu(
 )
 
 difficulty_menu.config(
-    font=("Segoe UI", 10),
+    font=(
+        "Segoe UI",
+        10
+    ),
     width=10
 )
 
@@ -2512,7 +3649,11 @@ difficulty_menu.grid(
 start_button = tk.Button(
     player_frame,
     text="START GAME",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=start_player_game,
     padx=15,
     pady=5
@@ -2528,7 +3669,11 @@ start_button.grid(
 multiplayer_button = tk.Button(
     player_frame,
     text="👥 MULTIPLAYER",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=show_multiplayer_setup,
     padx=15,
     pady=5
@@ -2542,13 +3687,100 @@ multiplayer_button.grid(
 
 
 # ============================================================
+# V18 GAME MODE
+# ============================================================
+
+mode_frame = tk.LabelFrame(
+    root,
+    text="  🎮 V18 Game Mode  ",
+    font=(
+        "Segoe UI",
+        12,
+        "bold"
+    ),
+    padx=20,
+    pady=15
+)
+
+mode_frame.pack(
+    fill="x",
+    padx=30,
+    pady=10
+)
+
+
+tk.Label(
+    mode_frame,
+    text="Select Mode:",
+    font=(
+        "Segoe UI",
+        11,
+        "bold"
+    )
+).grid(
+    row=0,
+    column=0,
+    padx=10
+)
+
+
+mode_var = tk.StringVar(
+    value="Classic Mode"
+)
+
+
+mode_menu = tk.OptionMenu(
+    mode_frame,
+    mode_var,
+    *GAME_MODES,
+    command=lambda _: change_game_mode()
+)
+
+mode_menu.config(
+    font=(
+        "Segoe UI",
+        10
+    ),
+    width=18
+)
+
+mode_menu.grid(
+    row=0,
+    column=1,
+    padx=10
+)
+
+
+mode_info_label = tk.Label(
+    mode_frame,
+    text=(
+        "Normal number guessing."
+    ),
+    font=(
+        "Segoe UI",
+        10
+    )
+)
+
+mode_info_label.grid(
+    row=0,
+    column=2,
+    padx=20
+)
+
+
+# ============================================================
 # STATISTICS
 # ============================================================
 
 stats_frame = tk.LabelFrame(
     root,
     text="  📊 Your Statistics  ",
-    font=("Segoe UI", 12, "bold"),
+    font=(
+        "Segoe UI",
+        12,
+        "bold"
+    ),
     padx=15,
     pady=15
 )
@@ -2582,13 +3814,20 @@ def create_stat_card(
     tk.Label(
         frame,
         text=title,
-        font=("Segoe UI", 10)
+        font=(
+            "Segoe UI",
+            10
+        )
     ).pack()
 
     value_label = tk.Label(
         frame,
         text=str(value),
-        font=("Segoe UI", 21, "bold")
+        font=(
+            "Segoe UI",
+            21,
+            "bold"
+        )
     )
 
     value_label.pack()
@@ -2632,7 +3871,11 @@ best_value = create_stat_card(
 game_frame = tk.LabelFrame(
     root,
     text="  🎮 Current Game  ",
-    font=("Segoe UI", 12, "bold"),
+    font=(
+        "Segoe UI",
+        12,
+        "bold"
+    ),
     padx=30,
     pady=20
 )
@@ -2650,8 +3893,12 @@ result_label = tk.Label(
         "Enter your name "
         "and start a game."
     ),
-    font=("Segoe UI", 14, "bold"),
-    wraplength=800,
+    font=(
+        "Segoe UI",
+        14,
+        "bold"
+    ),
+    wraplength=900,
     justify="center"
 )
 
@@ -2662,7 +3909,10 @@ result_label.pack(
 
 guess_entry = tk.Entry(
     game_frame,
-    font=("Segoe UI", 20),
+    font=(
+        "Segoe UI",
+        20
+    ),
     justify="center",
     width=12
 )
@@ -2675,7 +3925,11 @@ guess_entry.pack(
 guess_button = tk.Button(
     game_frame,
     text="GUESS",
-    font=("Segoe UI", 12, "bold"),
+    font=(
+        "Segoe UI",
+        12,
+        "bold"
+    ),
     command=check_guess,
     width=15,
     pady=8
@@ -2706,12 +3960,17 @@ labels = [
     "Time"
 ]
 
-for column, text in enumerate(labels):
+for column, text in enumerate(
+    labels
+):
 
     tk.Label(
         info_frame,
         text=text,
-        font=("Segoe UI", 10)
+        font=(
+            "Segoe UI",
+            10
+        )
     ).grid(
         row=0,
         column=column,
@@ -2722,7 +3981,11 @@ for column, text in enumerate(labels):
 attempts_value = tk.Label(
     info_frame,
     text="0 / 10",
-    font=("Segoe UI", 16, "bold")
+    font=(
+        "Segoe UI",
+        16,
+        "bold"
+    )
 )
 
 attempts_value.grid(
@@ -2735,7 +3998,11 @@ attempts_value.grid(
 score_value = tk.Label(
     info_frame,
     text="0",
-    font=("Segoe UI", 16, "bold")
+    font=(
+        "Segoe UI",
+        16,
+        "bold"
+    )
 )
 
 score_value.grid(
@@ -2748,7 +4015,11 @@ score_value.grid(
 multiplier_value = tk.Label(
     info_frame,
     text="2×",
-    font=("Segoe UI", 16, "bold")
+    font=(
+        "Segoe UI",
+        16,
+        "bold"
+    )
 )
 
 multiplier_value.grid(
@@ -2761,7 +4032,11 @@ multiplier_value.grid(
 timer_value = tk.Label(
     info_frame,
     text="00:00",
-    font=("Segoe UI", 16, "bold")
+    font=(
+        "Segoe UI",
+        16,
+        "bold"
+    )
 )
 
 timer_value.grid(
@@ -2787,7 +4062,11 @@ action_frame.pack(
 new_game_button = tk.Button(
     action_frame,
     text="🔄 NEW GAME",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=start_new_game,
     width=18,
     pady=8
@@ -2803,7 +4082,11 @@ new_game_button.grid(
 profile_button = tk.Button(
     action_frame,
     text="👤 PLAYER PROFILE",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=show_profile,
     width=18,
     pady=8
@@ -2819,7 +4102,11 @@ profile_button.grid(
 history_button = tk.Button(
     action_frame,
     text="📜 GAME HISTORY",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=show_history,
     width=18,
     pady=8
@@ -2835,7 +4122,11 @@ history_button.grid(
 leaderboard_button = tk.Button(
     action_frame,
     text="🏆 LEADERBOARD",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=show_leaderboard,
     width=18,
     pady=8
@@ -2851,7 +4142,11 @@ leaderboard_button.grid(
 achievement_button = tk.Button(
     action_frame,
     text="🏅 ACHIEVEMENTS",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=show_achievements,
     width=18,
     pady=8
@@ -2868,7 +4163,11 @@ achievement_button.grid(
 reset_button = tk.Button(
     action_frame,
     text="🗑️ RESET DATA",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=reset_data,
     width=18,
     pady=8
@@ -2885,7 +4184,11 @@ reset_button.grid(
 theme_button = tk.Button(
     action_frame,
     text="🌙 DARK MODE",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=toggle_dark_mode,
     width=18,
     pady=8
@@ -2902,7 +4205,11 @@ theme_button.grid(
 sound_button = tk.Button(
     action_frame,
     text="🔊 SOUND ON",
-    font=("Segoe UI", 10, "bold"),
+    font=(
+        "Segoe UI",
+        10,
+        "bold"
+    ),
     command=toggle_sound,
     width=18,
     pady=8
@@ -2923,12 +4230,16 @@ sound_button.grid(
 footer_label = tk.Label(
     root,
     text=(
-        "Python • Tkinter • JSON • "
-        "Multiplayer • Profiles • Statistics • "
-        "Leaderboard • Achievements • "
-        "Timer • Sound • Dynamic Scoring"
+        "V18 • Custom Game Modes • "
+        "Multiplayer • Profiles • "
+        "Statistics • Leaderboard • "
+        "Achievements • Timer • "
+        "Sound • Dynamic Scoring"
     ),
-    font=("Segoe UI", 9)
+    font=(
+        "Segoe UI",
+        9
+    )
 )
 
 footer_label.pack(
@@ -2937,9 +4248,14 @@ footer_label.pack(
 
 
 # ============================================================
-# START
+# INITIAL THEME
 # ============================================================
 
 apply_theme()
+
+
+# ============================================================
+# RUN APPLICATION
+# ============================================================
 
 root.mainloop()
