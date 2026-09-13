@@ -5,30 +5,30 @@ import json
 import os
 
 # =========================================================
-# NUMBER GUESSING GAME - V21
-# MULTIPLAYER & CHALLENGE EDITION
+# NUMBER GUESSING GAME - V22
+# MODERN CHALLENGE EDITION
 # =========================================================
 
-SAVE_FILE = "game_data_v21.json"
+SAVE_FILE = "game_data_v22.json"
 
 DIFFICULTIES = {
     "Easy": {
         "maximum": 50,
         "attempts": 15,
         "time": 90,
-        "starting_score": 100
+        "score": 100
     },
     "Medium": {
         "maximum": 100,
         "attempts": 10,
         "time": 60,
-        "starting_score": 200
+        "score": 200
     },
     "Hard": {
         "maximum": 500,
         "attempts": 7,
         "time": 45,
-        "starting_score": 300
+        "score": 300
     }
 }
 
@@ -39,20 +39,23 @@ DIFFICULTIES = {
 game_mode = "Single Player"
 difficulty = "Medium"
 
-secret_number = 0
+player1_name = "Player 1"
+player2_name = "Player 2"
 
+secret_number = 0
 current_player = 1
+
 attempts_used = 0
 max_attempts = 10
+
+timer_seconds = 60
+timer_running = False
 
 player1_score = 0
 player2_score = 0
 
 player1_streak = 0
 player2_streak = 0
-
-timer_seconds = 60
-timer_running = False
 
 hints_used = 0
 
@@ -71,6 +74,7 @@ achievements = []
 # =========================================================
 
 def load_data():
+
     global games_played
     global games_won
     global best_score
@@ -81,6 +85,7 @@ def load_data():
         return
 
     try:
+
         with open(SAVE_FILE, "r") as file:
             data = json.load(file)
 
@@ -95,6 +100,7 @@ def load_data():
 
 
 def save_data():
+
     data = {
         "games_played": games_played,
         "games_won": games_won,
@@ -104,6 +110,7 @@ def save_data():
     }
 
     try:
+
         with open(SAVE_FILE, "w") as file:
             json.dump(data, file, indent=4)
 
@@ -116,18 +123,31 @@ def save_data():
 # =========================================================
 
 def get_background():
-    return "#141421" if dark_mode else "#eeeeee"
+
+    if dark_mode:
+        return "#0f1117"
+
+    return "#f4f6f8"
 
 
 def get_card():
-    return "#222235" if dark_mode else "#ffffff"
+
+    if dark_mode:
+        return "#1b1f2a"
+
+    return "#ffffff"
 
 
 def get_text():
-    return "#ffffff" if dark_mode else "#222222"
+
+    if dark_mode:
+        return "#ffffff"
+
+    return "#1c1c1c"
 
 
 def toggle_theme():
+
     global dark_mode
 
     dark_mode = not dark_mode
@@ -148,7 +168,7 @@ def apply_theme():
         fg=text
     )
 
-    version_label.config(
+    subtitle_label.config(
         bg=bg
     )
 
@@ -162,17 +182,17 @@ def apply_theme():
         fg=text
     )
 
+    player_label.config(
+        bg=bg,
+        fg=text
+    )
+
     range_frame.config(
         bg=card
     )
 
     range_label.config(
         bg=card,
-        fg=text
-    )
-
-    player_label.config(
-        bg=bg,
         fg=text
     )
 
@@ -223,7 +243,47 @@ def apply_theme():
 
 
 # =========================================================
-# MODE CHANGE
+# PLAYER NAME INPUT
+# =========================================================
+
+def set_player_names():
+
+    global player1_name
+    global player2_name
+
+    name1 = player1_entry.get().strip()
+    name2 = player2_entry.get().strip()
+
+    if name1:
+        player1_name = name1
+    else:
+        player1_name = "Player 1"
+
+    if name2:
+        player2_name = name2
+    else:
+        player2_name = "Player 2"
+
+    if game_mode == "Single Player":
+
+        player_label.config(
+            text=f"👤 {player1_name}'S GAME"
+        )
+
+    else:
+
+        player_label.config(
+            text=f"👤 {player1_name}'S TURN"
+        )
+
+    messagebox.showinfo(
+        "Players Updated",
+        f"Player 1: {player1_name}\nPlayer 2: {player2_name}"
+    )
+
+
+# =========================================================
+# GAME MODE
 # =========================================================
 
 def change_mode(value):
@@ -232,11 +292,28 @@ def change_mode(value):
 
     game_mode = value
 
+    if game_mode == "Single Player":
+
+        player2_entry.config(
+            state=tk.DISABLED
+        )
+
+        player2_entry.delete(
+            0,
+            tk.END
+        )
+
+    else:
+
+        player2_entry.config(
+            state=tk.NORMAL
+        )
+
     new_game()
 
 
 # =========================================================
-# DIFFICULTY CHANGE
+# DIFFICULTY
 # =========================================================
 
 def change_difficulty(value):
@@ -258,12 +335,12 @@ def new_game():
     global current_player
     global attempts_used
     global max_attempts
+    global timer_seconds
+    global timer_running
     global player1_score
     global player2_score
     global player1_streak
     global player2_streak
-    global timer_seconds
-    global timer_running
     global hints_used
     global games_played
 
@@ -279,30 +356,28 @@ def new_game():
     attempts_used = 0
     max_attempts = settings["attempts"]
 
-    player1_score = settings["starting_score"]
-    player2_score = settings["starting_score"]
+    timer_seconds = settings["time"]
+
+    timer_running = True
+
+    player1_score = settings["score"]
+    player2_score = settings["score"]
 
     player1_streak = 0
     player2_streak = 0
 
-    timer_seconds = settings["time"]
-
     hints_used = 0
 
-    timer_running = True
-
     games_played += 1
+
+    result_label.config(
+        text="🤔 A secret number has been generated.",
+        fg=get_text()
+    )
 
     range_label.config(
         text=f"Guess a number between 1 and {settings['maximum']}"
     )
-
-    result_label.config(
-        text="🤔 I'm thinking of a number...",
-        fg=get_text()
-    )
-
-    update_game_information()
 
     guess_entry.config(
         state=tk.NORMAL
@@ -323,6 +398,8 @@ def new_game():
 
     guess_entry.focus()
 
+    update_game_information()
+
     update_statistics()
 
     save_data()
@@ -338,6 +415,11 @@ def update_game_information():
 
     if game_mode == "Single Player":
 
+        player_label.config(
+            text=f"👤 {player1_name}'S TURN",
+            fg="#00bfff"
+        )
+
         score_label.config(
             text=f"🏆 Score: {player1_score}"
         )
@@ -346,34 +428,33 @@ def update_game_information():
             text=f"🔥 Streak: {player1_streak}"
         )
 
-        player_label.config(
-            text="👤 SINGLE PLAYER"
-        )
-
     else:
 
-        score_label.config(
-            text=(
-                f"🏆 Player 1: {player1_score}    "
-                f"Player 2: {player2_score}"
-            )
-        )
-
         if current_player == 1:
+
             player_label.config(
-                text="👤 PLAYER 1'S TURN",
+                text=f"👤 {player1_name.upper()}'S TURN",
                 fg="#00bfff"
             )
+
         else:
+
             player_label.config(
-                text="👤 PLAYER 2'S TURN",
+                text=f"👤 {player2_name.upper()}'S TURN",
                 fg="#ff77aa"
             )
 
+        score_label.config(
+            text=(
+                f"🏆 {player1_name}: {player1_score}    "
+                f"{player2_name}: {player2_score}"
+            )
+        )
+
         streak_label.config(
             text=(
-                f"🔥 P1 Streak: {player1_streak}    "
-                f"P2 Streak: {player2_streak}"
+                f"🔥 {player1_name}: {player1_streak}    "
+                f"{player2_name}: {player2_streak}"
             )
         )
 
@@ -444,7 +525,7 @@ def use_hint():
 
     hints_used += 1
 
-    if game_mode == "Single Player":
+    if current_player == 1:
 
         player1_score = max(
             0,
@@ -453,32 +534,29 @@ def use_hint():
 
     else:
 
-        if current_player == 1:
-
-            player1_score = max(
-                0,
-                player1_score - 25
-            )
-
-        else:
-
-            player2_score = max(
-                0,
-                player2_score - 25
-            )
+        player2_score = max(
+            0,
+            player2_score - 25
+        )
 
     if hints_used == 1:
 
         if secret_number % 2 == 0:
+
             hint = "💡 Hint: The number is EVEN."
+
         else:
+
             hint = "💡 Hint: The number is ODD."
 
     elif hints_used == 2:
 
         if secret_number <= 50:
-            hint = "💡 Hint: The number is 1–50."
+
+            hint = "💡 Hint: The number is 50 or below."
+
         else:
+
             hint = "💡 Hint: The number is greater than 50."
 
     else:
@@ -514,10 +592,11 @@ def check_guess():
     global player2_score
     global player1_streak
     global player2_streak
+    global games_won
     global best_score
     global best_streak
-    global games_won
     global timer_running
+    global current_player
 
     if not timer_running:
         return
@@ -527,7 +606,7 @@ def check_guess():
     if not value:
 
         result_label.config(
-            text="⚠️ Enter a number first!"
+            text="⚠️ Please enter a number."
         )
 
         return
@@ -539,7 +618,7 @@ def check_guess():
     except ValueError:
 
         result_label.config(
-            text="❌ Numbers only!"
+            text="❌ Please enter numbers only."
         )
 
         return
@@ -549,7 +628,7 @@ def check_guess():
     if guess < 1 or guess > maximum:
 
         result_label.config(
-            text=f"⚠️ Enter a number from 1 to {maximum}!"
+            text=f"⚠️ Enter a number from 1 to {maximum}."
         )
 
         return
@@ -557,7 +636,7 @@ def check_guess():
     attempts_used += 1
 
     # =====================================================
-    # CORRECT GUESS
+    # CORRECT
     # =====================================================
 
     if guess == secret_number:
@@ -576,12 +655,14 @@ def check_guess():
             - hints_used * 25
         )
 
-        if game_mode == "Single Player":
+        bonus = max(
+            10,
+            bonus
+        )
 
-            player1_score = max(
-                10,
-                player1_score + bonus
-            )
+        if current_player == 1:
+
+            player1_score += bonus
 
             player1_streak += 1
 
@@ -591,61 +672,27 @@ def check_guess():
             if player1_streak > best_streak:
                 best_streak = player1_streak
 
-            winner_text = (
-                f"🎉 YOU WON!\n"
-                f"The number was {secret_number}!"
-            )
-
-            final_score = player1_score
+            winner = player1_name
 
         else:
 
-            if current_player == 1:
+            player2_score += bonus
 
-                player1_score = max(
-                    10,
-                    player1_score + bonus
-                )
+            player2_streak += 1
 
-                player1_streak += 1
+            if player2_score > best_score:
+                best_score = player2_score
 
-                if player1_score > best_score:
-                    best_score = player1_score
+            if player2_streak > best_streak:
+                best_streak = player2_streak
 
-                if player1_streak > best_streak:
-                    best_streak = player1_streak
-
-                winner_text = (
-                    f"🎉 PLAYER 1 WINS!\n"
-                    f"The number was {secret_number}!"
-                )
-
-                final_score = player1_score
-
-            else:
-
-                player2_score = max(
-                    10,
-                    player2_score + bonus
-                )
-
-                player2_streak += 1
-
-                if player2_score > best_score:
-                    best_score = player2_score
-
-                if player2_streak > best_streak:
-                    best_streak = player2_streak
-
-                winner_text = (
-                    f"🎉 PLAYER 2 WINS!\n"
-                    f"The number was {secret_number}!"
-                )
-
-                final_score = player2_score
+            winner = player2_name
 
         result_label.config(
-            text=winner_text,
+            text=(
+                f"🎉 CORRECT!\n"
+                f"{winner} wins!"
+            ),
             fg="#00ff88"
         )
 
@@ -672,9 +719,10 @@ def check_guess():
         messagebox.showinfo(
             "🏆 WINNER!",
             (
-                f"{winner_text}\n\n"
-                f"Score: {final_score}\n"
+                f"🎉 Congratulations, {winner}!\n\n"
+                f"Secret Number: {secret_number}\n"
                 f"Attempts: {attempts_used}\n"
+                f"Score Earned: +{bonus}\n"
                 f"Time Remaining: {timer_seconds}s"
             )
         )
@@ -685,7 +733,7 @@ def check_guess():
     # WRONG GUESS
     # =====================================================
 
-    if game_mode == "Single Player":
+    if current_player == 1:
 
         player1_score = max(
             0,
@@ -694,19 +742,10 @@ def check_guess():
 
     else:
 
-        if current_player == 1:
-
-            player1_score = max(
-                0,
-                player1_score - 10
-            )
-
-        else:
-
-            player2_score = max(
-                0,
-                player2_score - 10
-            )
+        player2_score = max(
+            0,
+            player2_score - 10
+        )
 
     if guess < secret_number:
 
@@ -722,15 +761,13 @@ def check_guess():
             fg="#ff7777"
         )
 
-    update_game_information()
-
     guess_entry.delete(
         0,
         tk.END
     )
 
     # =====================================================
-    # TWO PLAYER TURN CHANGE
+    # SWITCH PLAYER
     # =====================================================
 
     if (
@@ -742,12 +779,10 @@ def check_guess():
             2 if current_player == 1 else 1
         )
 
-        player_label.config(
-            text=f"👤 PLAYER {current_player}'S TURN"
-        )
+    update_game_information()
 
     # =====================================================
-    # GAME OVER
+    # ATTEMPTS EXHAUSTED
     # =====================================================
 
     if attempts_used >= max_attempts:
@@ -802,9 +837,60 @@ def game_over(reason):
         "Game Over",
         (
             f"{reason}\n\n"
-            f"The correct number was: {secret_number}"
+            f"The correct number was {secret_number}."
         )
     )
+
+
+# =========================================================
+# STATISTICS
+# =========================================================
+
+def update_statistics():
+
+    if games_played > 0:
+
+        win_rate = (
+            games_won
+            / games_played
+            * 100
+        )
+
+    else:
+
+        win_rate = 0
+
+    statistics_label.config(
+        text=(
+            "📊 STATISTICS\n\n"
+            f"Games Played : {games_played}\n"
+            f"Games Won    : {games_won}\n"
+            f"Win Rate     : {win_rate:.1f}%\n"
+            f"Best Score   : {best_score}\n"
+            f"Best Streak  : {best_streak}"
+        )
+    )
+
+    if achievements:
+
+        text = "🏆 ACHIEVEMENTS\n\n"
+
+        for achievement in achievements:
+
+            text += f"✓ {achievement}\n"
+
+        achievements_label.config(
+            text=text
+        )
+
+    else:
+
+        achievements_label.config(
+            text=(
+                "🏆 ACHIEVEMENTS\n\n"
+                "No achievements unlocked yet."
+            )
+        )
 
 
 # =========================================================
@@ -872,58 +958,7 @@ def check_achievements():
 
 
 # =========================================================
-# STATISTICS
-# =========================================================
-
-def update_statistics():
-
-    if games_played > 0:
-
-        win_rate = (
-            games_won
-            / games_played
-            * 100
-        )
-
-    else:
-
-        win_rate = 0
-
-    statistics_label.config(
-        text=(
-            "📊 STATISTICS\n\n"
-            f"Games Played : {games_played}\n"
-            f"Games Won    : {games_won}\n"
-            f"Win Rate     : {win_rate:.1f}%\n"
-            f"Best Score   : {best_score}\n"
-            f"Best Streak  : {best_streak}"
-        )
-    )
-
-    if achievements:
-
-        text = "🏆 ACHIEVEMENTS\n\n"
-
-        for achievement in achievements:
-
-            text += f"✓ {achievement}\n"
-
-        achievements_label.config(
-            text=text
-        )
-
-    else:
-
-        achievements_label.config(
-            text=(
-                "🏆 ACHIEVEMENTS\n\n"
-                "No achievements yet."
-            )
-        )
-
-
-# =========================================================
-# RESET
+# RESET STATISTICS
 # =========================================================
 
 def reset_statistics():
@@ -932,8 +967,6 @@ def reset_statistics():
     global games_won
     global best_score
     global best_streak
-    global player1_streak
-    global player2_streak
     global achievements
 
     answer = messagebox.askyesno(
@@ -949,9 +982,6 @@ def reset_statistics():
     best_score = 0
     best_streak = 0
 
-    player1_streak = 0
-    player2_streak = 0
-
     achievements = []
 
     save_data()
@@ -960,7 +990,7 @@ def reset_statistics():
 
     messagebox.showinfo(
         "Reset Complete",
-        "All statistics have been reset."
+        "Statistics have been reset."
     )
 
 
@@ -989,11 +1019,11 @@ def exit_game():
 root = tk.Tk()
 
 root.title(
-    "Number Guessing Game - V21"
+    "Number Guessing Game - V22"
 )
 
 root.geometry(
-    "700x850"
+    "720x900"
 )
 
 root.resizable(
@@ -1009,34 +1039,34 @@ root.resizable(
 title_label = tk.Label(
     root,
     text="🎯 NUMBER GUESSING GAME",
-    font=("Arial", 26, "bold")
+    font=("Arial", 28, "bold")
 )
 
 title_label.pack(
-    pady=(20, 3)
+    pady=(20, 2)
 )
 
 
-version_label = tk.Label(
+subtitle_label = tk.Label(
     root,
-    text="V21 • MULTIPLAYER & CHALLENGE EDITION",
+    text="V22 • MODERN CHALLENGE EDITION",
     font=("Arial", 11, "bold"),
     fg="#00bfff"
 )
 
-version_label.pack(
+subtitle_label.pack(
     pady=(0, 12)
 )
 
 
 # =========================================================
-# MODE
+# GAME MODE
 # =========================================================
 
 mode_label = tk.Label(
     root,
     text="🎮 GAME MODE",
-    font=("Arial", 12, "bold")
+    font=("Arial", 11, "bold")
 )
 
 mode_label.pack()
@@ -1055,12 +1085,83 @@ mode_menu = tk.OptionMenu(
 )
 
 mode_menu.config(
-    width=15,
-    font=("Arial", 11, "bold")
+    width=16,
+    font=("Arial", 10, "bold")
 )
 
 mode_menu.pack(
-    pady=6
+    pady=5
+)
+
+
+# =========================================================
+# PLAYER NAMES
+# =========================================================
+
+names_frame = tk.Frame(
+    root
+)
+
+names_frame.pack(
+    pady=5
+)
+
+
+player1_entry = tk.Entry(
+    names_frame,
+    font=("Arial", 10),
+    width=18
+)
+
+player1_entry.grid(
+    row=0,
+    column=0,
+    padx=5
+)
+
+player1_entry.insert(
+    0,
+    "Player 1"
+)
+
+
+player2_entry = tk.Entry(
+    names_frame,
+    font=("Arial", 10),
+    width=18
+)
+
+player2_entry.grid(
+    row=0,
+    column=1,
+    padx=5
+)
+
+player2_entry.insert(
+    0,
+    "Player 2"
+)
+
+player2_entry.config(
+    state=tk.DISABLED
+)
+
+
+name_button = tk.Button(
+    names_frame,
+    text="SET NAMES",
+    font=("Arial", 9, "bold"),
+    command=set_player_names,
+    bg="#008cff",
+    fg="white",
+    bd=0
+)
+
+name_button.grid(
+    row=1,
+    column=0,
+    columnspan=2,
+    pady=5
 )
 
 
@@ -1071,7 +1172,7 @@ mode_menu.pack(
 difficulty_label = tk.Label(
     root,
     text="🎚️ DIFFICULTY",
-    font=("Arial", 12, "bold")
+    font=("Arial", 11, "bold")
 )
 
 difficulty_label.pack()
@@ -1089,12 +1190,12 @@ difficulty_menu = tk.OptionMenu(
 )
 
 difficulty_menu.config(
-    width=15,
-    font=("Arial", 11, "bold")
+    width=16,
+    font=("Arial", 10, "bold")
 )
 
 difficulty_menu.pack(
-    pady=6
+    pady=5
 )
 
 
@@ -1109,7 +1210,7 @@ range_frame = tk.Frame(
 )
 
 range_frame.pack(
-    pady=6
+    pady=7
 )
 
 
@@ -1123,12 +1224,12 @@ range_label.pack()
 
 
 # =========================================================
-# PLAYER
+# PLAYER TURN
 # =========================================================
 
 player_label = tk.Label(
     root,
-    text="👤 SINGLE PLAYER",
+    text="👤 PLAYER 1'S TURN",
     font=("Arial", 13, "bold")
 )
 
@@ -1138,7 +1239,7 @@ player_label.pack(
 
 
 # =========================================================
-# ENTRY
+# GUESS ENTRY
 # =========================================================
 
 guess_entry = tk.Entry(
@@ -1149,7 +1250,7 @@ guess_entry = tk.Entry(
 )
 
 guess_entry.pack(
-    pady=8
+    pady=7
 )
 
 
@@ -1160,8 +1261,8 @@ guess_entry.pack(
 guess_button = tk.Button(
     root,
     text="🎯 GUESS",
-    font=("Arial", 13, "bold"),
-    width=16,
+    font=("Arial", 12, "bold"),
+    width=17,
     height=2,
     command=check_guess,
     bg="#008cff",
@@ -1175,14 +1276,14 @@ guess_button.pack(
 
 
 # =========================================================
-# HINT
+# HINT BUTTON
 # =========================================================
 
 hint_button = tk.Button(
     root,
     text="💡 USE HINT",
-    font=("Arial", 11, "bold"),
-    width=16,
+    font=("Arial", 10, "bold"),
+    width=17,
     height=2,
     command=use_hint,
     bg="#6f42c1",
@@ -1201,24 +1302,24 @@ hint_button.pack(
 
 result_label = tk.Label(
     root,
-    text="🤔 I'm thinking of a number...",
-    font=("Arial", 15, "bold"),
+    text="🤔 A secret number has been generated.",
+    font=("Arial", 14, "bold"),
     justify="center"
 )
 
 result_label.pack(
-    pady=12
+    pady=10
 )
 
 
 # =========================================================
-# GAME INFORMATION
+# SCORE
 # =========================================================
 
 score_label = tk.Label(
     root,
     text="🏆 Score: 200",
-    font=("Arial", 13, "bold"),
+    font=("Arial", 12, "bold"),
     fg="#ffd700"
 )
 
@@ -1227,10 +1328,14 @@ score_label.pack(
 )
 
 
+# =========================================================
+# ATTEMPTS
+# =========================================================
+
 attempts_label = tk.Label(
     root,
     text="🎯 Attempts: 0/10",
-    font=("Arial", 13, "bold")
+    font=("Arial", 12, "bold")
 )
 
 attempts_label.pack(
@@ -1238,10 +1343,14 @@ attempts_label.pack(
 )
 
 
+# =========================================================
+# TIMER
+# =========================================================
+
 timer_label = tk.Label(
     root,
     text="⏱️ Time: 60s",
-    font=("Arial", 13, "bold")
+    font=("Arial", 12, "bold")
 )
 
 timer_label.pack(
@@ -1249,10 +1358,14 @@ timer_label.pack(
 )
 
 
+# =========================================================
+# STREAK
+# =========================================================
+
 streak_label = tk.Label(
     root,
     text="🔥 Streak: 0",
-    font=("Arial", 13, "bold")
+    font=("Arial", 12, "bold")
 )
 
 streak_label.pack(
@@ -1267,7 +1380,7 @@ streak_label.pack(
 statistics_frame = tk.Frame(
     root,
     padx=20,
-    pady=8
+    pady=7
 )
 
 statistics_frame.pack(
@@ -1278,7 +1391,7 @@ statistics_frame.pack(
 statistics_label = tk.Label(
     statistics_frame,
     text="",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     justify="left"
 )
 
@@ -1294,14 +1407,14 @@ achievements_frame = tk.Frame(
 )
 
 achievements_frame.pack(
-    pady=3
+    pady=2
 )
 
 
 achievements_label = tk.Label(
     achievements_frame,
     text="",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     justify="left"
 )
 
@@ -1309,22 +1422,22 @@ achievements_label.pack()
 
 
 # =========================================================
-# BUTTON FRAME
+# CONTROL BUTTONS
 # =========================================================
 
-button_frame = tk.Frame(
+control_frame = tk.Frame(
     root
 )
 
-button_frame.pack(
+control_frame.pack(
     pady=8
 )
 
 
 new_game_button = tk.Button(
-    button_frame,
+    control_frame,
     text="🔄 NEW GAME",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     width=13,
     height=2,
     command=new_game,
@@ -1341,9 +1454,9 @@ new_game_button.grid(
 
 
 theme_button = tk.Button(
-    button_frame,
+    control_frame,
     text="🌓 THEME",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     width=13,
     height=2,
     command=toggle_theme,
@@ -1360,9 +1473,9 @@ theme_button.grid(
 
 
 reset_button = tk.Button(
-    button_frame,
+    control_frame,
     text="🗑️ RESET",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     width=13,
     height=2,
     command=reset_statistics,
@@ -1385,7 +1498,7 @@ reset_button.grid(
 exit_button = tk.Button(
     root,
     text="❌ EXIT",
-    font=("Arial", 10, "bold"),
+    font=("Arial", 9, "bold"),
     width=12,
     command=exit_game,
     bg="#dc3545",
@@ -1404,14 +1517,14 @@ exit_button.pack(
 
 footer_label = tk.Label(
     root,
-    text="Python • Tkinter • JSON • V21",
-    font=("Arial", 9),
+    text="Python • Tkinter • JSON • V22",
+    font=("Arial", 8),
     fg="#888888"
 )
 
 footer_label.pack(
     side="bottom",
-    pady=8
+    pady=6
 )
 
 
@@ -1439,7 +1552,7 @@ new_game()
 
 
 # =========================================================
-# START APPLICATION
+# START
 # =========================================================
 
 root.mainloop()
