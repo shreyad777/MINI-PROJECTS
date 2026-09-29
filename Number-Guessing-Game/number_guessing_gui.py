@@ -3,1810 +3,1369 @@ from tkinter import messagebox
 import random
 import json
 import os
+import time
 
-SAVE_FILE = "leaderboard_v26.json"
+# ============================================================
+# NUMBER GUESSING GAME V27
+# QUEST & XP EDITION
+# ============================================================
 
-# =========================
-# COLORS
-# =========================
+SAVE_FILE = "leaderboard_v27.json"
+PROFILE_FILE = "player_profile_v27.json"
 
-BG = "#0F172A"
-PANEL = "#172554"
-PANEL2 = "#1E3A5F"
+# ---------------- COLORS ----------------
 
-PURPLE = "#8B5CF6"
-BLUE = "#38BDF8"
-GREEN = "#22C55E"
-YELLOW = "#FACC15"
-ORANGE = "#FB923C"
-RED = "#F43F5E"
-PINK = "#EC4899"
-CYAN = "#22D3EE"
+BG = "#0B1020"
+PANEL = "#151C35"
+PANEL2 = "#1D2747"
+
+PURPLE = "#9B59FF"
+BLUE = "#3498DB"
+CYAN = "#00E5FF"
+GREEN = "#2ECC71"
+YELLOW = "#F1C40F"
+ORANGE = "#FF9F43"
+RED = "#FF4757"
+PINK = "#FF4FA3"
 WHITE = "#FFFFFF"
-MUTED = "#A5B4CC"
+GRAY = "#AAB4D4"
+
+# ---------------- DIFFICULTY ----------------
 
 DIFFICULTIES = {
-    "Easy": {"max": 50, "attempts": 15, "time": 90, "score": 100},
-    "Medium": {"max": 100, "attempts": 10, "time": 60, "score": 200},
-    "Hard": {"max": 500, "attempts": 7, "time": 45, "score": 300}
+    "Easy": {
+        "max": 50,
+        "attempts": 15,
+        "time": 90,
+        "score": 100
+    },
+    "Medium": {
+        "max": 100,
+        "attempts": 10,
+        "time": 60,
+        "score": 200
+    },
+    "Hard": {
+        "max": 500,
+        "attempts": 7,
+        "time": 45,
+        "score": 300
+    }
 }
 
-MODES = ["Single Player", "Two Player", "Tournament"]
+# ---------------- QUESTS ----------------
 
-# =========================
-# WINDOW
-# =========================
-
-root = tk.Tk()
-root.title("🎮 Number Guessing Game - V26")
-root.geometry("1150x760")
-root.resizable(False, False)
-root.configure(bg=BG)
-
-# =========================
-# VARIABLES
-# =========================
-
-difficulty = tk.StringVar(value="Medium")
-game_mode = tk.StringVar(value="Single Player")
-rounds_var = tk.StringVar(value="3")
-
-player1_name = tk.StringVar(value="Player 1")
-player2_name = tk.StringVar(value="Player 2")
-
-guess_var = tk.StringVar()
-
-secret_number = 0
-attempts_left = 0
-time_left = 0
-score = 0
-
-current_player = 1
-
-streak = 0
-combo = 1
-
-hints_used = 0
-fast_bonus = 0
-
-player1_wins = 0
-player2_wins = 0
-
-tournament_round = 1
-total_rounds = 3
-
-timer_id = None
-timer_running = False
-
-# Power-ups
-extra_life_available = True
-time_freeze_available = True
-double_score_available = True
-range_reveal_available = True
-
-double_score_active = False
-
-leaderboard = {}
-
-# =========================
-# LEADERBOARD
-# =========================
-
-def load_leaderboard():
-    global leaderboard
-
-    if os.path.exists(SAVE_FILE):
-        try:
-            with open(SAVE_FILE, "r") as file:
-                leaderboard = json.load(file)
-        except:
-            leaderboard = {}
-    else:
-        leaderboard = {}
+QUEST_POOL = [
+    {
+        "name": "First Strike",
+        "description": "Win 1 game",
+        "target": 1,
+        "reward": 50,
+        "type": "wins"
+    },
+    {
+        "name": "Sharp Shooter",
+        "description": "Win within 3 guesses",
+        "target": 1,
+        "reward": 75,
+        "type": "quick_win"
+    },
+    {
+        "name": "Hot Streak",
+        "description": "Reach a 3-win streak",
+        "target": 3,
+        "reward": 100,
+        "type": "streak"
+    },
+    {
+        "name": "Power Player",
+        "description": "Use a power-up and win",
+        "target": 1,
+        "reward": 75,
+        "type": "power_win"
+    },
+    {
+        "name": "Speed Demon",
+        "description": "Win with 10+ seconds remaining",
+        "target": 1,
+        "reward": 100,
+        "type": "speed_win"
+    },
+    {
+        "name": "High Roller",
+        "description": "Score 300+ points in one game",
+        "target": 1,
+        "reward": 100,
+        "type": "high_score"
+    },
+    {
+        "name": "Hintless Hero",
+        "description": "Win without using a hint",
+        "target": 1,
+        "reward": 100,
+        "type": "no_hint"
+    }
+]
 
 
-def save_leaderboard():
-    with open(SAVE_FILE, "w") as file:
-        json.dump(leaderboard, file, indent=4)
+# ============================================================
+# MAIN CLASS
+# ============================================================
 
+class NumberGuessingGame:
 
-def create_player(name):
-    if not name.strip():
-        name = "Player"
+    def __init__(self, root):
+        self.root = root
 
-    if name not in leaderboard:
-        leaderboard[name] = {
-            "wins": 0,
-            "games": 0,
-            "best_score": 0,
-            "best_streak": 0
+        self.root.title("🎯 Number Guessing Game V27 - Quest & XP Edition")
+        self.root.geometry("1100x720")
+        self.root.configure(bg=BG)
+        self.root.resizable(False, False)
+
+        # ---------------- GAME VARIABLES ----------------
+
+        self.difficulty = "Medium"
+        self.mode = "Single Player"
+
+        self.secret_number = 0
+        self.max_number = 100
+        self.attempts_left = 10
+        self.total_attempts = 10
+
+        self.timer_seconds = 60
+        self.timer_running = False
+        self.timer_job = None
+
+        self.hints_left = 3
+
+        self.score = 0
+        self.streak = 0
+        self.best_streak = 0
+
+        self.current_player = 1
+
+        # Power-ups
+        self.extra_life_available = True
+        self.time_freeze_available = True
+        self.double_score_available = True
+        self.range_reveal_available = True
+        self.double_score_active = False
+
+        self.freeze_active = False
+
+        self.used_hint = False
+        self.used_powerup = False
+
+        # Tournament
+        self.tournament_round = 0
+        self.tournament_total = 3
+        self.tournament_scores = [0, 0]
+
+        # ---------------- PROFILE ----------------
+
+        self.xp = 0
+        self.level = 1
+        self.total_wins = 0
+        self.total_games = 0
+
+        self.load_profile()
+
+        # ---------------- LEADERBOARD ----------------
+
+        self.leaderboard = self.load_leaderboard()
+
+        # ---------------- QUESTS ----------------
+
+        self.quests = []
+        self.generate_quests()
+
+        # ---------------- UI ----------------
+
+        self.create_header()
+        self.create_left_panel()
+        self.create_game_panel()
+        self.create_right_panel()
+
+        self.update_profile_display()
+        self.update_quest_display()
+
+        self.new_game()
+
+    # ========================================================
+    # PROFILE
+    # ========================================================
+
+    def load_profile(self):
+
+        if os.path.exists(PROFILE_FILE):
+
+            try:
+                with open(PROFILE_FILE, "r") as file:
+                    data = json.load(file)
+
+                self.xp = data.get("xp", 0)
+                self.level = data.get("level", 1)
+                self.total_wins = data.get("total_wins", 0)
+                self.total_games = data.get("total_games", 0)
+
+            except Exception:
+                pass
+
+    def save_profile(self):
+
+        data = {
+            "xp": self.xp,
+            "level": self.level,
+            "total_wins": self.total_wins,
+            "total_games": self.total_games
         }
 
-    return name
-
-
-def record_player(name, won=False, score_value=0):
-    name = create_player(name)
-
-    leaderboard[name]["games"] += 1
-
-    if won:
-        leaderboard[name]["wins"] += 1
-
-    if score_value > leaderboard[name]["best_score"]:
-        leaderboard[name]["best_score"] = score_value
-
-    if streak > leaderboard[name]["best_streak"]:
-        leaderboard[name]["best_streak"] = streak
-
-    save_leaderboard()
-    refresh_leaderboard()
-
-
-# =========================
-# TIMER
-# =========================
-
-def cancel_timer():
-    global timer_id
-
-    if timer_id is not None:
         try:
-            root.after_cancel(timer_id)
-        except:
+            with open(PROFILE_FILE, "w") as file:
+                json.dump(data, file, indent=4)
+        except Exception:
             pass
 
-        timer_id = None
+    def xp_needed(self):
 
+        return self.level * 250
 
-def start_timer():
-    global timer_running
+    def add_xp(self, amount):
 
-    timer_running = True
-    update_timer()
+        self.xp += amount
 
+        level_up = False
 
-def update_timer():
-    global time_left
-    global timer_id
-    global timer_running
+        while self.xp >= self.xp_needed():
 
-    if not timer_running:
-        return
+            self.xp -= self.xp_needed()
+            self.level += 1
+            level_up = True
 
-    timer_label.config(text=f"⏱ {time_left}s")
+        self.save_profile()
+        self.update_profile_display()
 
-    if time_left <= 0:
-        timer_running = False
-        game_over("⏰ TIME'S UP!")
-        return
+        if level_up:
 
-    time_left -= 1
-
-    timer_id = root.after(1000, update_timer)
-
-
-# =========================
-# VISUAL EFFECTS
-# =========================
-
-def flash_screen(color, duration=250):
-    old_color = root.cget("bg")
-
-    root.configure(bg=color)
-
-    root.after(
-        duration,
-        lambda: root.configure(bg=old_color)
-    )
-
-
-def show_feedback(text, color):
-    feedback_label.config(
-        text=text,
-        fg=color
-    )
-
-
-# =========================
-# SETTINGS
-# =========================
-
-def change_difficulty(*args):
-    new_game()
-
-
-def change_mode(*args):
-
-    if game_mode.get() == "Tournament":
-        tournament_controls.pack(
-            side="left",
-            padx=10
-        )
-    else:
-        tournament_controls.pack_forget()
-
-    new_game()
-
-
-def change_rounds(*args):
-    global total_rounds
-
-    try:
-        total_rounds = int(rounds_var.get())
-    except:
-        total_rounds = 3
-
-    new_game()
-
-
-# =========================
-# PLAYERS
-# =========================
-
-def set_names():
-
-    p1 = player1_entry.get().strip()
-
-    if not p1:
-        p1 = "Player 1"
-
-    player1_name.set(p1)
-    create_player(p1)
-
-    if game_mode.get() in ["Two Player", "Tournament"]:
-
-        p2 = player2_entry.get().strip()
-
-        if not p2:
-            p2 = "Player 2"
-
-        player2_name.set(p2)
-        create_player(p2)
-
-    save_leaderboard()
-    refresh_leaderboard()
-
-    show_feedback(
-        "✨ Players updated!",
-        GREEN
-    )
-
-
-# =========================
-# NEW GAME
-# =========================
-
-def reset_powerups():
-
-    global extra_life_available
-    global time_freeze_available
-    global double_score_available
-    global range_reveal_available
-    global double_score_active
-
-    extra_life_available = True
-    time_freeze_available = True
-    double_score_available = True
-    range_reveal_available = True
-    double_score_active = False
-
-
-def new_game():
-
-    global secret_number
-    global attempts_left
-    global time_left
-    global score
-    global current_player
-    global streak
-    global combo
-    global hints_used
-    global fast_bonus
-    global player1_wins
-    global player2_wins
-    global tournament_round
-    global timer_running
-
-    cancel_timer()
-
-    config = DIFFICULTIES[difficulty.get()]
-
-    secret_number = random.randint(
-        1,
-        config["max"]
-    )
-
-    attempts_left = config["attempts"]
-    time_left = config["time"]
-
-    score = config["score"]
-
-    current_player = 1
-
-    streak = 0
-    combo = 1
-    hints_used = 0
-    fast_bonus = 0
-
-    player1_wins = 0
-    player2_wins = 0
-    tournament_round = 1
-
-    reset_powerups()
-
-    timer_running = True
-
-    guess_var.set("")
-
-    show_feedback(
-        "🎮 Make your first guess!",
-        BLUE
-    )
-
-    update_display()
-    update_powerup_buttons()
-    start_timer()
-
-
-# =========================
-# DISPLAY
-# =========================
-
-def update_display():
-
-    config = DIFFICULTIES[difficulty.get()]
-
-    range_label.config(
-        text=f"🎯 Guess between 1 and {config['max']}"
-    )
-
-    attempts_label.config(
-        text=f"❤️ Lives: {attempts_left}"
-    )
-
-    score_label.config(
-        text=f"⭐ Score: {score}"
-    )
-
-    streak_label.config(
-        text=f"🔥 Streak: {streak}"
-    )
-
-    combo_label.config(
-        text=f"⚡ COMBO x{combo}"
-    )
-
-    hint_label.config(
-        text=f"💡 Hints: {hints_used}/3"
-    )
-
-    if game_mode.get() == "Single Player":
-
-        turn_label.config(
-            text=f"👤 {player1_name.get()}'s Turn",
-            fg=BLUE
-        )
-
-    elif game_mode.get() == "Two Player":
-
-        if current_player == 1:
-            turn_label.config(
-                text=f"🔵 {player1_name.get()}'s Turn",
-                fg=BLUE
+            messagebox.showinfo(
+                "🎉 LEVEL UP!",
+                f"Congratulations!\n\nYou reached LEVEL {self.level}!"
             )
+
+    # ========================================================
+    # LEADERBOARD
+    # ========================================================
+
+    def load_leaderboard(self):
+
+        if os.path.exists(SAVE_FILE):
+
+            try:
+                with open(SAVE_FILE, "r") as file:
+                    return json.load(file)
+            except Exception:
+                pass
+
+        return {}
+
+    def save_leaderboard(self):
+
+        try:
+            with open(SAVE_FILE, "w") as file:
+                json.dump(self.leaderboard, file, indent=4)
+        except Exception:
+            pass
+
+    def record_player(self, name="Player"):
+
+        if name not in self.leaderboard:
+
+            self.leaderboard[name] = {
+                "wins": 0,
+                "games": 0,
+                "best_score": 0,
+                "best_streak": 0
+            }
+
+        self.leaderboard[name]["games"] += 1
+
+        if self.score > self.leaderboard[name]["best_score"]:
+            self.leaderboard[name]["best_score"] = self.score
+
+        if self.streak > self.leaderboard[name]["best_streak"]:
+            self.leaderboard[name]["best_streak"] = self.streak
+
+        self.save_leaderboard()
+
+    # ========================================================
+    # QUEST SYSTEM
+    # ========================================================
+
+    def generate_quests(self):
+
+        selected = random.sample(
+            QUEST_POOL,
+            min(3, len(QUEST_POOL))
+        )
+
+        self.quests = []
+
+        for quest in selected:
+
+            self.quests.append({
+                "name": quest["name"],
+                "description": quest["description"],
+                "target": quest["target"],
+                "reward": quest["reward"],
+                "type": quest["type"],
+                "progress": 0,
+                "completed": False
+            })
+
+    def update_quest(self, event_type, value=1):
+
+        completed_messages = []
+
+        for quest in self.quests:
+
+            if quest["completed"]:
+                continue
+
+            should_update = False
+
+            if quest["type"] == event_type:
+                should_update = True
+
+            if should_update:
+
+                quest["progress"] += value
+
+                if quest["progress"] >= quest["target"]:
+
+                    quest["progress"] = quest["target"]
+                    quest["completed"] = True
+
+                    self.add_xp(quest["reward"])
+
+                    completed_messages.append(
+                        f"🏆 {quest['name']}  +{quest['reward']} XP"
+                    )
+
+        self.update_quest_display()
+
+        if completed_messages:
+
+            messagebox.showinfo(
+                "🎯 QUEST COMPLETED!",
+                "\n".join(completed_messages)
+            )
+
+    # ========================================================
+    # HEADER
+    # ========================================================
+
+    def create_header(self):
+
+        header = tk.Frame(
+            self.root,
+            bg=BG,
+            height=80
+        )
+
+        header.pack(fill="x", padx=20, pady=(15, 5))
+
+        title = tk.Label(
+            header,
+            text="🎯 NUMBER GUESSING ARCADE",
+            font=("Arial", 26, "bold"),
+            fg=CYAN,
+            bg=BG
+        )
+
+        title.pack(side="left")
+
+        self.profile_label = tk.Label(
+            header,
+            text="⭐ Level 1 | XP 0/250",
+            font=("Arial", 13, "bold"),
+            fg=YELLOW,
+            bg=BG
+        )
+
+        self.profile_label.pack(side="right", pady=10)
+
+    # ========================================================
+    # LEFT PANEL
+    # ========================================================
+
+    def create_left_panel(self):
+
+        self.left_panel = tk.Frame(
+            self.root,
+            bg=PANEL,
+            width=220,
+            height=590
+        )
+
+        self.left_panel.pack(
+            side="left",
+            padx=(20, 10),
+            pady=10,
+            fill="y"
+        )
+
+        self.left_panel.pack_propagate(False)
+
+        tk.Label(
+            self.left_panel,
+            text="🎮 GAME SETTINGS",
+            font=("Arial", 14, "bold"),
+            fg=PINK,
+            bg=PANEL
+        ).pack(pady=15)
+
+        tk.Label(
+            self.left_panel,
+            text="Difficulty",
+            font=("Arial", 11, "bold"),
+            fg=WHITE,
+            bg=PANEL
+        ).pack()
+
+        self.difficulty_var = tk.StringVar(value="Medium")
+
+        for difficulty in ["Easy", "Medium", "Hard"]:
+
+            tk.Radiobutton(
+                self.left_panel,
+                text=difficulty,
+                variable=self.difficulty_var,
+                value=difficulty,
+                command=self.change_difficulty,
+                bg=PANEL,
+                fg=WHITE,
+                selectcolor=PANEL2,
+                activebackground=PANEL,
+                activeforeground=CYAN,
+                font=("Arial", 10)
+            ).pack(anchor="w", padx=35, pady=3)
+
+        tk.Label(
+            self.left_panel,
+            text="Mode",
+            font=("Arial", 11, "bold"),
+            fg=WHITE,
+            bg=PANEL
+        ).pack(pady=(20, 5))
+
+        self.mode_var = tk.StringVar(value="Single Player")
+
+        for mode in ["Single Player", "Two Player", "Tournament"]:
+
+            tk.Radiobutton(
+                self.left_panel,
+                text=mode,
+                variable=self.mode_var,
+                value=mode,
+                command=self.change_mode,
+                bg=PANEL,
+                fg=WHITE,
+                selectcolor=PANEL2,
+                activebackground=PANEL,
+                activeforeground=CYAN,
+                font=("Arial", 10)
+            ).pack(anchor="w", padx=20, pady=3)
+
+        tk.Button(
+            self.left_panel,
+            text="🔄 NEW GAME",
+            command=self.new_game,
+            bg=PURPLE,
+            fg=WHITE,
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=10,
+            pady=8
+        ).pack(pady=20)
+
+        tk.Button(
+            self.left_panel,
+            text="🏆 LEADERBOARD",
+            command=self.show_leaderboard,
+            bg=ORANGE,
+            fg=WHITE,
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=10,
+            pady=8
+        ).pack()
+
+    # ========================================================
+    # GAME PANEL
+    # ========================================================
+
+    def create_game_panel(self):
+
+        self.game_panel = tk.Frame(
+            self.root,
+            bg=PANEL2,
+            width=540,
+            height=590
+        )
+
+        self.game_panel.pack(
+            side="left",
+            padx=10,
+            pady=10,
+            fill="both",
+            expand=True
+        )
+
+        self.game_panel.pack_propagate(False)
+
+        self.status_label = tk.Label(
+            self.game_panel,
+            text="Guess the secret number!",
+            font=("Arial", 17, "bold"),
+            fg=WHITE,
+            bg=PANEL2
+        )
+
+        self.status_label.pack(pady=(20, 15))
+
+        self.range_label = tk.Label(
+            self.game_panel,
+            text="Number between 1 and 100",
+            font=("Arial", 13),
+            fg=CYAN,
+            bg=PANEL2
+        )
+
+        self.range_label.pack()
+
+        self.timer_label = tk.Label(
+            self.game_panel,
+            text="⏱ 60",
+            font=("Arial", 18, "bold"),
+            fg=YELLOW,
+            bg=PANEL2
+        )
+
+        self.timer_label.pack(pady=12)
+
+        self.attempt_label = tk.Label(
+            self.game_panel,
+            text="Attempts: 10",
+            font=("Arial", 12, "bold"),
+            fg=GREEN,
+            bg=PANEL2
+        )
+
+        self.attempt_label.pack()
+
+        self.guess_entry = tk.Entry(
+            self.game_panel,
+            font=("Arial", 20, "bold"),
+            justify="center",
+            bg=BG,
+            fg=WHITE,
+            insertbackground=WHITE,
+            relief="flat"
+        )
+
+        self.guess_entry.pack(
+            pady=15,
+            ipadx=15,
+            ipady=8
+        )
+
+        self.guess_entry.bind(
+            "<Return>",
+            lambda event: self.check_guess()
+        )
+
+        tk.Button(
+            self.game_panel,
+            text="🎯 GUESS",
+            command=self.check_guess,
+            bg=BLUE,
+            fg=WHITE,
+            font=("Arial", 13, "bold"),
+            relief="flat",
+            padx=35,
+            pady=10
+        ).pack()
+
+        self.feedback_label = tk.Label(
+            self.game_panel,
+            text="",
+            font=("Arial", 13, "bold"),
+            fg=WHITE,
+            bg=PANEL2,
+            wraplength=450
+        )
+
+        self.feedback_label.pack(pady=15)
+
+        # ---------------- POWER UPS ----------------
+
+        power_frame = tk.Frame(
+            self.game_panel,
+            bg=PANEL2
+        )
+
+        power_frame.pack(pady=5)
+
+        tk.Label(
+            power_frame,
+            text="⚡ POWER-UPS",
+            font=("Arial", 12, "bold"),
+            fg=ORANGE,
+            bg=PANEL2
+        ).grid(row=0, column=0, columnspan=2, pady=5)
+
+        self.extra_button = tk.Button(
+            power_frame,
+            text="❤️ +2 Lives",
+            command=self.use_extra_life,
+            bg=RED,
+            fg=WHITE,
+            relief="flat"
+        )
+
+        self.extra_button.grid(row=1, column=0, padx=5, pady=3)
+
+        self.freeze_button = tk.Button(
+            power_frame,
+            text="❄️ Freeze",
+            command=self.use_time_freeze,
+            bg=CYAN,
+            fg=BG,
+            relief="flat"
+        )
+
+        self.freeze_button.grid(row=1, column=1, padx=5, pady=3)
+
+        self.double_button = tk.Button(
+            power_frame,
+            text="⭐ 2X Score",
+            command=self.use_double_score,
+            bg=YELLOW,
+            fg=BG,
+            relief="flat"
+        )
+
+        self.double_button.grid(row=2, column=0, padx=5, pady=3)
+
+        self.range_button = tk.Button(
+            power_frame,
+            text="🔍 Reveal Range",
+            command=self.use_range_reveal,
+            bg=GREEN,
+            fg=WHITE,
+            relief="flat"
+        )
+
+        self.range_button.grid(row=2, column=1, padx=5, pady=3)
+
+        # ---------------- STATS ----------------
+
+        self.stats_label = tk.Label(
+            self.game_panel,
+            text="⭐ Score: 0    🔥 Streak: 0",
+            font=("Arial", 12, "bold"),
+            fg=PINK,
+            bg=PANEL2
+        )
+
+        self.stats_label.pack(pady=15)
+
+    # ========================================================
+    # RIGHT PANEL
+    # ========================================================
+
+    def create_right_panel(self):
+
+        self.right_panel = tk.Frame(
+            self.root,
+            bg=PANEL,
+            width=250,
+            height=590
+        )
+
+        self.right_panel.pack(
+            side="right",
+            padx=(10, 20),
+            pady=10,
+            fill="y"
+        )
+
+        self.right_panel.pack_propagate(False)
+
+        tk.Label(
+            self.right_panel,
+            text="🎯 ACTIVE QUESTS",
+            font=("Arial", 14, "bold"),
+            fg=YELLOW,
+            bg=PANEL
+        ).pack(pady=15)
+
+        self.quest_frame = tk.Frame(
+            self.right_panel,
+            bg=PANEL
+        )
+
+        self.quest_frame.pack(fill="both", padx=10)
+
+        tk.Label(
+            self.right_panel,
+            text="━━━━━━━━━━━━━━",
+            fg=PURPLE,
+            bg=PANEL
+        ).pack(pady=10)
+
+        tk.Label(
+            self.right_panel,
+            text="📊 PROFILE",
+            font=("Arial", 13, "bold"),
+            fg=CYAN,
+            bg=PANEL
+        ).pack()
+
+        self.profile_stats = tk.Label(
+            self.right_panel,
+            text="",
+            font=("Arial", 10),
+            fg=WHITE,
+            bg=PANEL,
+            justify="left"
+        )
+
+        self.profile_stats.pack(pady=10)
+
+    # ========================================================
+    # PROFILE DISPLAY
+    # ========================================================
+
+    def update_profile_display(self):
+
+        needed = self.xp_needed()
+
+        self.profile_label.config(
+            text=f"⭐ Level {self.level} | XP {self.xp}/{needed}"
+        )
+
+        self.profile_stats.config(
+            text=(
+                f"⭐ Level: {self.level}\n"
+                f"✨ XP: {self.xp}/{needed}\n"
+                f"🏆 Total Wins: {self.total_wins}\n"
+                f"🎮 Games: {self.total_games}\n"
+                f"🔥 Best Streak: {self.best_streak}"
+            )
+        )
+
+    # ========================================================
+    # QUEST DISPLAY
+    # ========================================================
+
+    def update_quest_display(self):
+
+        for widget in self.quest_frame.winfo_children():
+            widget.destroy()
+
+        for quest in self.quests:
+
+            if quest["completed"]:
+
+                color = GREEN
+                status = "✅ COMPLETED"
+
+            else:
+
+                color = WHITE
+                status = (
+                    f"{quest['progress']}/{quest['target']}"
+                )
+
+            card = tk.Frame(
+                self.quest_frame,
+                bg=PANEL2,
+                padx=8,
+                pady=8
+            )
+
+            card.pack(
+                fill="x",
+                pady=6
+            )
+
+            tk.Label(
+                card,
+                text=f"🎯 {quest['name']}",
+                font=("Arial", 10, "bold"),
+                fg=color,
+                bg=PANEL2
+            ).pack(anchor="w")
+
+            tk.Label(
+                card,
+                text=quest["description"],
+                font=("Arial", 9),
+                fg=GRAY,
+                bg=PANEL2,
+                wraplength=190,
+                justify="left"
+            ).pack(anchor="w", pady=3)
+
+            tk.Label(
+                card,
+                text=f"{status}   +{quest['reward']} XP",
+                font=("Arial", 9, "bold"),
+                fg=YELLOW,
+                bg=PANEL2
+            ).pack(anchor="w")
+
+    # ========================================================
+    # DIFFICULTY
+    # ========================================================
+
+    def change_difficulty(self):
+
+        self.difficulty = self.difficulty_var.get()
+
+        self.new_game()
+
+    # ========================================================
+    # MODE
+    # ========================================================
+
+    def change_mode(self):
+
+        self.mode = self.mode_var.get()
+
+        self.new_game()
+
+    # ========================================================
+    # NEW GAME
+    # ========================================================
+
+    def new_game(self):
+
+        self.stop_timer()
+
+        settings = DIFFICULTIES[self.difficulty]
+
+        self.max_number = settings["max"]
+
+        self.total_attempts = settings["attempts"]
+        self.attempts_left = settings["attempts"]
+
+        self.timer_seconds = settings["time"]
+
+        self.secret_number = random.randint(
+            1,
+            self.max_number
+        )
+
+        self.hints_left = 3
+
+        self.score = 0
+
+        self.used_hint = False
+        self.used_powerup = False
+
+        self.double_score_active = False
+        self.freeze_active = False
+
+        self.extra_life_available = True
+        self.time_freeze_available = True
+        self.double_score_available = True
+        self.range_reveal_available = True
+
+        self.extra_button.config(state="normal")
+        self.freeze_button.config(state="normal")
+        self.double_button.config(state="normal")
+        self.range_button.config(state="normal")
+
+        self.current_player = 1
+
+        self.range_label.config(
+            text=f"Number between 1 and {self.max_number}"
+        )
+
+        self.feedback_label.config(
+            text="🎯 Make your guess!"
+        )
+
+        self.update_attempt_display()
+        self.update_stats()
+
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.start_timer()
+
+    # ========================================================
+    # TIMER
+    # ========================================================
+
+    def start_timer(self):
+
+        self.stop_timer()
+
+        self.timer_running = True
+
+        self.timer_tick()
+
+    def stop_timer(self):
+
+        self.timer_running = False
+
+        if self.timer_job:
+
+            try:
+                self.root.after_cancel(self.timer_job)
+            except Exception:
+                pass
+
+            self.timer_job = None
+
+    def timer_tick(self):
+
+        if not self.timer_running:
+            return
+
+        self.timer_label.config(
+            text=f"⏱ {self.timer_seconds}"
+        )
+
+        if self.timer_seconds <= 10:
+
+            self.timer_label.config(
+                fg=RED
+            )
+
         else:
-            turn_label.config(
-                text=f"🟣 {player2_name.get()}'s Turn",
+
+            self.timer_label.config(
+                fg=YELLOW
+            )
+
+        if self.timer_seconds <= 0:
+
+            self.timer_running = False
+
+            self.feedback_label.config(
+                text=f"⏰ Time's up! Number was {self.secret_number}",
+                fg=RED
+            )
+
+            self.game_lost()
+
+            return
+
+        self.timer_seconds -= 1
+
+        self.timer_job = self.root.after(
+            1000,
+            self.timer_tick
+        )
+
+    # ========================================================
+    # GUESS
+    # ========================================================
+
+    def check_guess(self):
+
+        value = self.guess_entry.get().strip()
+
+        if not value.isdigit():
+
+            self.feedback_label.config(
+                text="⚠️ Enter a valid number!",
+                fg=RED
+            )
+
+            return
+
+        guess = int(value)
+
+        if guess < 1 or guess > self.max_number:
+
+            self.feedback_label.config(
+                text=f"⚠️ Enter a number from 1 to {self.max_number}",
+                fg=RED
+            )
+
+            return
+
+        self.attempts_left -= 1
+
+        self.update_attempt_display()
+
+        if guess == self.secret_number:
+
+            self.game_won()
+
+            return
+
+        if guess < self.secret_number:
+
+            self.feedback_label.config(
+                text="📈 Too LOW! Try a higher number.",
+                fg=ORANGE
+            )
+
+        else:
+
+            self.feedback_label.config(
+                text="📉 Too HIGH! Try a lower number.",
                 fg=PINK
             )
 
-    else:
+        if self.attempts_left <= 0:
 
-        turn_label.config(
-            text=f"🏆 Tournament Round "
-                 f"{tournament_round}/{total_rounds}",
+            self.game_lost()
+
+    # ========================================================
+    # GAME WON
+    # ========================================================
+
+    def game_won(self):
+
+        self.stop_timer()
+
+        self.total_games += 1
+        self.total_wins += 1
+
+        self.streak += 1
+
+        if self.streak > self.best_streak:
+            self.best_streak = self.streak
+
+        settings = DIFFICULTIES[self.difficulty]
+
+        base_score = settings["score"]
+
+        # Attempt bonus
+        attempt_bonus = self.attempts_left * 10
+
+        # Time bonus
+        time_bonus = self.timer_seconds * 2
+
+        reward = (
+            base_score +
+            attempt_bonus +
+            time_bonus
+        )
+
+        # Streak bonus
+        reward += self.streak * 20
+
+        # Double score
+        if self.double_score_active:
+            reward *= 2
+
+        self.score = reward
+
+        self.feedback_label.config(
+            text=(
+                f"🎉 CORRECT!\n"
+                f"The number was {self.secret_number}\n"
+                f"⭐ Score: {self.score}"
+            ),
+            fg=GREEN
+        )
+
+        self.add_xp(50)
+
+        # Quest updates
+        self.update_quest("wins")
+
+        if self.attempts_left >= self.total_attempts - 3:
+
+            self.update_quest("quick_win")
+
+        if self.streak >= 3:
+
+            self.update_quest(
+                "streak",
+                self.streak
+            )
+
+        if self.used_powerup:
+
+            self.update_quest("power_win")
+
+        if self.timer_seconds >= 10:
+
+            self.update_quest("speed_win")
+
+        if self.score >= 300:
+
+            self.update_quest("high_score")
+
+        if not self.used_hint:
+
+            self.update_quest("no_hint")
+
+        self.record_player()
+
+        self.save_profile()
+
+        self.update_stats()
+        self.update_profile_display()
+
+        self.root.after(
+            2200,
+            self.new_game
+        )
+
+    # ========================================================
+    # GAME LOST
+    # ========================================================
+
+    def game_lost(self):
+
+        self.stop_timer()
+
+        self.total_games += 1
+
+        self.streak = 0
+
+        self.feedback_label.config(
+            text=(
+                f"💥 GAME OVER!\n"
+                f"The number was {self.secret_number}"
+            ),
+            fg=RED
+        )
+
+        self.save_profile()
+
+        self.update_stats()
+        self.update_profile_display()
+
+        self.root.after(
+            2200,
+            self.new_game
+        )
+
+    # ========================================================
+    # ATTEMPT DISPLAY
+    # ========================================================
+
+    def update_attempt_display(self):
+
+        self.attempt_label.config(
+            text=f"Attempts: {self.attempts_left}"
+        )
+
+    # ========================================================
+    # STATS
+    # ========================================================
+
+    def update_stats(self):
+
+        self.stats_label.config(
+            text=(
+                f"⭐ Score: {self.score}    "
+                f"🔥 Streak: {self.streak}"
+            )
+        )
+
+    # ========================================================
+    # POWER-UP: EXTRA LIFE
+    # ========================================================
+
+    def use_extra_life(self):
+
+        if not self.extra_life_available:
+            return
+
+        self.attempts_left += 2
+
+        self.extra_life_available = False
+        self.used_powerup = True
+
+        self.extra_button.config(
+            state="disabled"
+        )
+
+        self.feedback_label.config(
+            text="❤️ +2 LIVES ACTIVATED!",
+            fg=RED
+        )
+
+        self.update_attempt_display()
+
+    # ========================================================
+    # POWER-UP: TIME FREEZE
+    # ========================================================
+
+    def use_time_freeze(self):
+
+        if not self.time_freeze_available:
+            return
+
+        self.time_freeze_available = False
+        self.used_powerup = True
+        self.freeze_active = True
+
+        self.freeze_button.config(
+            state="disabled"
+        )
+
+        self.timer_running = False
+
+        self.feedback_label.config(
+            text="❄️ TIME FROZEN FOR 10 SECONDS!",
+            fg=CYAN
+        )
+
+        self.root.after(
+            10000,
+            self.resume_after_freeze
+        )
+
+    def resume_after_freeze(self):
+
+        if self.timer_seconds > 0:
+
+            self.freeze_active = False
+            self.timer_running = True
+
+            self.timer_tick()
+
+    # ========================================================
+    # POWER-UP: DOUBLE SCORE
+    # ========================================================
+
+    def use_double_score(self):
+
+        if not self.double_score_available:
+            return
+
+        self.double_score_available = False
+        self.double_score_active = True
+        self.used_powerup = True
+
+        self.double_button.config(
+            state="disabled"
+        )
+
+        self.feedback_label.config(
+            text="⭐ 2X SCORE ACTIVATED!",
             fg=YELLOW
         )
 
+    # ========================================================
+    # POWER-UP: RANGE REVEAL
+    # ========================================================
 
-# =========================
-# POWER-UP SYSTEM
-# =========================
+    def use_range_reveal(self):
 
-def update_powerup_buttons():
+        if not self.range_reveal_available:
+            return
 
-    if extra_life_available:
-        extra_life_button.config(
-            text="❤️ EXTRA LIFE",
-            state="normal",
-            bg=RED
-        )
-    else:
-        extra_life_button.config(
-            text="❤️ USED",
-            state="disabled",
-            bg="#4B5563"
+        self.range_reveal_available = False
+        self.used_powerup = True
+
+        self.range_button.config(
+            state="disabled"
         )
 
-    if time_freeze_available:
-        time_freeze_button.config(
-            text="❄️ TIME FREEZE",
-            state="normal",
-            bg=CYAN
-        )
-    else:
-        time_freeze_button.config(
-            text="❄️ USED",
-            state="disabled",
-            bg="#4B5563"
+        low = max(
+            1,
+            self.secret_number - 10
         )
 
-    if double_score_available:
-        double_score_button.config(
-            text="⭐ 2X SCORE",
-            state="normal",
-            bg=YELLOW
-        )
-    else:
-        double_score_button.config(
-            text="⭐ USED",
-            state="disabled",
-            bg="#4B5563"
+        high = min(
+            self.max_number,
+            self.secret_number + 10
         )
 
-    if range_reveal_available:
-        range_button.config(
-            text="🔍 REVEAL RANGE",
-            state="normal",
-            bg=PURPLE
-        )
-    else:
-        range_button.config(
-            text="🔍 USED",
-            state="disabled",
-            bg="#4B5563"
+        self.range_label.config(
+            text=f"🔍 Secret is between {low} and {high}",
+            fg=GREEN
         )
 
+    # ========================================================
+    # LEADERBOARD
+    # ========================================================
 
-def use_extra_life():
+    def show_leaderboard(self):
 
-    global extra_life_available
-    global attempts_left
+        window = tk.Toplevel(self.root)
 
-    if not extra_life_available:
-        return
+        window.title("🏆 Leaderboard")
+        window.geometry("550x450")
 
-    extra_life_available = False
-
-    attempts_left += 2
-
-    show_feedback(
-        "❤️ +2 LIVES!",
-        RED
-    )
-
-    flash_screen(
-        RED,
-        180
-    )
-
-    update_display()
-    update_powerup_buttons()
-
-
-def use_time_freeze():
-
-    global time_freeze_available
-    global timer_running
-    global time_left
-
-    if not time_freeze_available:
-        return
-
-    time_freeze_available = False
-
-    timer_running = False
-
-    show_feedback(
-        "❄️ TIME FROZEN FOR 10 SECONDS!",
-        CYAN
-    )
-
-    update_powerup_buttons()
-
-    root.after(
-        10000,
-        resume_timer
-    )
-
-
-def resume_timer():
-
-    global timer_running
-
-    if not timer_running:
-        timer_running = True
-        update_timer()
-
-
-def use_double_score():
-
-    global double_score_available
-    global double_score_active
-
-    if not double_score_available:
-        return
-
-    double_score_available = False
-    double_score_active = True
-
-    show_feedback(
-        "⭐ DOUBLE SCORE ACTIVATED!",
-        YELLOW
-    )
-
-    update_powerup_buttons()
-
-
-def use_range_reveal():
-
-    global range_reveal_available
-
-    if not range_reveal_available:
-        return
-
-    range_reveal_available = False
-
-    maximum = DIFFICULTIES[difficulty.get()]["max"]
-
-    lower = max(
-        1,
-        secret_number - max(5, maximum // 10)
-    )
-
-    upper = min(
-        maximum,
-        secret_number + max(5, maximum // 10)
-    )
-
-    show_feedback(
-        f"🔍 SECRET IS BETWEEN {lower} AND {upper}!",
-        PURPLE
-    )
-
-    update_powerup_buttons()
-
-
-# =========================
-# GUESS LOGIC
-# =========================
-
-def make_guess(event=None):
-
-    global attempts_left
-    global score
-    global current_player
-    global streak
-    global combo
-    global fast_bonus
-    global double_score_active
-
-    value = guess_var.get().strip()
-
-    if not value.isdigit():
-
-        show_feedback(
-            "❌ Enter a valid number!",
-            RED
-        )
-
-        return
-
-    guess = int(value)
-
-    maximum = DIFFICULTIES[
-        difficulty.get()
-    ]["max"]
-
-    if guess < 1 or guess > maximum:
-
-        show_feedback(
-            f"⚠️ Choose between 1 and {maximum}!",
-            ORANGE
-        )
-
-        return
-
-    attempts_left -= 1
-
-    # =====================
-    # CORRECT
-    # =====================
-
-    if guess == secret_number:
-
-        global timer_running
-
-        timer_running = False
-        cancel_timer()
-
-        streak += 1
-
-        combo = min(
-            5,
-            1 + streak // 2
-        )
-
-        fast_bonus = time_left * 2
-
-        reward = (
-            50
-            + attempts_left * 15
-            + fast_bonus
-        )
-
-        if double_score_active:
-            reward *= 2
-            double_score_active = False
-
-        score += reward * combo
-
-        flash_screen(
-            GREEN,
-            300
-        )
-
-        show_feedback(
-            "🎉 PERFECT GUESS!",
-            GREEN
-        )
-
-        if game_mode.get() == "Single Player":
-            finish_single_player()
-
-        elif game_mode.get() == "Two Player":
-            finish_two_player()
-
-        else:
-            finish_tournament_round()
-
-        return
-
-    # =====================
-    # WRONG
-    # =====================
-
-    combo = 1
-    double_score_active = False
-
-    if guess < secret_number:
-
-        show_feedback(
-            "📈 TOO LOW!",
-            ORANGE
-        )
-
-    else:
-
-        show_feedback(
-            "📉 TOO HIGH!",
-            PINK
-        )
-
-    score = max(
-        0,
-        score - 10
-    )
-
-    guess_var.set("")
-
-    if game_mode.get() == "Two Player":
-
-        if current_player == 1:
-            current_player = 2
-        else:
-            current_player = 1
-
-    if attempts_left <= 0:
-
-        game_over(
-            "💔 NO LIVES LEFT!"
-        )
-
-        return
-
-    update_display()
-
-
-# =========================
-# HINT
-# =========================
-
-def use_hint():
-
-    global hints_used
-    global score
-    global combo
-
-    if hints_used >= 3:
-
-        show_feedback(
-            "🚫 Maximum 3 hints!",
-            RED
-        )
-
-        return
-
-    hints_used += 1
-
-    score = max(
-        0,
-        score - 25
-    )
-
-    combo = 1
-
-    maximum = DIFFICULTIES[
-        difficulty.get()
-    ]["max"]
-
-    if hints_used == 1:
-
-        if secret_number % 2 == 0:
-            hint = "💡 EVEN NUMBER"
-        else:
-            hint = "💡 ODD NUMBER"
-
-    elif hints_used == 2:
-
-        if secret_number <= maximum // 2:
-            hint = "💡 LOWER HALF"
-        else:
-            hint = "💡 UPPER HALF"
-
-    else:
-
-        if secret_number % 5 == 0:
-            hint = "💡 DIVISIBLE BY 5"
-        elif secret_number % 3 == 0:
-            hint = "💡 DIVISIBLE BY 3"
-        else:
-            hint = "💡 NOT DIVISIBLE BY 3 OR 5"
-
-    show_feedback(
-        hint,
-        YELLOW
-    )
-
-    update_display()
-
-
-# =========================
-# FINISH GAMES
-# =========================
-
-def finish_single_player():
-
-    player = player1_name.get()
-
-    record_player(
-        player,
-        True,
-        score
-    )
-
-    messagebox.showinfo(
-        "🏆 VICTORY!",
-        f"🎉 {player} WON!\n\n"
-        f"🔢 Number: {secret_number}\n"
-        f"⭐ Score: {score}\n"
-        f"🔥 Streak: {streak}\n"
-        f"⚡ Combo: x{combo}\n"
-        f"🎁 Fast Bonus: {fast_bonus}"
-    )
-
-    new_game()
-
-
-def finish_two_player():
-
-    winner = (
-        player1_name.get()
-        if current_player == 1
-        else player2_name.get()
-    )
-
-    record_player(
-        winner,
-        True,
-        score
-    )
-
-    messagebox.showinfo(
-        "🏆 WINNER!",
-        f"🎉 {winner} WON!\n\n"
-        f"🔢 Number: {secret_number}\n"
-        f"⭐ Score: {score}"
-    )
-
-    new_game()
-
-
-# =========================
-# TOURNAMENT
-# =========================
-
-def finish_tournament_round():
-
-    global player1_wins
-    global player2_wins
-    global tournament_round
-
-    winner = (
-        player1_name.get()
-        if current_player == 1
-        else player2_name.get()
-    )
-
-    if current_player == 1:
-        player1_wins += 1
-    else:
-        player2_wins += 1
-
-    record_player(
-        winner,
-        True,
-        score
-    )
-
-    if (
-        player1_wins > total_rounds // 2
-        or player2_wins > total_rounds // 2
-    ):
-        finish_tournament()
-        return
-
-    if tournament_round >= total_rounds:
-        finish_tournament()
-        return
-
-    messagebox.showinfo(
-        "🎉 ROUND COMPLETE!",
-        f"{winner} won Round {tournament_round}!"
-    )
-
-    tournament_round += 1
-
-    start_tournament_round()
-
-
-def start_tournament_round():
-
-    global secret_number
-    global attempts_left
-    global time_left
-    global score
-    global current_player
-    global streak
-    global combo
-    global hints_used
-    global fast_bonus
-    global timer_running
-
-    cancel_timer()
-
-    config = DIFFICULTIES[difficulty.get()]
-
-    secret_number = random.randint(
-        1,
-        config["max"]
-    )
-
-    attempts_left = config["attempts"]
-    time_left = config["time"]
-
-    score = config["score"]
-
-    current_player = 1
-
-    streak = 0
-    combo = 1
-    hints_used = 0
-    fast_bonus = 0
-
-    reset_powerups()
-
-    guess_var.set("")
-
-    timer_running = True
-
-    show_feedback(
-        "🥊 NEW TOURNAMENT ROUND!",
-        BLUE
-    )
-
-    update_display()
-    update_powerup_buttons()
-    start_timer()
-
-
-def finish_tournament():
-
-    global timer_running
-
-    timer_running = False
-    cancel_timer()
-
-    if player1_wins > player2_wins:
-        champion = player1_name.get()
-
-    elif player2_wins > player1_wins:
-        champion = player2_name.get()
-
-    else:
-        champion = "DRAW"
-
-    if champion == "DRAW":
-
-        result = (
-            "🤝 IT'S A DRAW!\n\n"
-            f"🔵 {player1_name.get()}: "
-            f"{player1_wins} wins\n"
-            f"🟣 {player2_name.get()}: "
-            f"{player2_wins} wins"
-        )
-
-    else:
-
-        result = (
-            f"👑 CHAMPION: {champion}!\n\n"
-            f"🔵 {player1_name.get()}: "
-            f"{player1_wins} wins\n"
-            f"🟣 {player2_name.get()}: "
-            f"{player2_wins} wins"
-        )
-
-    flash_screen(
-        PURPLE,
-        400
-    )
-
-    messagebox.showinfo(
-        "🏆 TOURNAMENT COMPLETE",
-        result
-    )
-
-    new_game()
-
-
-# =========================
-# GAME OVER
-# =========================
-
-def game_over(reason):
-
-    global timer_running
-    global streak
-    global combo
-
-    timer_running = False
-    cancel_timer()
-
-    player = (
-        player1_name.get()
-        if current_player == 1
-        else player2_name.get()
-    )
-
-    if game_mode.get() == "Single Player":
-
-        record_player(
-            player,
-            False,
-            score
-        )
-
-    streak = 0
-    combo = 1
-
-    flash_screen(
-        RED,
-        350
-    )
-
-    messagebox.showinfo(
-        "GAME OVER",
-        f"{reason}\n\n"
-        f"🔢 Number: {secret_number}\n"
-        f"⭐ Score: {score}"
-    )
-
-    new_game()
-
-
-# =========================
-# LEADERBOARD
-# =========================
-
-def refresh_leaderboard():
-
-    for widget in leaderboard_list.winfo_children():
-        widget.destroy()
-
-    players = sorted(
-        leaderboard.items(),
-        key=lambda item: (
-            item[1]["best_score"],
-            item[1]["wins"]
-        ),
-        reverse=True
-    )
-
-    medals = ["🥇", "🥈", "🥉"]
-
-    if not players:
-
-        tk.Label(
-            leaderboard_list,
-            text="No champions yet!\n🚀 Be the first!",
-            font=("Arial", 12, "bold"),
-            bg=PANEL,
-            fg=MUTED
-        ).pack(
-            pady=30
-        )
-
-        return
-
-    for index, (name, data) in enumerate(
-        players[:10]
-    ):
-
-        medal = (
-            medals[index]
-            if index < 3
-            else f"{index + 1}."
-        )
-
-        card = tk.Frame(
-            leaderboard_list,
-            bg=PANEL2,
-            padx=8,
-            pady=7
-        )
-
-        card.pack(
-            fill="x",
-            padx=8,
-            pady=4
+        window.configure(
+            bg=BG
         )
 
         tk.Label(
-            card,
-            text=f"{medal} {name}",
-            font=("Arial", 11, "bold"),
-            bg=PANEL2,
-            fg=WHITE
-        ).pack(
-            anchor="w"
+            window,
+            text="🏆 LEADERBOARD",
+            font=("Arial", 22, "bold"),
+            fg=YELLOW,
+            bg=BG
+        ).pack(pady=20)
+
+        if not self.leaderboard:
+
+            tk.Label(
+                window,
+                text="No records yet!",
+                font=("Arial", 13),
+                fg=WHITE,
+                bg=BG
+            ).pack()
+
+            return
+
+        sorted_players = sorted(
+            self.leaderboard.items(),
+            key=lambda item: item[1]["best_score"],
+            reverse=True
         )
 
-        tk.Label(
-            card,
-            text=(
+        for index, (name, data) in enumerate(
+            sorted_players[:10],
+            start=1
+        ):
+
+            text = (
+                f"{index}. {name}   "
                 f"⭐ {data['best_score']}   "
                 f"🏆 {data['wins']} wins   "
                 f"🔥 {data['best_streak']}"
-            ),
-            font=("Arial", 9),
-            bg=PANEL2,
-            fg=MUTED
-        ).pack(
-            anchor="w"
-        )
+            )
 
+            tk.Label(
+                window,
+                text=text,
+                font=("Arial", 11, "bold"),
+                fg=WHITE,
+                bg=BG,
+                anchor="w"
+            ).pack(
+                fill="x",
+                padx=30,
+                pady=7
+            )
 
-def reset_leaderboard():
 
-    global leaderboard
+# ============================================================
+# START APPLICATION
+# ============================================================
 
-    confirm = messagebox.askyesno(
-        "Reset Leaderboard",
-        "Delete the complete leaderboard?"
-    )
+if __name__ == "__main__":
 
-    if confirm:
+    root = tk.Tk()
 
-        leaderboard = {}
+    game = NumberGuessingGame(root)
 
-        save_leaderboard()
-        refresh_leaderboard()
-
-
-# =========================
-# HEADER
-# =========================
-
-header = tk.Frame(
-    root,
-    bg=BG
-)
-
-header.pack(
-    fill="x",
-    padx=25,
-    pady=15
-)
-
-
-tk.Label(
-    header,
-    text="🎯",
-    font=("Arial", 34),
-    bg=BG,
-    fg=YELLOW
-).pack(side="left")
-
-
-tk.Label(
-    header,
-    text="NUMBER GUESSING",
-    font=("Arial", 27, "bold"),
-    bg=BG,
-    fg=WHITE
-).pack(
-    side="left",
-    padx=8
-)
-
-
-tk.Label(
-    header,
-    text="ARCADE",
-    font=("Arial", 27, "bold"),
-    bg=BG,
-    fg=PURPLE
-).pack(side="left")
-
-
-tk.Label(
-    header,
-    text="V26",
-    font=("Arial", 12, "bold"),
-    bg=PINK,
-    fg=WHITE,
-    padx=9,
-    pady=4
-).pack(
-    side="right"
-)
-
-
-# =========================
-# SETTINGS
-# =========================
-
-settings = tk.Frame(
-    root,
-    bg=PANEL,
-    padx=15,
-    pady=10
-)
-
-settings.pack(
-    fill="x",
-    padx=25
-)
-
-
-tk.Label(
-    settings,
-    text="⚙️ Difficulty",
-    bg=PANEL,
-    fg=WHITE,
-    font=("Arial", 10, "bold")
-).pack(
-    side="left"
-)
-
-
-difficulty_menu = tk.OptionMenu(
-    settings,
-    difficulty,
-    *DIFFICULTIES.keys(),
-    command=change_difficulty
-)
-
-difficulty_menu.config(
-    bg=PURPLE,
-    fg=WHITE,
-    activebackground=PINK,
-    activeforeground=WHITE,
-    relief="flat"
-)
-
-difficulty_menu.pack(
-    side="left",
-    padx=7
-)
-
-
-tk.Label(
-    settings,
-    text="🎮 Mode",
-    bg=PANEL,
-    fg=WHITE,
-    font=("Arial", 10, "bold")
-).pack(
-    side="left",
-    padx=(15, 5)
-)
-
-
-mode_menu = tk.OptionMenu(
-    settings,
-    game_mode,
-    *MODES,
-    command=change_mode
-)
-
-mode_menu.config(
-    bg=BLUE,
-    fg=BG,
-    activebackground=GREEN,
-    relief="flat"
-)
-
-mode_menu.pack(
-    side="left"
-)
-
-
-tournament_controls = tk.Frame(
-    settings,
-    bg=PANEL
-)
-
-tk.Label(
-    tournament_controls,
-    text="Rounds:",
-    bg=PANEL,
-    fg=WHITE
-).pack(
-    side="left"
-)
-
-
-rounds_menu = tk.OptionMenu(
-    tournament_controls,
-    rounds_var,
-    "3",
-    "5",
-    command=change_rounds
-)
-
-rounds_menu.config(
-    bg=ORANGE,
-    fg=BG,
-    relief="flat"
-)
-
-rounds_menu.pack(
-    side="left",
-    padx=5
-)
-
-
-# =========================
-# PLAYER PANEL
-# =========================
-
-players = tk.Frame(
-    root,
-    bg=PANEL,
-    padx=15,
-    pady=10
-)
-
-players.pack(
-    fill="x",
-    padx=25,
-    pady=10
-)
-
-
-tk.Label(
-    players,
-    text="🔵 Player 1",
-    bg=PANEL,
-    fg=BLUE,
-    font=("Arial", 10, "bold")
-).grid(
-    row=0,
-    column=0,
-    padx=5
-)
-
-
-player1_entry = tk.Entry(
-    players,
-    width=18,
-    bg=BG,
-    fg=WHITE,
-    insertbackground=WHITE,
-    relief="flat"
-)
-
-player1_entry.insert(
-    0,
-    "Player 1"
-)
-
-player1_entry.grid(
-    row=0,
-    column=1,
-    padx=5
-)
-
-
-tk.Label(
-    players,
-    text="🟣 Player 2",
-    bg=PANEL,
-    fg=PINK,
-    font=("Arial", 10, "bold")
-).grid(
-    row=0,
-    column=2,
-    padx=5
-)
-
-
-player2_entry = tk.Entry(
-    players,
-    width=18,
-    bg=BG,
-    fg=WHITE,
-    insertbackground=WHITE,
-    relief="flat"
-)
-
-player2_entry.insert(
-    0,
-    "Player 2"
-)
-
-player2_entry.grid(
-    row=0,
-    column=3,
-    padx=5
-)
-
-
-tk.Button(
-    players,
-    text="✨ SET PLAYERS",
-    command=set_names,
-    bg=GREEN,
-    fg=BG,
-    activebackground=YELLOW,
-    relief="flat",
-    font=("Arial", 10, "bold"),
-    padx=12
-).grid(
-    row=0,
-    column=4,
-    padx=15
-)
-
-
-# =========================
-# MAIN CONTENT
-# =========================
-
-content = tk.Frame(
-    root,
-    bg=BG
-)
-
-content.pack(
-    fill="both",
-    expand=True,
-    padx=25
-)
-
-
-# =========================
-# GAME PANEL
-# =========================
-
-game_panel = tk.Frame(
-    content,
-    bg=PANEL
-)
-
-game_panel.pack(
-    side="left",
-    fill="both",
-    expand=True,
-    padx=(0, 10)
-)
-
-
-tk.Label(
-    game_panel,
-    text="⚡ POWER-UP ARENA ⚡",
-    font=("Arial", 18, "bold"),
-    bg=PANEL,
-    fg=YELLOW
-).pack(
-    pady=(15, 5)
-)
-
-
-range_label = tk.Label(
-    game_panel,
-    text="🎯 Guess between 1 and 100",
-    font=("Arial", 13, "bold"),
-    bg=PANEL,
-    fg=WHITE
-)
-
-range_label.pack(pady=3)
-
-
-turn_label = tk.Label(
-    game_panel,
-    text="👤 Player 1's Turn",
-    font=("Arial", 12, "bold"),
-    bg=PANEL,
-    fg=BLUE
-)
-
-turn_label.pack(pady=3)
-
-
-stats = tk.Frame(
-    game_panel,
-    bg=PANEL
-)
-
-stats.pack(
-    pady=8
-)
-
-
-def stat_box(text, color):
-
-    label = tk.Label(
-        stats,
-        text=text,
-        font=("Arial", 10, "bold"),
-        bg=PANEL2,
-        fg=color,
-        padx=9,
-        pady=6
-    )
-
-    label.pack(
-        side="left",
-        padx=3
-    )
-
-    return label
-
-
-timer_label = stat_box("⏱ 60s", BLUE)
-attempts_label = stat_box("❤️ Lives: 10", RED)
-score_label = stat_box("⭐ Score: 200", YELLOW)
-streak_label = stat_box("🔥 Streak: 0", ORANGE)
-combo_label = stat_box("⚡ x1", PINK)
-
-
-hint_label = tk.Label(
-    game_panel,
-    text="💡 Hints: 0/3",
-    font=("Arial", 9, "bold"),
-    bg=PANEL,
-    fg=MUTED
-)
-
-hint_label.pack()
-
-
-feedback_label = tk.Label(
-    game_panel,
-    text="🎮 Make your first guess!",
-    font=("Arial", 13, "bold"),
-    bg=PANEL,
-    fg=BLUE
-)
-
-feedback_label.pack(
-    pady=8
-)
-
-
-guess_entry = tk.Entry(
-    game_panel,
-    textvariable=guess_var,
-    font=("Arial", 21, "bold"),
-    justify="center",
-    width=10,
-    bg=BG,
-    fg=WHITE,
-    insertbackground=WHITE,
-    relief="flat"
-)
-
-guess_entry.pack(
-    pady=5
-)
-
-guess_entry.bind(
-    "<Return>",
-    make_guess
-)
-
-
-# =========================
-# MAIN BUTTONS
-# =========================
-
-buttons = tk.Frame(
-    game_panel,
-    bg=PANEL
-)
-
-buttons.pack(
-    pady=10
-)
-
-
-tk.Button(
-    buttons,
-    text="🎯 GUESS",
-    command=make_guess,
-    bg=GREEN,
-    fg=BG,
-    activebackground=YELLOW,
-    relief="flat",
-    font=("Arial", 11, "bold"),
-    width=12,
-    pady=6
-).grid(
-    row=0,
-    column=0,
-    padx=4
-)
-
-
-tk.Button(
-    buttons,
-    text="💡 HINT",
-    command=use_hint,
-    bg=YELLOW,
-    fg=BG,
-    activebackground=ORANGE,
-    relief="flat",
-    font=("Arial", 11, "bold"),
-    width=12,
-    pady=6
-).grid(
-    row=0,
-    column=1,
-    padx=4
-)
-
-
-tk.Button(
-    buttons,
-    text="🔄 NEW GAME",
-    command=new_game,
-    bg=PURPLE,
-    fg=WHITE,
-    activebackground=PINK,
-    relief="flat",
-    font=("Arial", 11, "bold"),
-    width=12,
-    pady=6
-).grid(
-    row=0,
-    column=2,
-    padx=4
-)
-
-
-# =========================
-# POWER-UP PANEL
-# =========================
-
-powerup_panel = tk.Frame(
-    game_panel,
-    bg=PANEL2,
-    padx=8,
-    pady=8
-)
-
-powerup_panel.pack(
-    fill="x",
-    padx=15,
-    pady=8
-)
-
-
-tk.Label(
-    powerup_panel,
-    text="🚀 POWER-UPS",
-    font=("Arial", 11, "bold"),
-    bg=PANEL2,
-    fg=CYAN
-).pack(
-    pady=(0, 6)
-)
-
-
-power_buttons = tk.Frame(
-    powerup_panel,
-    bg=PANEL2
-)
-
-power_buttons.pack()
-
-
-extra_life_button = tk.Button(
-    power_buttons,
-    text="❤️ EXTRA LIFE",
-    command=use_extra_life,
-    bg=RED,
-    fg=WHITE,
-    relief="flat",
-    font=("Arial", 9, "bold"),
-    width=15,
-    pady=5
-)
-
-extra_life_button.grid(
-    row=0,
-    column=0,
-    padx=3
-)
-
-
-time_freeze_button = tk.Button(
-    power_buttons,
-    text="❄️ TIME FREEZE",
-    command=use_time_freeze,
-    bg=CYAN,
-    fg=BG,
-    relief="flat",
-    font=("Arial", 9, "bold"),
-    width=15,
-    pady=5
-)
-
-time_freeze_button.grid(
-    row=0,
-    column=1,
-    padx=3
-)
-
-
-double_score_button = tk.Button(
-    power_buttons,
-    text="⭐ 2X SCORE",
-    command=use_double_score,
-    bg=YELLOW,
-    fg=BG,
-    relief="flat",
-    font=("Arial", 9, "bold"),
-    width=15,
-    pady=5
-)
-
-double_score_button.grid(
-    row=1,
-    column=0,
-    padx=3,
-    pady=5
-)
-
-
-range_button = tk.Button(
-    power_buttons,
-    text="🔍 REVEAL RANGE",
-    command=use_range_reveal,
-    bg=PURPLE,
-    fg=WHITE,
-    relief="flat",
-    font=("Arial", 9, "bold"),
-    width=15,
-    pady=5
-)
-
-range_button.grid(
-    row=1,
-    column=1,
-    padx=3,
-    pady=5
-)
-
-
-# =========================
-# LEADERBOARD
-# =========================
-
-leaderboard_panel = tk.Frame(
-    content,
-    bg=PANEL,
-    width=325
-)
-
-leaderboard_panel.pack(
-    side="right",
-    fill="y"
-)
-
-
-tk.Label(
-    leaderboard_panel,
-    text="🏆 TOP CHAMPIONS",
-    font=("Arial", 17, "bold"),
-    bg=PANEL,
-    fg=YELLOW
-).pack(
-    pady=15
-)
-
-
-leaderboard_list = tk.Frame(
-    leaderboard_panel,
-    bg=PANEL
-)
-
-leaderboard_list.pack(
-    fill="both",
-    expand=True
-)
-
-
-tk.Button(
-    leaderboard_panel,
-    text="🗑 RESET LEADERBOARD",
-    command=reset_leaderboard,
-    bg=RED,
-    fg=WHITE,
-    activebackground=PINK,
-    relief="flat",
-    font=("Arial", 9, "bold"),
-    pady=6
-).pack(
-    pady=10
-)
-
-
-# =========================
-# FOOTER
-# =========================
-
-tk.Label(
-    root,
-    text="🐍 Python • Tkinter • JSON • Power-Ups • Arcade Edition • V26",
-    font=("Arial", 9),
-    bg=BG,
-    fg=MUTED
-).pack(
-    pady=7
-)
-
-
-# =========================
-# START
-# =========================
-
-load_leaderboard()
-refresh_leaderboard()
-new_game()
-
-root.mainloop()
+    root.mainloop()
