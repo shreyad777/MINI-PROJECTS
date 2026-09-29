@@ -3,15 +3,15 @@ from tkinter import messagebox
 import random
 import json
 import os
-import time
 
 # ============================================================
-# NUMBER GUESSING GAME V27
-# QUEST & XP EDITION
+# NUMBER GUESSING GAME V28
+# ACHIEVEMENT & BADGE EDITION
 # ============================================================
 
-SAVE_FILE = "leaderboard_v27.json"
-PROFILE_FILE = "player_profile_v27.json"
+SAVE_FILE = "leaderboard_v28.json"
+PROFILE_FILE = "player_profile_v28.json"
+ACHIEVEMENT_FILE = "achievements_v28.json"
 
 # ---------------- COLORS ----------------
 
@@ -107,18 +107,83 @@ QUEST_POOL = [
     }
 ]
 
+# ---------------- ACHIEVEMENTS ----------------
 
-# ============================================================
-# MAIN CLASS
-# ============================================================
+ACHIEVEMENTS = {
+    "first_win": {
+        "name": "First Blood",
+        "description": "Win your first game",
+        "icon": "🥉",
+        "reward": 100
+    },
+    "sharp_shooter": {
+        "name": "Sharp Shooter",
+        "description": "Win within 3 guesses",
+        "icon": "🎯",
+        "reward": 125
+    },
+    "on_fire": {
+        "name": "On Fire",
+        "description": "Reach a 3-win streak",
+        "icon": "🔥",
+        "reward": 150
+    },
+    "power_player": {
+        "name": "Power Player",
+        "description": "Use a power-up and win",
+        "icon": "⚡",
+        "reward": 125
+    },
+    "high_roller": {
+        "name": "High Roller",
+        "description": "Score 300+ points",
+        "icon": "💯",
+        "reward": 150
+    },
+    "no_help": {
+        "name": "No Help Needed",
+        "description": "Win without using a hint",
+        "icon": "🧠",
+        "reward": 150
+    },
+    "speed_demon": {
+        "name": "Speed Demon",
+        "description": "Win with 10+ seconds remaining",
+        "icon": "⚡",
+        "reward": 150
+    },
+    "hard_mode": {
+        "name": "Hard Mode Hero",
+        "description": "Win a Hard difficulty game",
+        "icon": "💀",
+        "reward": 200
+    },
+    "five_streak": {
+        "name": "Unstoppable",
+        "description": "Reach a 5-win streak",
+        "icon": "👑",
+        "reward": 250
+    },
+    "level_five": {
+        "name": "Rising Star",
+        "description": "Reach Level 5",
+        "icon": "⭐",
+        "reward": 300
+    }
+}
+
 
 class NumberGuessingGame:
 
     def __init__(self, root):
+
         self.root = root
 
-        self.root.title("🎯 Number Guessing Game V27 - Quest & XP Edition")
-        self.root.geometry("1100x720")
+        self.root.title(
+            "🎯 Number Guessing Arcade - V28 Achievement Edition"
+        )
+
+        self.root.geometry("1150x720")
         self.root.configure(bg=BG)
         self.root.resizable(False, False)
 
@@ -129,6 +194,7 @@ class NumberGuessingGame:
 
         self.secret_number = 0
         self.max_number = 100
+
         self.attempts_left = 10
         self.total_attempts = 10
 
@@ -142,42 +208,39 @@ class NumberGuessingGame:
         self.streak = 0
         self.best_streak = 0
 
-        self.current_player = 1
+        self.total_wins = 0
+        self.total_games = 0
 
         # Power-ups
         self.extra_life_available = True
         self.time_freeze_available = True
         self.double_score_available = True
         self.range_reveal_available = True
-        self.double_score_active = False
 
+        self.double_score_active = False
         self.freeze_active = False
 
         self.used_hint = False
         self.used_powerup = False
 
-        # Tournament
-        self.tournament_round = 0
-        self.tournament_total = 3
-        self.tournament_scores = [0, 0]
-
-        # ---------------- PROFILE ----------------
-
+        # XP
         self.xp = 0
         self.level = 1
-        self.total_wins = 0
-        self.total_games = 0
+
+        # Quests
+        self.quests = []
+
+        # Achievements
+        self.achievements = {}
 
         self.load_profile()
+        self.load_achievements()
+
+        self.generate_quests()
 
         # ---------------- LEADERBOARD ----------------
 
         self.leaderboard = self.load_leaderboard()
-
-        # ---------------- QUESTS ----------------
-
-        self.quests = []
-        self.generate_quests()
 
         # ---------------- UI ----------------
 
@@ -188,6 +251,7 @@ class NumberGuessingGame:
 
         self.update_profile_display()
         self.update_quest_display()
+        self.update_achievement_count()
 
         self.new_game()
 
@@ -200,6 +264,7 @@ class NumberGuessingGame:
         if os.path.exists(PROFILE_FILE):
 
             try:
+
                 with open(PROFILE_FILE, "r") as file:
                     data = json.load(file)
 
@@ -207,6 +272,7 @@ class NumberGuessingGame:
                 self.level = data.get("level", 1)
                 self.total_wins = data.get("total_wins", 0)
                 self.total_games = data.get("total_games", 0)
+                self.best_streak = data.get("best_streak", 0)
 
             except Exception:
                 pass
@@ -217,12 +283,15 @@ class NumberGuessingGame:
             "xp": self.xp,
             "level": self.level,
             "total_wins": self.total_wins,
-            "total_games": self.total_games
+            "total_games": self.total_games,
+            "best_streak": self.best_streak
         }
 
         try:
+
             with open(PROFILE_FILE, "w") as file:
                 json.dump(data, file, indent=4)
+
         except Exception:
             pass
 
@@ -239,18 +308,109 @@ class NumberGuessingGame:
         while self.xp >= self.xp_needed():
 
             self.xp -= self.xp_needed()
+
             self.level += 1
+
             level_up = True
 
         self.save_profile()
+
         self.update_profile_display()
 
         if level_up:
 
+            self.check_achievement("level_five")
+
             messagebox.showinfo(
                 "🎉 LEVEL UP!",
-                f"Congratulations!\n\nYou reached LEVEL {self.level}!"
+                f"You reached LEVEL {self.level}!"
             )
+
+    # ========================================================
+    # ACHIEVEMENT SYSTEM
+    # ========================================================
+
+    def load_achievements(self):
+
+        if os.path.exists(ACHIEVEMENT_FILE):
+
+            try:
+
+                with open(ACHIEVEMENT_FILE, "r") as file:
+                    self.achievements = json.load(file)
+
+            except Exception:
+
+                self.achievements = {}
+
+        else:
+
+            self.achievements = {}
+
+        for key in ACHIEVEMENTS:
+
+            if key not in self.achievements:
+
+                self.achievements[key] = False
+
+        self.save_achievements()
+
+    def save_achievements(self):
+
+        try:
+
+            with open(
+                ACHIEVEMENT_FILE,
+                "w"
+            ) as file:
+
+                json.dump(
+                    self.achievements,
+                    file,
+                    indent=4
+                )
+
+        except Exception:
+            pass
+
+    def check_achievement(self, achievement_id):
+
+        if achievement_id not in ACHIEVEMENTS:
+            return
+
+        if self.achievements.get(
+            achievement_id,
+            False
+        ):
+            return
+
+        achievement = ACHIEVEMENTS[achievement_id]
+
+        self.achievements[achievement_id] = True
+
+        self.save_achievements()
+
+        self.add_xp(achievement["reward"])
+
+        messagebox.showinfo(
+            "🏆 ACHIEVEMENT UNLOCKED!",
+            (
+                f"{achievement['icon']} "
+                f"{achievement['name']}\n\n"
+                f"{achievement['description']}\n\n"
+                f"+{achievement['reward']} XP"
+            )
+        )
+
+        self.update_achievement_count()
+
+    def unlocked_achievements(self):
+
+        return sum(
+            1
+            for value in self.achievements.values()
+            if value
+        )
 
     # ========================================================
     # LEADERBOARD
@@ -261,8 +421,10 @@ class NumberGuessingGame:
         if os.path.exists(SAVE_FILE):
 
             try:
+
                 with open(SAVE_FILE, "r") as file:
                     return json.load(file)
+
             except Exception:
                 pass
 
@@ -271,12 +433,20 @@ class NumberGuessingGame:
     def save_leaderboard(self):
 
         try:
+
             with open(SAVE_FILE, "w") as file:
-                json.dump(self.leaderboard, file, indent=4)
+                json.dump(
+                    self.leaderboard,
+                    file,
+                    indent=4
+                )
+
         except Exception:
             pass
 
-    def record_player(self, name="Player"):
+    def record_player(self):
+
+        name = "Player"
 
         if name not in self.leaderboard:
 
@@ -289,10 +459,15 @@ class NumberGuessingGame:
 
         self.leaderboard[name]["games"] += 1
 
+        if self.total_wins > self.leaderboard[name]["wins"]:
+            self.leaderboard[name]["wins"] = self.total_wins
+
         if self.score > self.leaderboard[name]["best_score"]:
+
             self.leaderboard[name]["best_score"] = self.score
 
         if self.streak > self.leaderboard[name]["best_streak"]:
+
             self.leaderboard[name]["best_streak"] = self.streak
 
         self.save_leaderboard()
@@ -305,7 +480,7 @@ class NumberGuessingGame:
 
         selected = random.sample(
             QUEST_POOL,
-            min(3, len(QUEST_POOL))
+            3
         )
 
         self.quests = []
@@ -324,40 +499,39 @@ class NumberGuessingGame:
 
     def update_quest(self, event_type, value=1):
 
-        completed_messages = []
+        completed = []
 
         for quest in self.quests:
 
             if quest["completed"]:
                 continue
 
-            should_update = False
+            if quest["type"] != event_type:
+                continue
 
-            if quest["type"] == event_type:
-                should_update = True
+            quest["progress"] += value
 
-            if should_update:
+            if quest["progress"] >= quest["target"]:
 
-                quest["progress"] += value
+                quest["progress"] = quest["target"]
+                quest["completed"] = True
 
-                if quest["progress"] >= quest["target"]:
+                self.add_xp(
+                    quest["reward"]
+                )
 
-                    quest["progress"] = quest["target"]
-                    quest["completed"] = True
-
-                    self.add_xp(quest["reward"])
-
-                    completed_messages.append(
-                        f"🏆 {quest['name']}  +{quest['reward']} XP"
-                    )
+                completed.append(
+                    f"🏆 {quest['name']} "
+                    f"+{quest['reward']} XP"
+                )
 
         self.update_quest_display()
 
-        if completed_messages:
+        if completed:
 
             messagebox.showinfo(
                 "🎯 QUEST COMPLETED!",
-                "\n".join(completed_messages)
+                "\n".join(completed)
             )
 
     # ========================================================
@@ -368,21 +542,22 @@ class NumberGuessingGame:
 
         header = tk.Frame(
             self.root,
-            bg=BG,
-            height=80
+            bg=BG
         )
 
-        header.pack(fill="x", padx=20, pady=(15, 5))
+        header.pack(
+            fill="x",
+            padx=20,
+            pady=(15, 5)
+        )
 
-        title = tk.Label(
+        tk.Label(
             header,
             text="🎯 NUMBER GUESSING ARCADE",
             font=("Arial", 26, "bold"),
             fg=CYAN,
             bg=BG
-        )
-
-        title.pack(side="left")
+        ).pack(side="left")
 
         self.profile_label = tk.Label(
             header,
@@ -392,7 +567,9 @@ class NumberGuessingGame:
             bg=BG
         )
 
-        self.profile_label.pack(side="right", pady=10)
+        self.profile_label.pack(
+            side="right"
+        )
 
     # ========================================================
     # LEFT PANEL
@@ -404,7 +581,7 @@ class NumberGuessingGame:
             self.root,
             bg=PANEL,
             width=220,
-            height=590
+            height=600
         )
 
         self.left_panel.pack(
@@ -432,9 +609,15 @@ class NumberGuessingGame:
             bg=PANEL
         ).pack()
 
-        self.difficulty_var = tk.StringVar(value="Medium")
+        self.difficulty_var = tk.StringVar(
+            value="Medium"
+        )
 
-        for difficulty in ["Easy", "Medium", "Hard"]:
+        for difficulty in [
+            "Easy",
+            "Medium",
+            "Hard"
+        ]:
 
             tk.Radiobutton(
                 self.left_panel,
@@ -448,7 +631,11 @@ class NumberGuessingGame:
                 activebackground=PANEL,
                 activeforeground=CYAN,
                 font=("Arial", 10)
-            ).pack(anchor="w", padx=35, pady=3)
+            ).pack(
+                anchor="w",
+                padx=35,
+                pady=3
+            )
 
         tk.Label(
             self.left_panel,
@@ -456,11 +643,19 @@ class NumberGuessingGame:
             font=("Arial", 11, "bold"),
             fg=WHITE,
             bg=PANEL
-        ).pack(pady=(20, 5))
+        ).pack(
+            pady=(20, 5)
+        )
 
-        self.mode_var = tk.StringVar(value="Single Player")
+        self.mode_var = tk.StringVar(
+            value="Single Player"
+        )
 
-        for mode in ["Single Player", "Two Player", "Tournament"]:
+        for mode in [
+            "Single Player",
+            "Two Player",
+            "Tournament"
+        ]:
 
             tk.Radiobutton(
                 self.left_panel,
@@ -474,7 +669,11 @@ class NumberGuessingGame:
                 activebackground=PANEL,
                 activeforeground=CYAN,
                 font=("Arial", 10)
-            ).pack(anchor="w", padx=20, pady=3)
+            ).pack(
+                anchor="w",
+                padx=20,
+                pady=3
+            )
 
         tk.Button(
             self.left_panel,
@@ -486,7 +685,7 @@ class NumberGuessingGame:
             relief="flat",
             padx=10,
             pady=8
-        ).pack(pady=20)
+        ).pack(pady=18)
 
         tk.Button(
             self.left_panel,
@@ -498,7 +697,19 @@ class NumberGuessingGame:
             relief="flat",
             padx=10,
             pady=8
-        ).pack()
+        ).pack(pady=3)
+
+        tk.Button(
+            self.left_panel,
+            text="🎖️ ACHIEVEMENTS",
+            command=self.show_achievements,
+            bg=PINK,
+            fg=WHITE,
+            font=("Arial", 10, "bold"),
+            relief="flat",
+            padx=10,
+            pady=8
+        ).pack(pady=3)
 
     # ========================================================
     # GAME PANEL
@@ -509,8 +720,8 @@ class NumberGuessingGame:
         self.game_panel = tk.Frame(
             self.root,
             bg=PANEL2,
-            width=540,
-            height=590
+            width=550,
+            height=600
         )
 
         self.game_panel.pack(
@@ -531,7 +742,9 @@ class NumberGuessingGame:
             bg=PANEL2
         )
 
-        self.status_label.pack(pady=(20, 15))
+        self.status_label.pack(
+            pady=(20, 12)
+        )
 
         self.range_label = tk.Label(
             self.game_panel,
@@ -551,7 +764,9 @@ class NumberGuessingGame:
             bg=PANEL2
         )
 
-        self.timer_label.pack(pady=12)
+        self.timer_label.pack(
+            pady=10
+        )
 
         self.attempt_label = tk.Label(
             self.game_panel,
@@ -574,7 +789,7 @@ class NumberGuessingGame:
         )
 
         self.guess_entry.pack(
-            pady=15,
+            pady=12,
             ipadx=15,
             ipady=8
         )
@@ -605,7 +820,9 @@ class NumberGuessingGame:
             wraplength=450
         )
 
-        self.feedback_label.pack(pady=15)
+        self.feedback_label.pack(
+            pady=12
+        )
 
         # ---------------- POWER UPS ----------------
 
@@ -614,7 +831,7 @@ class NumberGuessingGame:
             bg=PANEL2
         )
 
-        power_frame.pack(pady=5)
+        power_frame.pack()
 
         tk.Label(
             power_frame,
@@ -622,7 +839,12 @@ class NumberGuessingGame:
             font=("Arial", 12, "bold"),
             fg=ORANGE,
             bg=PANEL2
-        ).grid(row=0, column=0, columnspan=2, pady=5)
+        ).grid(
+            row=0,
+            column=0,
+            columnspan=2,
+            pady=4
+        )
 
         self.extra_button = tk.Button(
             power_frame,
@@ -633,7 +855,12 @@ class NumberGuessingGame:
             relief="flat"
         )
 
-        self.extra_button.grid(row=1, column=0, padx=5, pady=3)
+        self.extra_button.grid(
+            row=1,
+            column=0,
+            padx=5,
+            pady=3
+        )
 
         self.freeze_button = tk.Button(
             power_frame,
@@ -644,7 +871,12 @@ class NumberGuessingGame:
             relief="flat"
         )
 
-        self.freeze_button.grid(row=1, column=1, padx=5, pady=3)
+        self.freeze_button.grid(
+            row=1,
+            column=1,
+            padx=5,
+            pady=3
+        )
 
         self.double_button = tk.Button(
             power_frame,
@@ -655,7 +887,12 @@ class NumberGuessingGame:
             relief="flat"
         )
 
-        self.double_button.grid(row=2, column=0, padx=5, pady=3)
+        self.double_button.grid(
+            row=2,
+            column=0,
+            padx=5,
+            pady=3
+        )
 
         self.range_button = tk.Button(
             power_frame,
@@ -666,9 +903,12 @@ class NumberGuessingGame:
             relief="flat"
         )
 
-        self.range_button.grid(row=2, column=1, padx=5, pady=3)
-
-        # ---------------- STATS ----------------
+        self.range_button.grid(
+            row=2,
+            column=1,
+            padx=5,
+            pady=3
+        )
 
         self.stats_label = tk.Label(
             self.game_panel,
@@ -678,7 +918,9 @@ class NumberGuessingGame:
             bg=PANEL2
         )
 
-        self.stats_label.pack(pady=15)
+        self.stats_label.pack(
+            pady=12
+        )
 
     # ========================================================
     # RIGHT PANEL
@@ -690,7 +932,7 @@ class NumberGuessingGame:
             self.root,
             bg=PANEL,
             width=250,
-            height=590
+            height=600
         )
 
         self.right_panel.pack(
@@ -708,21 +950,24 @@ class NumberGuessingGame:
             font=("Arial", 14, "bold"),
             fg=YELLOW,
             bg=PANEL
-        ).pack(pady=15)
+        ).pack(pady=12)
 
         self.quest_frame = tk.Frame(
             self.right_panel,
             bg=PANEL
         )
 
-        self.quest_frame.pack(fill="both", padx=10)
+        self.quest_frame.pack(
+            fill="x",
+            padx=10
+        )
 
         tk.Label(
             self.right_panel,
             text="━━━━━━━━━━━━━━",
             fg=PURPLE,
             bg=PANEL
-        ).pack(pady=10)
+        ).pack(pady=7)
 
         tk.Label(
             self.right_panel,
@@ -741,7 +986,21 @@ class NumberGuessingGame:
             justify="left"
         )
 
-        self.profile_stats.pack(pady=10)
+        self.profile_stats.pack(
+            pady=7
+        )
+
+        self.achievement_count = tk.Label(
+            self.right_panel,
+            text="🏅 Achievements: 0/10",
+            font=("Arial", 10, "bold"),
+            fg=YELLOW,
+            bg=PANEL
+        )
+
+        self.achievement_count.pack(
+            pady=5
+        )
 
     # ========================================================
     # PROFILE DISPLAY
@@ -752,7 +1011,10 @@ class NumberGuessingGame:
         needed = self.xp_needed()
 
         self.profile_label.config(
-            text=f"⭐ Level {self.level} | XP {self.xp}/{needed}"
+            text=(
+                f"⭐ Level {self.level} | "
+                f"XP {self.xp}/{needed}"
+            )
         )
 
         self.profile_stats.config(
@@ -762,6 +1024,17 @@ class NumberGuessingGame:
                 f"🏆 Total Wins: {self.total_wins}\n"
                 f"🎮 Games: {self.total_games}\n"
                 f"🔥 Best Streak: {self.best_streak}"
+            )
+        )
+
+    def update_achievement_count(self):
+
+        unlocked = self.unlocked_achievements()
+
+        self.achievement_count.config(
+            text=(
+                f"🏅 Achievements: "
+                f"{unlocked}/{len(ACHIEVEMENTS)}"
             )
         )
 
@@ -776,28 +1049,28 @@ class NumberGuessingGame:
 
         for quest in self.quests:
 
-            if quest["completed"]:
+            color = (
+                GREEN
+                if quest["completed"]
+                else WHITE
+            )
 
-                color = GREEN
-                status = "✅ COMPLETED"
-
-            else:
-
-                color = WHITE
-                status = (
-                    f"{quest['progress']}/{quest['target']}"
-                )
+            status = (
+                "✅ COMPLETED"
+                if quest["completed"]
+                else f"{quest['progress']}/{quest['target']}"
+            )
 
             card = tk.Frame(
                 self.quest_frame,
                 bg=PANEL2,
                 padx=8,
-                pady=8
+                pady=7
             )
 
             card.pack(
                 fill="x",
-                pady=6
+                pady=5
             )
 
             tk.Label(
@@ -806,28 +1079,35 @@ class NumberGuessingGame:
                 font=("Arial", 10, "bold"),
                 fg=color,
                 bg=PANEL2
-            ).pack(anchor="w")
+            ).pack(
+                anchor="w"
+            )
 
             tk.Label(
                 card,
                 text=quest["description"],
-                font=("Arial", 9),
+                font=("Arial", 8),
                 fg=GRAY,
                 bg=PANEL2,
                 wraplength=190,
                 justify="left"
-            ).pack(anchor="w", pady=3)
+            ).pack(
+                anchor="w",
+                pady=2
+            )
 
             tk.Label(
                 card,
                 text=f"{status}   +{quest['reward']} XP",
-                font=("Arial", 9, "bold"),
+                font=("Arial", 8, "bold"),
                 fg=YELLOW,
                 bg=PANEL2
-            ).pack(anchor="w")
+            ).pack(
+                anchor="w"
+            )
 
     # ========================================================
-    # DIFFICULTY
+    # DIFFICULTY / MODE
     # ========================================================
 
     def change_difficulty(self):
@@ -835,10 +1115,6 @@ class NumberGuessingGame:
         self.difficulty = self.difficulty_var.get()
 
         self.new_game()
-
-    # ========================================================
-    # MODE
-    # ========================================================
 
     def change_mode(self):
 
@@ -854,7 +1130,9 @@ class NumberGuessingGame:
 
         self.stop_timer()
 
-        settings = DIFFICULTIES[self.difficulty]
+        settings = DIFFICULTIES[
+            self.difficulty
+        ]
 
         self.max_number = settings["max"]
 
@@ -883,25 +1161,43 @@ class NumberGuessingGame:
         self.double_score_available = True
         self.range_reveal_available = True
 
-        self.extra_button.config(state="normal")
-        self.freeze_button.config(state="normal")
-        self.double_button.config(state="normal")
-        self.range_button.config(state="normal")
+        self.extra_button.config(
+            state="normal"
+        )
 
-        self.current_player = 1
+        self.freeze_button.config(
+            state="normal"
+        )
+
+        self.double_button.config(
+            state="normal"
+        )
+
+        self.range_button.config(
+            state="normal"
+        )
 
         self.range_label.config(
-            text=f"Number between 1 and {self.max_number}"
+            text=(
+                f"Number between "
+                f"1 and {self.max_number}"
+            ),
+            fg=CYAN
         )
 
         self.feedback_label.config(
-            text="🎯 Make your guess!"
+            text="🎯 Make your guess!",
+            fg=WHITE
         )
 
         self.update_attempt_display()
         self.update_stats()
 
-        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.delete(
+            0,
+            tk.END
+        )
+
         self.guess_entry.focus()
 
         self.start_timer()
@@ -925,7 +1221,9 @@ class NumberGuessingGame:
         if self.timer_job:
 
             try:
-                self.root.after_cancel(self.timer_job)
+                self.root.after_cancel(
+                    self.timer_job
+                )
             except Exception:
                 pass
 
@@ -957,7 +1255,11 @@ class NumberGuessingGame:
             self.timer_running = False
 
             self.feedback_label.config(
-                text=f"⏰ Time's up! Number was {self.secret_number}",
+                text=(
+                    f"⏰ Time's up!\n"
+                    f"The number was "
+                    f"{self.secret_number}"
+                ),
                 fg=RED
             )
 
@@ -991,10 +1293,16 @@ class NumberGuessingGame:
 
         guess = int(value)
 
-        if guess < 1 or guess > self.max_number:
+        if (
+            guess < 1
+            or guess > self.max_number
+        ):
 
             self.feedback_label.config(
-                text=f"⚠️ Enter a number from 1 to {self.max_number}",
+                text=(
+                    f"⚠️ Enter a number "
+                    f"from 1 to {self.max_number}"
+                ),
                 fg=RED
             )
 
@@ -1013,14 +1321,14 @@ class NumberGuessingGame:
         if guess < self.secret_number:
 
             self.feedback_label.config(
-                text="📈 Too LOW! Try a higher number.",
+                text="📈 Too LOW! Try higher.",
                 fg=ORANGE
             )
 
         else:
 
             self.feedback_label.config(
-                text="📉 Too HIGH! Try a lower number.",
+                text="📉 Too HIGH! Try lower.",
                 fg=PINK
             )
 
@@ -1042,29 +1350,22 @@ class NumberGuessingGame:
         self.streak += 1
 
         if self.streak > self.best_streak:
+
             self.best_streak = self.streak
 
-        settings = DIFFICULTIES[self.difficulty]
-
-        base_score = settings["score"]
-
-        # Attempt bonus
-        attempt_bonus = self.attempts_left * 10
-
-        # Time bonus
-        time_bonus = self.timer_seconds * 2
+        settings = DIFFICULTIES[
+            self.difficulty
+        ]
 
         reward = (
-            base_score +
-            attempt_bonus +
-            time_bonus
+            settings["score"]
+            + self.attempts_left * 10
+            + self.timer_seconds * 2
+            + self.streak * 20
         )
 
-        # Streak bonus
-        reward += self.streak * 20
-
-        # Double score
         if self.double_score_active:
+
             reward *= 2
 
         self.score = reward
@@ -1072,20 +1373,35 @@ class NumberGuessingGame:
         self.feedback_label.config(
             text=(
                 f"🎉 CORRECT!\n"
-                f"The number was {self.secret_number}\n"
+                f"The number was "
+                f"{self.secret_number}\n"
                 f"⭐ Score: {self.score}"
             ),
             fg=GREEN
         )
 
+        # ---------------- XP ----------------
+
         self.add_xp(50)
 
-        # Quest updates
+        # ---------------- QUESTS ----------------
+
         self.update_quest("wins")
 
-        if self.attempts_left >= self.total_attempts - 3:
+        guesses_used = (
+            self.total_attempts
+            - self.attempts_left
+        )
 
-            self.update_quest("quick_win")
+        if guesses_used <= 3:
+
+            self.update_quest(
+                "quick_win"
+            )
+
+            self.check_achievement(
+                "sharp_shooter"
+            )
 
         if self.streak >= 3:
 
@@ -1094,21 +1410,67 @@ class NumberGuessingGame:
                 self.streak
             )
 
+            self.check_achievement(
+                "on_fire"
+            )
+
+        if self.streak >= 5:
+
+            self.check_achievement(
+                "five_streak"
+            )
+
         if self.used_powerup:
 
-            self.update_quest("power_win")
+            self.update_quest(
+                "power_win"
+            )
+
+            self.check_achievement(
+                "power_player"
+            )
 
         if self.timer_seconds >= 10:
 
-            self.update_quest("speed_win")
+            self.update_quest(
+                "speed_win"
+            )
+
+            self.check_achievement(
+                "speed_demon"
+            )
 
         if self.score >= 300:
 
-            self.update_quest("high_score")
+            self.update_quest(
+                "high_score"
+            )
+
+            self.check_achievement(
+                "high_roller"
+            )
 
         if not self.used_hint:
 
-            self.update_quest("no_hint")
+            self.update_quest(
+                "no_hint"
+            )
+
+            self.check_achievement(
+                "no_help"
+            )
+
+        if self.difficulty == "Hard":
+
+            self.check_achievement(
+                "hard_mode"
+            )
+
+        if self.total_wins == 1:
+
+            self.check_achievement(
+                "first_win"
+            )
 
         self.record_player()
 
@@ -1118,7 +1480,7 @@ class NumberGuessingGame:
         self.update_profile_display()
 
         self.root.after(
-            2200,
+            3000,
             self.new_game
         )
 
@@ -1137,7 +1499,8 @@ class NumberGuessingGame:
         self.feedback_label.config(
             text=(
                 f"💥 GAME OVER!\n"
-                f"The number was {self.secret_number}"
+                f"The number was "
+                f"{self.secret_number}"
             ),
             fg=RED
         )
@@ -1148,23 +1511,22 @@ class NumberGuessingGame:
         self.update_profile_display()
 
         self.root.after(
-            2200,
+            2500,
             self.new_game
         )
 
     # ========================================================
-    # ATTEMPT DISPLAY
+    # ATTEMPTS / STATS
     # ========================================================
 
     def update_attempt_display(self):
 
         self.attempt_label.config(
-            text=f"Attempts: {self.attempts_left}"
+            text=(
+                f"Attempts: "
+                f"{self.attempts_left}"
+            )
         )
-
-    # ========================================================
-    # STATS
-    # ========================================================
 
     def update_stats(self):
 
@@ -1211,7 +1573,6 @@ class NumberGuessingGame:
 
         self.time_freeze_available = False
         self.used_powerup = True
-        self.freeze_active = True
 
         self.freeze_button.config(
             state="disabled"
@@ -1233,7 +1594,6 @@ class NumberGuessingGame:
 
         if self.timer_seconds > 0:
 
-            self.freeze_active = False
             self.timer_running = True
 
             self.timer_tick()
@@ -1287,20 +1647,181 @@ class NumberGuessingGame:
         )
 
         self.range_label.config(
-            text=f"🔍 Secret is between {low} and {high}",
+            text=(
+                f"🔍 Secret is between "
+                f"{low} and {high}"
+            ),
             fg=GREEN
         )
 
     # ========================================================
-    # LEADERBOARD
+    # ACHIEVEMENTS WINDOW
+    # ========================================================
+
+    def show_achievements(self):
+
+        window = tk.Toplevel(
+            self.root
+        )
+
+        window.title(
+            "🏅 Achievements"
+        )
+
+        window.geometry(
+            "650x600"
+        )
+
+        window.configure(
+            bg=BG
+        )
+
+        tk.Label(
+            window,
+            text="🏆 ACHIEVEMENT HALL",
+            font=("Arial", 23, "bold"),
+            fg=YELLOW,
+            bg=BG
+        ).pack(
+            pady=18
+        )
+
+        unlocked = self.unlocked_achievements()
+
+        tk.Label(
+            window,
+            text=(
+                f"Unlocked: "
+                f"{unlocked}/"
+                f"{len(ACHIEVEMENTS)}"
+            ),
+            font=("Arial", 12, "bold"),
+            fg=CYAN,
+            bg=BG
+        ).pack(
+            pady=(0, 12)
+        )
+
+        container = tk.Frame(
+            window,
+            bg=BG
+        )
+
+        container.pack(
+            fill="both",
+            expand=True,
+            padx=25
+        )
+
+        row = 0
+
+        for key, achievement in ACHIEVEMENTS.items():
+
+            is_unlocked = self.achievements.get(
+                key,
+                False
+            )
+
+            if is_unlocked:
+
+                icon = achievement["icon"]
+                color = GREEN
+                status = "UNLOCKED"
+
+            else:
+
+                icon = "🔒"
+                color = GRAY
+                status = "LOCKED"
+
+            card = tk.Frame(
+                container,
+                bg=PANEL,
+                padx=10,
+                pady=8
+            )
+
+            card.grid(
+                row=row,
+                column=0,
+                sticky="ew",
+                pady=4
+            )
+
+            tk.Label(
+                card,
+                text=icon,
+                font=("Arial", 18),
+                bg=PANEL
+            ).pack(
+                side="left",
+                padx=8
+            )
+
+            text_frame = tk.Frame(
+                card,
+                bg=PANEL
+            )
+
+            text_frame.pack(
+                side="left"
+            )
+
+            tk.Label(
+                text_frame,
+                text=achievement["name"],
+                font=("Arial", 11, "bold"),
+                fg=color,
+                bg=PANEL
+            ).pack(
+                anchor="w"
+            )
+
+            tk.Label(
+                text_frame,
+                text=achievement["description"],
+                font=("Arial", 9),
+                fg=GRAY,
+                bg=PANEL
+            ).pack(
+                anchor="w"
+            )
+
+            tk.Label(
+                card,
+                text=(
+                    status
+                    + "\n"
+                    + f"+{achievement['reward']} XP"
+                ),
+                font=("Arial", 8, "bold"),
+                fg=color,
+                bg=PANEL,
+                justify="right"
+            ).pack(
+                side="right",
+                padx=8
+            )
+
+            row += 1
+
+    # ========================================================
+    # LEADERBOARD WINDOW
     # ========================================================
 
     def show_leaderboard(self):
 
-        window = tk.Toplevel(self.root)
+        window = tk.Toplevel(
+            self.root
+        )
 
-        window.title("🏆 Leaderboard")
-        window.geometry("550x450")
+        window.title(
+            "🏆 Leaderboard"
+        )
+
+        window.geometry(
+            "600x500"
+        )
 
         window.configure(
             bg=BG
@@ -1309,10 +1830,12 @@ class NumberGuessingGame:
         tk.Label(
             window,
             text="🏆 LEADERBOARD",
-            font=("Arial", 22, "bold"),
+            font=("Arial", 23, "bold"),
             fg=YELLOW,
             bg=BG
-        ).pack(pady=20)
+        ).pack(
+            pady=20
+        )
 
         if not self.leaderboard:
 
@@ -1338,9 +1861,9 @@ class NumberGuessingGame:
         ):
 
             text = (
-                f"{index}. {name}   "
-                f"⭐ {data['best_score']}   "
-                f"🏆 {data['wins']} wins   "
+                f"{index}. {name}    "
+                f"⭐ {data['best_score']}    "
+                f"🏆 {data['wins']} wins    "
                 f"🔥 {data['best_streak']}"
             )
 
@@ -1359,13 +1882,15 @@ class NumberGuessingGame:
 
 
 # ============================================================
-# START APPLICATION
+# START
 # ============================================================
 
 if __name__ == "__main__":
 
     root = tk.Tk()
 
-    game = NumberGuessingGame(root)
+    game = NumberGuessingGame(
+        root
+    )
 
     root.mainloop()
