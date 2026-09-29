@@ -5,15 +5,16 @@ import json
 import os
 import time
 
+
 # ============================================================
-# NUMBER GUESSING GAME V30
-# COMPETITIVE MODE EDITION
+# FILES
 # ============================================================
 
-SAVE_FILE = "leaderboard_v30.json"
+LEADERBOARD_FILE = "leaderboard_v30.json"
 PROFILE_FILE = "player_profile_v30.json"
-ACHIEVEMENT_FILE = "achievements_v30.json"
+ACHIEVEMENTS_FILE = "achievements_v30.json"
 STATS_FILE = "game_statistics_v30.json"
+
 
 # ============================================================
 # COLORS
@@ -23,311 +24,161 @@ BG = "#0B1020"
 PANEL = "#151C35"
 PANEL2 = "#1D2747"
 
-PURPLE = "#9B59FF"
-BLUE = "#4D9EFF"
-CYAN = "#35D9FF"
-GREEN = "#32E875"
-YELLOW = "#FFD43B"
-ORANGE = "#FF9F43"
+PURPLE = "#A970FF"
+BLUE = "#4D8DFF"
+CYAN = "#38D9FF"
+GREEN = "#4DFF88"
+YELLOW = "#FFD84D"
+ORANGE = "#FF9D42"
 RED = "#FF5C5C"
-PINK = "#FF5DA2"
+PINK = "#FF6FD8"
 
 WHITE = "#FFFFFF"
-GRAY = "#AAB4D0"
-
-# ============================================================
-# DIFFICULTY
-# ============================================================
-
-DIFFICULTIES = {
-    "Easy": {
-        "max": 50,
-        "attempts": 15,
-        "time": 90,
-        "score": 100
-    },
-    "Medium": {
-        "max": 100,
-        "attempts": 10,
-        "time": 60,
-        "score": 200
-    },
-    "Hard": {
-        "max": 500,
-        "attempts": 7,
-        "time": 45,
-        "score": 300
-    }
-}
-
-# ============================================================
-# ACHIEVEMENTS
-# ============================================================
-
-ACHIEVEMENTS = {
-    "first_win": {
-        "name": "First Blood",
-        "description": "Win your first game",
-        "icon": "🥉",
-        "xp": 100
-    },
-    "sharp_shooter": {
-        "name": "Sharp Shooter",
-        "description": "Win within 3 guesses",
-        "icon": "🎯",
-        "xp": 125
-    },
-    "on_fire": {
-        "name": "On Fire",
-        "description": "Reach a 3-win streak",
-        "icon": "🔥",
-        "xp": 150
-    },
-    "power_player": {
-        "name": "Power Player",
-        "description": "Use a power-up and win",
-        "icon": "⚡",
-        "xp": 125
-    },
-    "high_roller": {
-        "name": "High Roller",
-        "description": "Score 300+",
-        "icon": "💯",
-        "xp": 150
-    },
-    "no_help": {
-        "name": "No Help Needed",
-        "description": "Win without power-ups",
-        "icon": "🧠",
-        "xp": 150
-    },
-    "speed_demon": {
-        "name": "Speed Demon",
-        "description": "Win with 10+ seconds remaining",
-        "icon": "⚡",
-        "xp": 150
-    },
-    "hard_mode": {
-        "name": "Hard Mode Hero",
-        "description": "Win on Hard",
-        "icon": "💀",
-        "xp": 200
-    },
-    "five_streak": {
-        "name": "Unstoppable",
-        "description": "Reach a 5-win streak",
-        "icon": "👑",
-        "xp": 250
-    },
-    "level_five": {
-        "name": "Rising Star",
-        "description": "Reach Level 5",
-        "icon": "⭐",
-        "xp": 300
-    }
-}
+GRAY = "#AAB3CF"
 
 
 # ============================================================
-# FILE FUNCTIONS
-# ============================================================
-
-def load_json(filename, default):
-
-    try:
-        if os.path.exists(filename):
-
-            with open(
-                filename,
-                "r",
-                encoding="utf-8"
-            ) as file:
-
-                return json.load(file)
-
-    except Exception:
-        pass
-
-    return default
-
-
-def save_json(filename, data):
-
-    try:
-
-        with open(
-            filename,
-            "w",
-            encoding="utf-8"
-        ) as file:
-
-            json.dump(
-                data,
-                file,
-                indent=4
-            )
-
-    except Exception:
-        pass
-
-
-# ============================================================
-# MAIN CLASS
+# GAME
 # ============================================================
 
 class NumberGuessingGame:
 
     def __init__(self, root):
-
         self.root = root
+        self.root.title("Number Guessing Game V31")
+        self.root.geometry("1100x760")
+        self.root.configure(bg=BG)
+        self.root.resizable(False, False)
 
-        self.root.title(
-            "Number Guessing Game V30"
-        )
-
-        self.root.geometry(
-            "1250x760"
-        )
-
-        self.root.configure(
-            bg=BG
-        )
-
-        self.root.resizable(
-            False,
-            False
-        )
-
-        # ----------------------------------------------------
-        # PROFILE
-        # ----------------------------------------------------
+        # ---------------- GAME VARIABLES ----------------
 
         self.player_name = "Player"
 
-        self.profile = load_json(
-            PROFILE_FILE,
-            {
-                "xp": 0,
-                "level": 1,
-                "total_wins": 0,
-                "total_games": 0,
-                "best_streak": 0
-            }
-        )
+        self.mode = "Single Player"
+        self.difficulty = "Medium"
 
-        # ----------------------------------------------------
-        # STATISTICS
-        # ----------------------------------------------------
-
-        self.statistics = load_json(
-            STATS_FILE,
-            {
-                "highest_score": 0,
-                "highest_level": 1,
-                "total_xp_earned": 0,
-                "total_guesses": 0,
-                "completed_quests": 0,
-                "difficulty": {
-                    "Easy": {
-                        "games": 0,
-                        "wins": 0,
-                        "score": 0
-                    },
-                    "Medium": {
-                        "games": 0,
-                        "wins": 0,
-                        "score": 0
-                    },
-                    "Hard": {
-                        "games": 0,
-                        "wins": 0,
-                        "score": 0
-                    }
-                }
-            }
-        )
-
-        # ----------------------------------------------------
-        # ACHIEVEMENTS
-        # ----------------------------------------------------
-
-        self.achievements = load_json(
-            ACHIEVEMENT_FILE,
-            {}
-        )
-
-        # ----------------------------------------------------
-        # LEADERBOARD
-        # ----------------------------------------------------
-
-        self.leaderboard = load_json(
-            SAVE_FILE,
-            []
-        )
-
-        # ----------------------------------------------------
-        # GAME STATE
-        # ----------------------------------------------------
-
-        self.secret_number = 0
-
+        self.number = None
         self.attempts_left = 0
-
-        self.current_score = 0
-
-        self.start_time = 0
-
+        self.max_attempts = 0
+        self.time_limit = 0
         self.time_left = 0
 
-        self.timer_running = False
+        self.score = 0
+        self.total_score = 0
+        self.xp = 0
+        self.level = 1
 
         self.streak = 0
-
         self.combo = 1
 
-        self.current_difficulty = "Easy"
+        self.game_running = False
+        self.timer_id = None
 
-        # ----------------------------------------------------
-        # POWER UPS
-        # ----------------------------------------------------
-
-        self.extra_life = True
-        self.time_freeze = True
-        self.double_score = True
-        self.reveal_range = True
-
-        self.power_used = False
-
-        # ----------------------------------------------------
-        # MODE
-        # ----------------------------------------------------
-
-        self.mode = "Single Player"
-
-        # ----------------------------------------------------
-        # COMPETITIVE STATE
-        # ----------------------------------------------------
-
-        self.player1_name = "Player 1"
-        self.player2_name = "Player 2"
-
+        # V30 competitive variables
         self.player1_score = 0
         self.player2_score = 0
 
+        self.tournament_round = 1
+        self.total_rounds = 3
         self.current_turn = 1
 
-        self.round_number = 1
-        self.total_rounds = 3
+        # V31 modes
+        self.time_attack_score = 0
+        self.time_attack_start = 0
 
-        self.tournament_active = False
+        self.survival_round = 1
+        self.survival_lives = 3
 
-        # ----------------------------------------------------
-        # UI
-        # ----------------------------------------------------
+        self.endless_round = 1
+        self.endless_lives = 3
+
+        self.power_used = False
+        self.score_multiplier = 1
+
+        self.extra_life = 0
+        self.time_freeze = False
+
+        # ---------------- DIFFICULTY ----------------
+
+        self.difficulties = {
+            "Easy": {
+                "max": 50,
+                "attempts": 15,
+                "time": 90,
+                "score": 100
+            },
+            "Medium": {
+                "max": 100,
+                "attempts": 10,
+                "time": 60,
+                "score": 200
+            },
+            "Hard": {
+                "max": 500,
+                "attempts": 7,
+                "time": 45,
+                "score": 300
+            }
+        }
+
+        # ---------------- DATA ----------------
+
+        self.profile = self.load_json(
+            PROFILE_FILE,
+            {
+                "name": "Player",
+                "xp": 0,
+                "level": 1,
+                "games": 0,
+                "wins": 0,
+                "losses": 0,
+                "highest_score": 0,
+                "best_streak": 0,
+                "total_guesses": 0,
+                "quests_completed": 0
+            }
+        )
+
+        self.achievements = self.load_json(
+            ACHIEVEMENTS_FILE,
+            {}
+        )
+
+        self.stats = self.load_json(
+            STATS_FILE,
+            {
+                "Easy": {"games": 0, "wins": 0},
+                "Medium": {"games": 0, "wins": 0},
+                "Hard": {"games": 0, "wins": 0}
+            }
+        )
+
+        self.profile_name = self.profile.get("name", "Player")
 
         self.build_ui()
-
+        self.update_profile_display()
         self.new_game()
+
+    # ========================================================
+    # JSON
+    # ========================================================
+
+    def load_json(self, filename, default):
+        try:
+            if os.path.exists(filename):
+                with open(filename, "r") as file:
+                    return json.load(file)
+        except Exception:
+            pass
+
+        return default
+
+    def save_json(self, filename, data):
+        try:
+            with open(filename, "w") as file:
+                json.dump(data, file, indent=4)
+        except Exception:
+            pass
 
     # ========================================================
     # UI
@@ -335,660 +186,420 @@ class NumberGuessingGame:
 
     def build_ui(self):
 
-        # ----------------------------------------------------
-        # TITLE
-        # ----------------------------------------------------
+        # ---------------- TITLE ----------------
 
-        tk.Label(
+        title = tk.Label(
             self.root,
-            text="🎯 NUMBER GUESSING ARCADE",
-            font=("Segoe UI", 26, "bold"),
+            text="🎮 NUMBER GUESSING ARCADE",
+            font=("Arial", 28, "bold"),
             bg=BG,
             fg=CYAN
-        ).pack(
-            pady=(15, 2)
         )
+        title.pack(pady=(15, 5))
 
-        tk.Label(
+        subtitle = tk.Label(
             self.root,
-            text="V30 • COMPETITIVE MODE EDITION",
-            font=("Segoe UI", 10, "bold"),
+            text="V31 • GAME MODES EDITION",
+            font=("Arial", 11, "bold"),
             bg=BG,
             fg=PURPLE
-        ).pack()
-
-        # ----------------------------------------------------
-        # MAIN
-        # ----------------------------------------------------
-
-        main = tk.Frame(
-            self.root,
-            bg=BG
         )
+        subtitle.pack()
 
-        main.pack(
-            fill="both",
-            expand=True,
-            padx=18,
-            pady=15
-        )
+        # ---------------- TOP BAR ----------------
 
-        # ====================================================
-        # LEFT PANEL
-        # ====================================================
-
-        left = tk.Frame(
-            main,
-            bg=PANEL,
-            width=250,
-            height=620
-        )
-
-        left.pack(
-            side="left",
-            fill="y",
-            padx=(0, 10)
-        )
-
-        left.pack_propagate(False)
+        top = tk.Frame(self.root, bg=BG)
+        top.pack(fill="x", padx=25, pady=15)
 
         tk.Label(
-            left,
-            text="⚙ GAME SETTINGS",
-            font=("Segoe UI", 14, "bold"),
-            bg=PANEL,
+            top,
+            text="Player:",
+            font=("Arial", 11, "bold"),
+            bg=BG,
             fg=WHITE
-        ).pack(
-            pady=18
-        )
-
-        tk.Label(
-            left,
-            text="Player Name",
-            bg=PANEL,
-            fg=GRAY,
-            font=("Segoe UI", 10, "bold")
-        ).pack()
+        ).pack(side="left")
 
         self.name_entry = tk.Entry(
-            left,
-            font=("Segoe UI", 11),
+            top,
+            width=15,
+            font=("Arial", 11),
             bg=PANEL2,
             fg=WHITE,
-            insertbackground=WHITE,
-            relief="flat",
-            justify="center"
+            insertbackground=WHITE
         )
+        self.name_entry.pack(side="left", padx=8)
 
-        self.name_entry.insert(
-            0,
-            self.player_name
-        )
+        self.name_entry.insert(0, self.profile_name)
 
-        self.name_entry.pack(
-            pady=7,
-            padx=25,
-            fill="x"
-        )
-
-        tk.Label(
-            left,
-            text="Difficulty",
-            bg=PANEL,
-            fg=GRAY,
-            font=("Segoe UI", 10, "bold")
-        ).pack(
-            pady=(15, 3)
-        )
-
-        self.difficulty_var = tk.StringVar(
-            value="Easy"
-        )
-
-        for difficulty in DIFFICULTIES:
-
-            tk.Radiobutton(
-                left,
-                text=difficulty,
-                variable=self.difficulty_var,
-                value=difficulty,
-                command=self.new_game,
-                bg=PANEL,
-                fg=WHITE,
-                selectcolor=PANEL2,
-                activebackground=PANEL,
-                activeforeground=CYAN,
-                font=("Segoe UI", 10)
-            ).pack(
-                anchor="w",
-                padx=35
-            )
-
-        # ----------------------------------------------------
-        # GAME MODE
-        # ----------------------------------------------------
-
-        tk.Label(
-            left,
-            text="Game Mode",
-            bg=PANEL,
-            fg=GRAY,
-            font=("Segoe UI", 10, "bold")
-        ).pack(
-            pady=(18, 3)
-        )
-
-        self.mode_var = tk.StringVar(
-            value="Single Player"
-        )
-
-        for mode in [
-            "Single Player",
-            "Two Player",
-            "Tournament"
-        ]:
-
-            tk.Radiobutton(
-                left,
-                text=mode,
-                variable=self.mode_var,
-                value=mode,
-                command=self.change_mode,
-                bg=PANEL,
-                fg=WHITE,
-                selectcolor=PANEL2,
-                activebackground=PANEL,
-                activeforeground=CYAN,
-                font=("Segoe UI", 9)
-            ).pack(
-                anchor="w",
-                padx=35
-            )
-
-        # ----------------------------------------------------
-        # BUTTONS
-        # ----------------------------------------------------
-
-        tk.Button(
-            left,
-            text="👤 PLAYER PROFILE",
-            command=self.show_profile,
+        save_name_btn = tk.Button(
+            top,
+            text="Save Name",
+            command=self.save_name,
             bg=PURPLE,
             fg=WHITE,
-            activebackground=BLUE,
+            font=("Arial", 10, "bold"),
             relief="flat",
-            font=("Segoe UI", 10, "bold")
-        ).pack(
-            pady=(20, 7),
-            padx=25,
-            fill="x"
-        )
-
-        tk.Button(
-            left,
-            text="🏆 LEADERBOARD",
-            command=self.show_leaderboard,
-            bg=BLUE,
-            fg=WHITE,
-            activebackground=CYAN,
-            relief="flat",
-            font=("Segoe UI", 10, "bold")
-        ).pack(
-            pady=5,
-            padx=25,
-            fill="x"
-        )
-
-        tk.Button(
-            left,
-            text="🎖 ACHIEVEMENTS",
-            command=self.show_achievements,
-            bg=ORANGE,
-            fg=WHITE,
-            activebackground=YELLOW,
-            relief="flat",
-            font=("Segoe UI", 10, "bold")
-        ).pack(
-            pady=5,
-            padx=25,
-            fill="x"
-        )
-
-        # ====================================================
-        # CENTER
-        # ====================================================
-
-        center = tk.Frame(
-            main,
-            bg=PANEL,
-            width=600,
-            height=620
-        )
-
-        center.pack(
-            side="left",
-            fill="both",
-            expand=True,
             padx=10
         )
+        save_name_btn.pack(side="left", padx=5)
 
-        center.pack_propagate(False)
-
-        self.status_label = tk.Label(
-            center,
-            text="Guess the secret number!",
-            font=("Segoe UI", 15, "bold"),
-            bg=PANEL,
-            fg=WHITE
-        )
-
-        self.status_label.pack(
-            pady=(20, 10)
-        )
-
-        # ----------------------------------------------------
-        # COMPETITIVE SCOREBOARD
-        # ----------------------------------------------------
-
-        self.competitive_label = tk.Label(
-            center,
-            text="",
-            font=("Segoe UI", 11, "bold"),
-            bg=PANEL,
-            fg=PINK
-        )
-
-        self.competitive_label.pack(
-            pady=3
-        )
-
-        self.turn_label = tk.Label(
-            center,
-            text="",
-            font=("Segoe UI", 11, "bold"),
-            bg=PANEL,
-            fg=YELLOW
-        )
-
-        self.turn_label.pack(
-            pady=3
-        )
-
-        # ----------------------------------------------------
-        # ROUND
-        # ----------------------------------------------------
-
-        self.round_label = tk.Label(
-            center,
-            text="",
-            font=("Segoe UI", 11, "bold"),
-            bg=PANEL,
-            fg=PURPLE
-        )
-
-        self.round_label.pack(
-            pady=3
-        )
-
-        # ----------------------------------------------------
-        # TIMER
-        # ----------------------------------------------------
-
-        self.timer_label = tk.Label(
-            center,
-            text="⏱ 00s",
-            font=("Segoe UI", 18, "bold"),
-            bg=PANEL,
-            fg=YELLOW
-        )
-
-        self.timer_label.pack(
-            pady=5
-        )
-
-        # ----------------------------------------------------
-        # SCORE
-        # ----------------------------------------------------
-
-        self.score_label = tk.Label(
-            center,
-            text="⭐ Score: 0",
-            font=("Segoe UI", 13, "bold"),
-            bg=PANEL,
-            fg=GREEN
-        )
-
-        self.score_label.pack()
-
-        # ----------------------------------------------------
-        # STREAK
-        # ----------------------------------------------------
-
-        self.streak_label = tk.Label(
-            center,
-            text="🔥 Streak: 0   Combo: x1",
-            font=("Segoe UI", 12, "bold"),
-            bg=PANEL,
-            fg=ORANGE
-        )
-
-        self.streak_label.pack(
-            pady=5
-        )
-
-        # ----------------------------------------------------
-        # RANGE
-        # ----------------------------------------------------
-
-        self.range_label = tk.Label(
-            center,
-            text="",
-            font=("Segoe UI", 12),
-            bg=PANEL,
-            fg=CYAN
-        )
-
-        self.range_label.pack(
-            pady=15
-        )
-
-        # ----------------------------------------------------
-        # GUESS
-        # ----------------------------------------------------
-
-        self.guess_entry = tk.Entry(
-            center,
-            font=("Segoe UI", 22, "bold"),
-            bg=PANEL2,
-            fg=WHITE,
-            insertbackground=WHITE,
-            relief="flat",
-            justify="center"
-        )
-
-        self.guess_entry.pack(
-            padx=100,
-            fill="x",
-            ipady=8
-        )
-
-        self.guess_entry.bind(
-            "<Return>",
-            lambda event: self.check_guess()
-        )
-
-        tk.Button(
-            center,
-            text="🎯 MAKE GUESS",
-            command=self.check_guess,
-            bg=GREEN,
-            fg=BG,
-            activebackground=CYAN,
-            relief="flat",
-            font=("Segoe UI", 13, "bold")
-        ).pack(
-            pady=12,
-            ipadx=20,
-            ipady=6
-        )
-
-        self.attempts_label = tk.Label(
-            center,
-            text="Attempts: 0",
-            font=("Segoe UI", 11, "bold"),
-            bg=PANEL,
-            fg=WHITE
-        )
-
-        self.attempts_label.pack()
-
-        # ----------------------------------------------------
-        # POWER UPS
-        # ----------------------------------------------------
-
-        power_frame = tk.Frame(
-            center,
-            bg=PANEL
-        )
-
-        power_frame.pack(
-            pady=10
-        )
-
-        tk.Label(
-            power_frame,
-            text="⚡ POWER-UPS",
-            font=("Segoe UI", 11, "bold"),
-            bg=PANEL,
-            fg=PURPLE
-        ).pack()
-
-        power_buttons = tk.Frame(
-            power_frame,
-            bg=PANEL
-        )
-
-        power_buttons.pack(
-            pady=6
-        )
-
-        self.life_button = tk.Button(
-            power_buttons,
-            text="❤️ +2",
-            command=self.use_extra_life,
-            bg=RED,
-            fg=WHITE,
-            relief="flat",
-            font=("Segoe UI", 9, "bold")
-        )
-
-        self.life_button.pack(
-            side="left",
-            padx=3
-        )
-
-        self.freeze_button = tk.Button(
-            power_buttons,
-            text="❄️ FREEZE",
-            command=self.use_time_freeze,
+        profile_btn = tk.Button(
+            top,
+            text="👤 Profile",
+            command=self.show_profile,
             bg=BLUE,
             fg=WHITE,
+            font=("Arial", 10, "bold"),
             relief="flat",
-            font=("Segoe UI", 9, "bold")
+            padx=12
         )
+        profile_btn.pack(side="right", padx=5)
 
-        self.freeze_button.pack(
-            side="left",
-            padx=3
-        )
-
-        self.double_button = tk.Button(
-            power_buttons,
-            text="⭐ 2X",
-            command=self.use_double_score,
-            bg=YELLOW,
-            fg=BG,
-            relief="flat",
-            font=("Segoe UI", 9, "bold")
-        )
-
-        self.double_button.pack(
-            side="left",
-            padx=3
-        )
-
-        self.range_button = tk.Button(
-            power_buttons,
-            text="🔍 RANGE",
-            command=self.use_reveal_range,
-            bg=PURPLE,
+        leaderboard_btn = tk.Button(
+            top,
+            text="🏆 Leaderboard",
+            command=self.show_leaderboard,
+            bg=ORANGE,
             fg=WHITE,
+            font=("Arial", 10, "bold"),
             relief="flat",
-            font=("Segoe UI", 9, "bold")
+            padx=12
+        )
+        leaderboard_btn.pack(side="right", padx=5)
+
+        # ---------------- MODE PANEL ----------------
+
+        mode_panel = tk.Frame(
+            self.root,
+            bg=PANEL,
+            padx=15,
+            pady=12
+        )
+        mode_panel.pack(fill="x", padx=25)
+
+        tk.Label(
+            mode_panel,
+            text="GAME MODE",
+            font=("Arial", 10, "bold"),
+            bg=PANEL,
+            fg=GRAY
+        ).pack(side="left", padx=(0, 10))
+
+        self.mode_var = tk.StringVar(value="Single Player")
+
+        modes = [
+            "Single Player",
+            "Time Attack",
+            "Survival",
+            "Endless",
+            "Two Player",
+            "Tournament"
+        ]
+
+        self.mode_menu = tk.OptionMenu(
+            mode_panel,
+            self.mode_var,
+            *modes,
+            command=self.mode_changed
         )
 
-        self.range_button.pack(
-            side="left",
-            padx=3
-        )
-
-        tk.Button(
-            center,
-            text="🔄 NEW GAME",
-            command=self.new_game,
+        self.mode_menu.config(
             bg=PANEL2,
             fg=WHITE,
             activebackground=PURPLE,
-            relief="flat",
-            font=("Segoe UI", 11, "bold")
-        ).pack(
-            pady=5
+            activeforeground=WHITE,
+            font=("Arial", 10, "bold"),
+            width=18
         )
 
-        # ====================================================
-        # RIGHT PANEL
-        # ====================================================
-
-        right = tk.Frame(
-            main,
-            bg=PANEL,
-            width=260,
-            height=620
-        )
-
-        right.pack(
-            side="right",
-            fill="y",
-            padx=(10, 0)
-        )
-
-        right.pack_propagate(False)
-
-        tk.Label(
-            right,
-            text="👤 PLAYER",
-            font=("Segoe UI", 14, "bold"),
-            bg=PANEL,
-            fg=CYAN
-        ).pack(
-            pady=(18, 5)
-        )
-
-        self.player_display = tk.Label(
-            right,
-            text="Player",
-            font=("Segoe UI", 13, "bold"),
-            bg=PANEL,
+        self.mode_menu["menu"].config(
+            bg=PANEL2,
             fg=WHITE
         )
 
-        self.player_display.pack()
+        self.mode_menu.pack(side="left")
 
-        self.level_display = tk.Label(
-            right,
-            text="⭐ Level 1",
-            font=("Segoe UI", 11, "bold"),
+        tk.Label(
+            mode_panel,
+            text="DIFFICULTY",
+            font=("Arial", 10, "bold"),
+            bg=PANEL,
+            fg=GRAY
+        ).pack(side="left", padx=(30, 10))
+
+        self.difficulty_var = tk.StringVar(value="Medium")
+
+        self.difficulty_menu = tk.OptionMenu(
+            mode_panel,
+            self.difficulty_var,
+            "Easy",
+            "Medium",
+            "Hard",
+            command=lambda x: self.new_game()
+        )
+
+        self.difficulty_menu.config(
+            bg=PANEL2,
+            fg=WHITE,
+            activebackground=PURPLE,
+            activeforeground=WHITE,
+            font=("Arial", 10, "bold"),
+            width=10
+        )
+
+        self.difficulty_menu["menu"].config(
+            bg=PANEL2,
+            fg=WHITE
+        )
+
+        self.difficulty_menu.pack(side="left")
+
+        # ---------------- STATUS PANEL ----------------
+
+        status = tk.Frame(
+            self.root,
+            bg=PANEL,
+            padx=15,
+            pady=12
+        )
+        status.pack(fill="x", padx=25, pady=12)
+
+        self.mode_label = tk.Label(
+            status,
+            text="Mode: Single Player",
+            font=("Arial", 11, "bold"),
+            bg=PANEL,
+            fg=CYAN
+        )
+        self.mode_label.pack(side="left", padx=15)
+
+        self.attempt_label = tk.Label(
+            status,
+            text="Attempts: 0",
+            font=("Arial", 11, "bold"),
             bg=PANEL,
             fg=YELLOW
         )
+        self.attempt_label.pack(side="left", padx=15)
 
-        self.level_display.pack(
-            pady=5
-        )
-
-        self.xp_label = tk.Label(
-            right,
-            text="XP: 0",
-            font=("Segoe UI", 10, "bold"),
+        self.timer_label = tk.Label(
+            status,
+            text="⏱ 00",
+            font=("Arial", 11, "bold"),
             bg=PANEL,
             fg=GREEN
         )
+        self.timer_label.pack(side="left", padx=15)
 
-        self.xp_label.pack(
-            pady=(10, 2)
-        )
-
-        self.xp_bar = tk.Canvas(
-            right,
-            width=210,
-            height=16,
-            bg=PANEL2,
-            highlightthickness=0
-        )
-
-        self.xp_bar.pack(
-            pady=3
-        )
-
-        tk.Label(
-            right,
-            text="📊 QUICK STATS",
-            font=("Segoe UI", 12, "bold"),
-            bg=PANEL,
-            fg=PURPLE
-        ).pack(
-            pady=(20, 10)
-        )
-
-        self.quick_stats = tk.Label(
-            right,
-            text="",
-            justify="left",
-            anchor="w",
-            font=("Segoe UI", 10),
-            bg=PANEL,
-            fg=WHITE
-        )
-
-        self.quick_stats.pack(
-            padx=20,
-            fill="x"
-        )
-
-        tk.Label(
-            right,
-            text="🏆 COMPETITIVE SCORE",
-            font=("Segoe UI", 11, "bold"),
+        self.score_label = tk.Label(
+            status,
+            text="Score: 0",
+            font=("Arial", 11, "bold"),
             bg=PANEL,
             fg=ORANGE
-        ).pack(
-            pady=(25, 8)
         )
+        self.score_label.pack(side="right", padx=15)
 
-        self.competitive_side = tk.Label(
-            right,
-            text="",
-            justify="left",
-            font=("Segoe UI", 10, "bold"),
+        self.xp_label = tk.Label(
+            status,
+            text="XP: 0 | Lv.1",
+            font=("Arial", 11, "bold"),
+            bg=PANEL,
+            fg=PURPLE
+        )
+        self.xp_label.pack(side="right", padx=15)
+
+        # ---------------- MAIN PANEL ----------------
+
+        main = tk.Frame(
+            self.root,
+            bg=PANEL,
+            padx=30,
+            pady=25
+        )
+        main.pack(fill="both", expand=True, padx=25)
+
+        self.instruction_label = tk.Label(
+            main,
+            text="Guess the hidden number!",
+            font=("Arial", 20, "bold"),
             bg=PANEL,
             fg=WHITE
         )
+        self.instruction_label.pack(pady=10)
 
-        self.competitive_side.pack()
+        self.range_label = tk.Label(
+            main,
+            text="Number is between 1 and 100",
+            font=("Arial", 12),
+            bg=PANEL,
+            fg=GRAY
+        )
+        self.range_label.pack(pady=5)
+
+        self.guess_entry = tk.Entry(
+            main,
+            font=("Arial", 22, "bold"),
+            width=10,
+            justify="center",
+            bg=PANEL2,
+            fg=WHITE,
+            insertbackground=WHITE
+        )
+        self.guess_entry.pack(pady=15)
+
+        self.guess_entry.bind(
+            "<Return>",
+            lambda event: self.make_guess()
+        )
+
+        self.guess_button = tk.Button(
+            main,
+            text="🎯 GUESS",
+            command=self.make_guess,
+            bg=GREEN,
+            fg=BG,
+            font=("Arial", 13, "bold"),
+            relief="flat",
+            padx=30,
+            pady=8
+        )
+        self.guess_button.pack(pady=5)
+
+        self.message_label = tk.Label(
+            main,
+            text="",
+            font=("Arial", 14, "bold"),
+            bg=PANEL,
+            fg=WHITE,
+            wraplength=800
+        )
+        self.message_label.pack(pady=15)
+
+        # ---------------- POWER UPS ----------------
+
+        power_frame = tk.Frame(main, bg=PANEL)
+        power_frame.pack(pady=10)
+
+        tk.Label(
+            power_frame,
+            text="POWER-UPS",
+            font=("Arial", 10, "bold"),
+            bg=PANEL,
+            fg=GRAY
+        ).pack(pady=4)
+
+        buttons = tk.Frame(power_frame, bg=PANEL)
+        buttons.pack()
+
+        self.life_btn = tk.Button(
+            buttons,
+            text="❤️ Extra Life",
+            command=self.use_extra_life,
+            bg=RED,
+            fg=WHITE,
+            font=("Arial", 9, "bold"),
+            relief="flat",
+            padx=8
+        )
+        self.life_btn.pack(side="left", padx=3)
+
+        self.freeze_btn = tk.Button(
+            buttons,
+            text="❄️ Time Freeze",
+            command=self.use_time_freeze,
+            bg=CYAN,
+            fg=BG,
+            font=("Arial", 9, "bold"),
+            relief="flat",
+            padx=8
+        )
+        self.freeze_btn.pack(side="left", padx=3)
+
+        self.double_btn = tk.Button(
+            buttons,
+            text="⭐ 2X Score",
+            command=self.use_double_score,
+            bg=YELLOW,
+            fg=BG,
+            font=("Arial", 9, "bold"),
+            relief="flat",
+            padx=8
+        )
+        self.double_btn.pack(side="left", padx=3)
+
+        self.reveal_btn = tk.Button(
+            buttons,
+            text="🔍 Reveal Range",
+            command=self.reveal_range,
+            bg=PURPLE,
+            fg=WHITE,
+            font=("Arial", 9, "bold"),
+            relief="flat",
+            padx=8
+        )
+        self.reveal_btn.pack(side="left", padx=3)
+
+        # ---------------- BOTTOM ----------------
+
+        bottom = tk.Frame(self.root, bg=BG)
+        bottom.pack(fill="x", padx=25, pady=12)
+
+        new_btn = tk.Button(
+            bottom,
+            text="🔄 New Game",
+            command=self.new_game,
+            bg=BLUE,
+            fg=WHITE,
+            font=("Arial", 11, "bold"),
+            relief="flat",
+            padx=20
+        )
+        new_btn.pack(side="left")
+
+        achievements_btn = tk.Button(
+            bottom,
+            text="🏅 Achievements",
+            command=self.show_achievements,
+            bg=PINK,
+            fg=WHITE,
+            font=("Arial", 11, "bold"),
+            relief="flat",
+            padx=20
+        )
+        achievements_btn.pack(side="right")
+
+        self.root.bind("<Escape>", lambda event: self.new_game())
+
+    # ========================================================
+    # NAME
+    # ========================================================
+
+    def save_name(self):
+        name = self.name_entry.get().strip()
+
+        if not name:
+            name = "Player"
+
+        self.player_name = name
+        self.profile["name"] = name
+
+        self.save_json(PROFILE_FILE, self.profile)
+
+        self.message_label.config(
+            text=f"Welcome, {name}! 🎮",
+            fg=GREEN
+        )
 
         self.update_profile_display()
 
     # ========================================================
-    # MODE CHANGE
+    # MODE
     # ========================================================
 
-    def change_mode(self):
-
-        self.mode = self.mode_var.get()
-
-        self.timer_running = False
-
-        if self.mode == "Single Player":
-
-            self.new_game()
-
-        elif self.mode == "Two Player":
-
-            self.start_two_player()
-
-        elif self.mode == "Tournament":
-
-            self.start_tournament()
+    def mode_changed(self, value):
+        self.mode = value
+        self.new_game()
 
     # ========================================================
     # NEW GAME
@@ -996,124 +607,262 @@ class NumberGuessingGame:
 
     def new_game(self):
 
-        self.player_name = (
-            self.name_entry.get().strip()
-            or "Player"
-        )
-
-        self.player_display.config(
-            text=self.player_name
-        )
-
-        self.current_difficulty = (
-            self.difficulty_var.get()
-        )
+        self.stop_timer()
 
         self.mode = self.mode_var.get()
-
-        # ----------------------------------------------------
-        # COMPETITIVE MODES
-        # ----------------------------------------------------
-
-        if self.mode == "Two Player":
-
-            self.start_two_player()
-
-            return
-
-        if self.mode == "Tournament":
-
-            self.start_tournament()
-
-            return
-
-        # ----------------------------------------------------
-        # SINGLE PLAYER
-        # ----------------------------------------------------
-
-        difficulty = DIFFICULTIES[
-            self.current_difficulty
-        ]
-
-        self.secret_number = random.randint(
-            1,
-            difficulty["max"]
-        )
-
-        self.attempts_left = difficulty[
-            "attempts"
-        ]
-
-        self.current_score = difficulty[
-            "score"
-        ]
-
-        self.time_left = difficulty[
-            "time"
-        ]
-
-        self.timer_running = True
-
-        self.start_time = time.time()
-
-        self.extra_life = True
-        self.time_freeze = True
-        self.double_score = True
-        self.reveal_range = True
+        self.difficulty = self.difficulty_var.get()
 
         self.power_used = False
+        self.score_multiplier = 1
+        self.extra_life = 0
+        self.time_freeze = False
 
-        self.life_button.config(
-            state="normal"
+        self.player_name = self.name_entry.get().strip()
+
+        if not self.player_name:
+            self.player_name = "Player"
+
+        self.mode_label.config(
+            text=f"Mode: {self.mode}"
         )
 
-        self.freeze_button.config(
-            state="normal"
+        self.enable_powerups()
+
+        if self.mode == "Two Player":
+            self.start_two_player()
+
+        elif self.mode == "Tournament":
+            self.start_tournament()
+
+        elif self.mode == "Time Attack":
+            self.start_time_attack()
+
+        elif self.mode == "Survival":
+            self.start_survival()
+
+        elif self.mode == "Endless":
+            self.start_endless()
+
+        else:
+            self.start_single_player()
+
+    # ========================================================
+    # DIFFICULTY
+    # ========================================================
+
+    def get_difficulty_data(self):
+        return self.difficulties[self.difficulty]
+
+    # ========================================================
+    # SINGLE PLAYER
+    # ========================================================
+
+    def start_single_player(self):
+
+        data = self.get_difficulty_data()
+
+        self.number = random.randint(1, data["max"])
+        self.max_attempts = data["attempts"]
+        self.attempts_left = data["attempts"]
+
+        self.time_limit = data["time"]
+        self.time_left = data["time"]
+
+        self.score = data["score"]
+        self.game_running = True
+
+        self.range_label.config(
+            text=f"Number is between 1 and {data['max']}"
         )
 
-        self.double_button.config(
-            state="normal"
+        self.instruction_label.config(
+            text="🎯 Guess the hidden number!"
         )
 
-        self.range_button.config(
-            state="normal"
+        self.message_label.config(
+            text="Make your first guess!",
+            fg=WHITE
         )
 
-        self.guess_entry.config(
-            state="normal"
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.update_status()
+        self.start_timer()
+
+    # ========================================================
+    # TIME ATTACK
+    # ========================================================
+
+    def start_time_attack(self):
+
+        data = self.get_difficulty_data()
+
+        self.number = random.randint(1, data["max"])
+
+        self.max_attempts = 999
+        self.attempts_left = 999
+
+        self.time_limit = 30 if self.difficulty == "Easy" else (
+            25 if self.difficulty == "Medium" else 20
         )
 
-        self.guess_entry.delete(
-            0,
-            tk.END
-        )
+        self.time_left = self.time_limit
 
-        self.status_label.config(
-            text="🎯 Guess the secret number!"
-        )
+        self.time_attack_score = 0
+        self.score = 0
 
-        self.competitive_label.config(
-            text=""
-        )
+        self.game_running = True
 
-        self.turn_label.config(
-            text=""
-        )
-
-        self.round_label.config(
-            text=""
+        self.instruction_label.config(
+            text="⚡ TIME ATTACK"
         )
 
         self.range_label.config(
-            text=(
-                f"Number is between "
-                f"1 and {difficulty['max']}"
-            )
+            text=f"Guess as many numbers as possible in {self.time_limit} seconds!"
         )
 
-        self.update_game_display()
+        self.message_label.config(
+            text="Speed is everything! 🔥",
+            fg=YELLOW
+        )
 
-        self.timer_tick()
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.update_status()
+        self.start_timer()
+
+    def time_attack_next_number(self):
+
+        data = self.get_difficulty_data()
+
+        self.number = random.randint(1, data["max"])
+
+        self.guess_entry.delete(0, tk.END)
+
+        self.message_label.config(
+            text="New number! Keep going! ⚡",
+            fg=CYAN
+        )
+
+    # ========================================================
+    # SURVIVAL
+    # ========================================================
+
+    def start_survival(self):
+
+        self.survival_round = 1
+        self.survival_lives = 3
+
+        self.start_survival_round()
+
+    def start_survival_round(self):
+
+        data = self.get_difficulty_data()
+
+        # Increase difficulty every round
+        max_number = min(
+            1000,
+            data["max"] + (self.survival_round - 1) * 50
+        )
+
+        self.number = random.randint(1, max_number)
+
+        self.max_attempts = max(
+            3,
+            data["attempts"] - (self.survival_round - 1)
+        )
+
+        self.attempts_left = self.max_attempts
+
+        self.time_limit = max(
+            15,
+            data["time"] - (self.survival_round - 1) * 3
+        )
+
+        self.time_left = self.time_limit
+
+        self.score = self.survival_round * 100
+        self.game_running = True
+
+        self.instruction_label.config(
+            text=f"💀 SURVIVAL — ROUND {self.survival_round}"
+        )
+
+        self.range_label.config(
+            text=f"Number is between 1 and {max_number}"
+        )
+
+        self.message_label.config(
+            text=f"❤️ Lives: {self.survival_lives}",
+            fg=RED
+        )
+
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.update_status()
+        self.start_timer()
+
+    # ========================================================
+    # ENDLESS
+    # ========================================================
+
+    def start_endless(self):
+
+        self.endless_round = 1
+        self.endless_lives = 3
+
+        self.start_endless_round()
+
+    def start_endless_round(self):
+
+        data = self.get_difficulty_data()
+
+        max_number = min(
+            2000,
+            data["max"] + (self.endless_round - 1) * 25
+        )
+
+        self.number = random.randint(1, max_number)
+
+        self.max_attempts = max(
+            3,
+            data["attempts"] - (self.endless_round // 3)
+        )
+
+        self.attempts_left = self.max_attempts
+
+        self.time_limit = max(
+            10,
+            data["time"] - (self.endless_round // 2)
+        )
+
+        self.time_left = self.time_limit
+
+        self.score = self.endless_round * 75
+
+        self.game_running = True
+
+        self.instruction_label.config(
+            text=f"♾️ ENDLESS — ROUND {self.endless_round}"
+        )
+
+        self.range_label.config(
+            text=f"Number is between 1 and {max_number}"
+        )
+
+        self.message_label.config(
+            text=f"❤️ Lives: {self.endless_lives}",
+            fg=CYAN
+        )
+
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.update_status()
+        self.start_timer()
 
     # ========================================================
     # TWO PLAYER
@@ -1121,21 +870,10 @@ class NumberGuessingGame:
 
     def start_two_player(self):
 
-        self.timer_running = False
-
-        self.player1_name = (
-            self.name_entry.get().strip()
-            or "Player 1"
-        )
-
-        self.player2_name = "Player 2"
-
         self.player1_score = 0
         self.player2_score = 0
 
         self.current_turn = 1
-
-        self.tournament_active = False
 
         self.start_competitive_round()
 
@@ -1145,25 +883,11 @@ class NumberGuessingGame:
 
     def start_tournament(self):
 
-        self.timer_running = False
-
-        self.player1_name = (
-            self.name_entry.get().strip()
-            or "Player 1"
-        )
-
-        self.player2_name = "Player 2"
-
         self.player1_score = 0
         self.player2_score = 0
 
+        self.tournament_round = 1
         self.current_turn = 1
-
-        self.round_number = 1
-
-        self.total_rounds = 3
-
-        self.tournament_active = True
 
         self.start_competitive_round()
 
@@ -1173,1303 +897,1125 @@ class NumberGuessingGame:
 
     def start_competitive_round(self):
 
-        difficulty = DIFFICULTIES[
-            self.difficulty_var.get()
-        ]
+        data = self.get_difficulty_data()
 
-        self.current_difficulty = (
-            self.difficulty_var.get()
-        )
+        self.number = random.randint(1, data["max"])
 
-        self.secret_number = random.randint(
-            1,
-            difficulty["max"]
-        )
+        self.max_attempts = data["attempts"]
+        self.attempts_left = data["attempts"]
 
-        self.attempts_left = difficulty[
-            "attempts"
-        ]
+        self.time_limit = data["time"]
+        self.time_left = data["time"]
 
-        self.time_left = difficulty[
-            "time"
-        ]
+        self.score = data["score"]
 
-        self.current_score = difficulty[
-            "score"
-        ]
+        self.game_running = True
 
-        self.current_turn = 1
-
-        self.timer_running = True
-
-        self.guess_entry.config(
-            state="normal"
-        )
-
-        self.guess_entry.delete(
-            0,
-            tk.END
-        )
-
-        self.status_label.config(
-            text="🎯 Find the secret number!"
-        )
-
-        if self.tournament_active:
-
-            self.round_label.config(
-                text=(
-                    f"🏆 ROUND "
-                    f"{self.round_number}/"
-                    f"{self.total_rounds}"
-                )
+        if self.mode == "Tournament":
+            prefix = (
+                f"🏆 TOURNAMENT — ROUND "
+                f"{self.tournament_round}/{self.total_rounds}"
             )
-
         else:
+            prefix = "⚔️ TWO PLAYER"
 
-            self.round_label.config(
-                text="👥 TWO PLAYER ROUND"
-            )
+        player = (
+            "Player 1"
+            if self.current_turn == 1
+            else "Player 2"
+        )
 
-        self.update_competitive_display()
+        self.instruction_label.config(
+            text=f"{prefix} • {player}"
+        )
 
-        self.timer_tick()
+        self.range_label.config(
+            text=f"Number is between 1 and {data['max']}"
+        )
+
+        self.message_label.config(
+            text=f"{player}'s turn!",
+            fg=CYAN
+        )
+
+        self.guess_entry.delete(0, tk.END)
+        self.guess_entry.focus()
+
+        self.update_status()
+        self.start_timer()
 
     # ========================================================
-    # TIMER
+    # GUESS
     # ========================================================
 
-    def timer_tick(self):
+    def make_guess(self):
 
-        if not self.timer_running:
+        if not self.game_running:
             return
 
-        if self.time_left <= 0:
+        try:
+            guess = int(self.guess_entry.get())
+        except ValueError:
+            self.message_label.config(
+                text="❌ Enter a valid number!",
+                fg=RED
+            )
+            return
 
-            self.timer_running = False
+        self.profile["total_guesses"] = (
+            self.profile.get("total_guesses", 0) + 1
+        )
 
-            if self.mode in [
-                "Two Player",
-                "Tournament"
-            ]:
+        # ---------------- TIME ATTACK ----------------
 
-                self.competitive_loss(
-                    "⏰ Time's up!"
+        if self.mode == "Time Attack":
+
+            if guess == self.number:
+
+                gained = max(
+                    10,
+                    self.time_left * 2
                 )
+
+                gained *= self.score_multiplier
+
+                self.time_attack_score += gained
+                self.score = self.time_attack_score
+
+                self.message_label.config(
+                    text=f"🔥 CORRECT! +{gained} points!",
+                    fg=GREEN
+                )
+
+                self.time_attack_next_number()
 
             else:
 
-                self.end_single_loss(
-                    "⏰ Time's up!"
+                if guess < self.number:
+                    hint = "⬆️ Higher!"
+                else:
+                    hint = "⬇️ Lower!"
+
+                self.message_label.config(
+                    text=hint,
+                    fg=ORANGE
                 )
 
+            self.update_status()
             return
 
-        self.timer_label.config(
-            text=f"⏱ {self.time_left:02d}s"
-        )
-
-        self.time_left -= 1
-
-        self.root.after(
-            1000,
-            self.timer_tick
-        )
-
-    # ========================================================
-    # CHECK GUESS
-    # ========================================================
-
-    def check_guess(self):
-
-        if not self.timer_running:
-            return
-
-        value = self.guess_entry.get().strip()
-
-        if not value.isdigit():
-
-            messagebox.showwarning(
-                "Invalid Input",
-                "Please enter a valid number."
-            )
-
-            return
-
-        guess = int(value)
-
-        maximum = DIFFICULTIES[
-            self.current_difficulty
-        ]["max"]
-
-        if guess < 1 or guess > maximum:
-
-            messagebox.showwarning(
-                "Out of Range",
-                f"Enter a number between 1 and {maximum}."
-            )
-
-            return
+        # ---------------- NORMAL GUESS ----------------
 
         self.attempts_left -= 1
 
-        self.statistics[
-            "total_guesses"
-        ] += 1
+        if guess == self.number:
 
-        # ----------------------------------------------------
-        # CORRECT
-        # ----------------------------------------------------
+            self.handle_correct_guess()
 
-        if guess == self.secret_number:
+        else:
 
-            self.timer_running = False
-
-            if self.mode in [
-                "Two Player",
-                "Tournament"
-            ]:
-
-                self.competitive_win()
-
+            if guess < self.number:
+                self.message_label.config(
+                    text="⬆️ Too low!",
+                    fg=CYAN
+                )
             else:
-
-                guesses_used = (
-                    DIFFICULTIES[
-                        self.current_difficulty
-                    ]["attempts"]
-                    - self.attempts_left
+                self.message_label.config(
+                    text="⬇️ Too high!",
+                    fg=ORANGE
                 )
 
-                self.single_player_win(
-                    guesses_used
-                )
+            if self.mode == "Survival":
+                if self.attempts_left <= 0:
+                    self.survival_life_lost()
+                    return
 
-            return
+            elif self.mode == "Endless":
+                if self.attempts_left <= 0:
+                    self.endless_life_lost()
+                    return
 
-        # ----------------------------------------------------
-        # WRONG
-        # ----------------------------------------------------
+            elif self.attempts_left <= 0:
+                self.handle_loss()
+                return
 
-        if guess < self.secret_number:
+        self.update_status()
 
-            self.status_label.config(
-                text="📈 Too Low!"
+    # ========================================================
+    # CORRECT GUESS
+    # ========================================================
+
+    def handle_correct_guess(self):
+
+        self.stop_timer()
+
+        if self.mode == "Single Player":
+
+            gained = max(
+                50,
+                self.score + self.attempts_left * 10 + self.time_left
+            )
+
+            gained *= self.score_multiplier
+
+            self.score = gained
+
+            self.streak += 1
+            self.combo = min(5, self.combo + 1)
+
+            self.profile["games"] += 1
+            self.profile["wins"] += 1
+
+            self.stats[self.difficulty]["games"] += 1
+            self.stats[self.difficulty]["wins"] += 1
+
+            self.add_xp(100 + self.streak * 20)
+
+            if self.score > self.profile["highest_score"]:
+                self.profile["highest_score"] = self.score
+
+            if self.streak > self.profile["best_streak"]:
+                self.profile["best_streak"] = self.streak
+
+            self.save_profile_data()
+            self.check_achievements()
+
+            self.add_leaderboard_score()
+
+            self.game_running = False
+
+            self.message_label.config(
+                text=(
+                    f"🎉 CORRECT! The number was {self.number}!\n"
+                    f"🏆 Score: {self.score}\n"
+                    f"🔥 Streak: {self.streak}"
+                ),
+                fg=GREEN
+            )
+
+            self.update_status()
+
+        elif self.mode == "Survival":
+
+            self.survival_round += 1
+
+            self.add_xp(50)
+
+            self.message_label.config(
+                text=(
+                    f"🔥 ROUND CLEARED!\n"
+                    f"Next round: {self.survival_round}"
+                ),
+                fg=GREEN
+            )
+
+            self.root.after(
+                1200,
+                self.start_survival_round
+            )
+
+        elif self.mode == "Endless":
+
+            self.endless_round += 1
+
+            self.add_xp(40)
+
+            self.message_label.config(
+                text=(
+                    f"♾️ ROUND {self.endless_round - 1} CLEARED!\n"
+                    f"Keep going!"
+                ),
+                fg=GREEN
+            )
+
+            self.root.after(
+                1000,
+                self.start_endless_round
             )
 
         else:
 
-            self.status_label.config(
-                text="📉 Too High!"
+            self.handle_competitive_win()
+
+    # ========================================================
+    # SURVIVAL LIFE
+    # ========================================================
+
+    def survival_life_lost(self):
+
+        self.stop_timer()
+
+        self.survival_lives -= 1
+
+        if self.survival_lives <= 0:
+
+            self.game_running = False
+
+            self.message_label.config(
+                text=(
+                    f"💀 SURVIVAL OVER!\n"
+                    f"You reached Round {self.survival_round}"
+                ),
+                fg=RED
             )
 
-        if self.attempts_left <= 0:
+            self.profile["games"] += 1
+            self.profile["losses"] += 1
 
-            self.timer_running = False
-
-            if self.mode in [
-                "Two Player",
-                "Tournament"
-            ]:
-
-                self.competitive_loss(
-                    f"💥 Out of attempts!\n"
-                    f"The number was "
-                    f"{self.secret_number}."
-                )
-
-            else:
-
-                self.end_single_loss(
-                    f"💥 Out of attempts!\n"
-                    f"The number was "
-                    f"{self.secret_number}."
-                )
-
-            return
-
-        self.update_game_display()
-
-    # ========================================================
-    # SINGLE PLAYER WIN
-    # ========================================================
-
-    def single_player_win(
-        self,
-        guesses_used
-    ):
-
-        self.profile[
-            "total_games"
-        ] += 1
-
-        self.profile[
-            "total_wins"
-        ] += 1
-
-        self.streak += 1
-
-        if self.streak > self.profile[
-            "best_streak"
-        ]:
-
-            self.profile[
-                "best_streak"
-            ] = self.streak
-
-        if self.streak >= 5:
-
-            self.combo = 3
-
-        elif self.streak >= 3:
-
-            self.combo = 2
+            self.save_profile_data()
 
         else:
 
-            self.combo = 1
+            self.message_label.config(
+                text=(
+                    f"💔 Life lost!\n"
+                    f"❤️ Lives remaining: {self.survival_lives}"
+                ),
+                fg=RED
+            )
 
-        score = self.current_score
-
-        score += self.attempts_left * 10
-
-        score += self.time_left * 2
-
-        score *= self.combo
-
-        if self.double_score:
-
-            score *= 2
-
-        self.current_score = score
-
-        self.statistics[
-            "highest_score"
-        ] = max(
-            self.statistics[
-                "highest_score"
-            ],
-            score
-        )
-
-        difficulty_stats = (
-            self.statistics[
-                "difficulty"
-            ][self.current_difficulty]
-        )
-
-        difficulty_stats[
-            "games"
-        ] += 1
-
-        difficulty_stats[
-            "wins"
-        ] += 1
-
-        difficulty_stats[
-            "score"
-        ] += score
-
-        self.add_xp(100)
-
-        self.check_achievements(
-            guesses_used
-        )
-
-        self.save_all()
-
-        self.update_profile_display()
-
-        self.record_leaderboard()
-
-        messagebox.showinfo(
-            "🎉 YOU WIN!",
-            f"Congratulations "
-            f"{self.player_name}!\n\n"
-            f"Secret Number: "
-            f"{self.secret_number}\n"
-            f"Guesses Used: "
-            f"{guesses_used}\n"
-            f"Score: {score}\n"
-            f"Streak: {self.streak}\n"
-            f"Combo: x{self.combo}"
-        )
+            self.root.after(
+                1200,
+                self.start_survival_round
+            )
 
     # ========================================================
-    # SINGLE PLAYER LOSS
+    # ENDLESS LIFE
     # ========================================================
 
-    def end_single_loss(
-        self,
-        message
-    ):
+    def endless_life_lost(self):
 
-        self.profile[
-            "total_games"
-        ] += 1
+        self.stop_timer()
 
-        self.streak = 0
-        self.combo = 1
+        self.endless_lives -= 1
 
-        self.statistics[
-            "difficulty"
-        ][self.current_difficulty][
-            "games"
-        ] += 1
+        if self.endless_lives <= 0:
 
-        self.save_all()
+            self.game_running = False
 
-        self.update_profile_display()
+            self.message_label.config(
+                text=(
+                    f"♾️ ENDLESS RUN OVER!\n"
+                    f"Rounds survived: {self.endless_round - 1}"
+                ),
+                fg=RED
+            )
 
-        messagebox.showinfo(
-            "Game Over",
-            message
-        )
+            self.profile["games"] += 1
+            self.profile["losses"] += 1
+
+            self.save_profile_data()
+
+        else:
+
+            self.message_label.config(
+                text=(
+                    f"💔 Life lost!\n"
+                    f"❤️ Lives remaining: {self.endless_lives}"
+                ),
+                fg=RED
+            )
+
+            self.root.after(
+                1200,
+                self.start_endless_round
+            )
 
     # ========================================================
     # COMPETITIVE WIN
     # ========================================================
 
-    def competitive_win(self):
-
-        winner = (
-            self.player1_name
-            if self.current_turn == 1
-            else self.player2_name
-        )
+    def handle_competitive_win(self):
 
         points = max(
             50,
-            self.current_score
-            + self.attempts_left * 10
-            + self.time_left
+            self.score + self.attempts_left * 10 + self.time_left
+        )
+
+        player = (
+            "Player 1"
+            if self.current_turn == 1
+            else "Player 2"
         )
 
         if self.current_turn == 1:
-
             self.player1_score += points
-
         else:
-
             self.player2_score += points
 
-        self.timer_running = False
+        if self.mode == "Two Player":
 
-        self.update_competitive_display()
+            if self.current_turn == 1:
 
-        messagebox.showinfo(
-            "🏆 ROUND WINNER!",
-            f"🎉 {winner} wins the round!\n\n"
-            f"Secret Number: "
-            f"{self.secret_number}\n"
-            f"Points Earned: {points}\n\n"
-            f"{self.player1_name}: "
-            f"{self.player1_score}\n"
-            f"{self.player2_name}: "
-            f"{self.player2_score}"
-        )
+                self.current_turn = 2
 
-        if self.mode == "Tournament":
+                self.message_label.config(
+                    text=(
+                        f"🎯 Player 1 scored {points}!\n"
+                        f"Now Player 2's turn."
+                    ),
+                    fg=GREEN
+                )
 
-            self.next_tournament_round()
+                self.root.after(
+                    1300,
+                    self.start_competitive_round
+                )
 
-        else:
+            else:
 
-            self.finish_two_player_round()
+                self.game_running = False
 
-    # ========================================================
-    # COMPETITIVE LOSS
-    # ========================================================
-
-    def competitive_loss(
-        self,
-        message
-    ):
-
-        loser = (
-            self.player1_name
-            if self.current_turn == 1
-            else self.player2_name
-        )
-
-        self.timer_running = False
-
-        messagebox.showinfo(
-            "Round Over",
-            f"{message}\n\n"
-            f"{loser} lost the round."
-        )
-
-        if self.mode == "Tournament":
-
-            self.next_tournament_round()
+                self.show_competitive_result()
 
         else:
 
-            self.finish_two_player_round()
+            if self.current_turn == 1:
+
+                self.current_turn = 2
+
+                self.message_label.config(
+                    text=(
+                        f"🎯 Player 1 scored {points}!\n"
+                        f"Player 2's turn!"
+                    ),
+                    fg=GREEN
+                )
+
+                self.root.after(
+                    1300,
+                    self.start_competitive_round
+                )
+
+            else:
+
+                self.finish_tournament_round()
 
     # ========================================================
-    # TWO PLAYER NEXT TURN
+    # TOURNAMENT ROUND
     # ========================================================
 
-    def finish_two_player_round(self):
+    def finish_tournament_round(self):
 
-        if self.current_turn == 1:
+        self.game_running = False
 
-            self.current_turn = 2
+        p1 = self.player1_score
+        p2 = self.player2_score
 
-            self.start_player_turn()
+        if self.tournament_round >= self.total_rounds:
+
+            self.show_tournament_result()
 
         else:
 
-            self.show_two_player_result()
+            self.tournament_round += 1
+            self.current_turn = 1
 
-    # ========================================================
-    # PLAYER TURN
-    # ========================================================
-
-    def start_player_turn(self):
-
-        difficulty = DIFFICULTIES[
-            self.current_difficulty
-        ]
-
-        self.secret_number = random.randint(
-            1,
-            difficulty["max"]
-        )
-
-        self.attempts_left = difficulty[
-            "attempts"
-        ]
-
-        self.time_left = difficulty[
-            "time"
-        ]
-
-        self.current_score = difficulty[
-            "score"
-        ]
-
-        self.guess_entry.delete(
-            0,
-            tk.END
-        )
-
-        self.timer_running = True
-
-        current_player = (
-            self.player1_name
-            if self.current_turn == 1
-            else self.player2_name
-        )
-
-        self.status_label.config(
-            text=(
-                f"🎯 {current_player}'s turn"
+            self.message_label.config(
+                text=(
+                    f"🏆 Round {self.tournament_round - 1} complete!\n"
+                    f"Player 1: {p1}   |   Player 2: {p2}"
+                ),
+                fg=YELLOW
             )
-        )
 
-        self.turn_label.config(
-            text=(
-                f"🎮 TURN: "
-                f"{current_player}"
+            self.root.after(
+                1800,
+                self.start_competitive_round
             )
-        )
-
-        self.update_competitive_display()
-
-        self.timer_tick()
 
     # ========================================================
-    # TWO PLAYER RESULT
+    # RESULTS
     # ========================================================
 
-    def show_two_player_result(self):
+    def show_competitive_result(self):
 
-        self.timer_running = False
+        self.stop_timer()
 
         if self.player1_score > self.player2_score:
 
-            winner = self.player1_name
+            result = (
+                f"🏆 PLAYER 1 WINS!\n\n"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
+            )
 
         elif self.player2_score > self.player1_score:
 
-            winner = self.player2_name
-
-        else:
-
-            winner = "DRAW"
-
-        if winner == "DRAW":
-
             result = (
-                "🤝 IT'S A DRAW!\n\n"
-                f"{self.player1_name}: "
-                f"{self.player1_score}\n"
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
+                f"🏆 PLAYER 2 WINS!\n\n"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
             )
 
         else:
 
             result = (
-                f"🏆 {winner} WINS!\n\n"
-                f"{self.player1_name}: "
-                f"{self.player1_score}\n"
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
+                f"🤝 DRAW!\n\n"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
             )
 
-        messagebox.showinfo(
-            "🏆 MATCH RESULT",
-            result
+        self.message_label.config(
+            text=result,
+            fg=YELLOW
         )
 
-        self.save_all()
+    def show_tournament_result(self):
 
-        self.new_game()
-
-    # ========================================================
-    # TOURNAMENT NEXT ROUND
-    # ========================================================
-
-    def next_tournament_round(self):
-
-        if self.round_number >= self.total_rounds:
-
-            self.finish_tournament()
-
-            return
-
-        self.round_number += 1
-
-        self.current_turn = 1
-
-        messagebox.showinfo(
-            "🏆 Next Round",
-            f"Round {self.round_number} begins!"
-        )
-
-        self.start_competitive_round()
-
-    # ========================================================
-    # TOURNAMENT RESULT
-    # ========================================================
-
-    def finish_tournament(self):
-
-        self.timer_running = False
+        self.stop_timer()
 
         if self.player1_score > self.player2_score:
 
-            winner = self.player1_name
+            result = (
+                "🏆 TOURNAMENT CHAMPION: PLAYER 1!\n\n"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
+            )
 
         elif self.player2_score > self.player1_score:
 
-            winner = self.player2_name
+            result = (
+                "🏆 TOURNAMENT CHAMPION: PLAYER 2!\n\n"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
+            )
 
         else:
-
-            winner = "DRAW"
-
-        if winner == "DRAW":
 
             result = (
                 "🤝 TOURNAMENT DRAW!\n\n"
-                f"{self.player1_name}: "
-                f"{self.player1_score}\n"
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
+                f"Player 1: {self.player1_score}\n"
+                f"Player 2: {self.player2_score}"
             )
 
-        else:
+        self.game_running = False
 
-            result = (
-                f"👑 TOURNAMENT CHAMPION\n\n"
-                f"🏆 {winner}\n\n"
-                f"{self.player1_name}: "
-                f"{self.player1_score}\n"
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
-            )
-
-        messagebox.showinfo(
-            "🏆 TOURNAMENT COMPLETE!",
-            result
+        self.message_label.config(
+            text=result,
+            fg=YELLOW
         )
-
-        self.tournament_active = False
-
-        self.save_all()
-
-        self.mode_var.set(
-            "Single Player"
-        )
-
-        self.mode = "Single Player"
-
-        self.new_game()
 
     # ========================================================
-    # COMPETITIVE DISPLAY
+    # LOSS
     # ========================================================
 
-    def update_competitive_display(self):
+    def handle_loss(self):
 
-        self.competitive_label.config(
+        self.stop_timer()
+
+        self.game_running = False
+
+        self.profile["games"] += 1
+        self.profile["losses"] += 1
+
+        self.streak = 0
+        self.combo = 1
+
+        self.save_profile_data()
+
+        self.message_label.config(
             text=(
-                f"👤 {self.player1_name}: "
-                f"{self.player1_score}"
-                f"     VS     "
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
-            )
+                f"💀 GAME OVER!\n"
+                f"The number was {self.number}"
+            ),
+            fg=RED
         )
 
-        if self.mode in [
-            "Two Player",
-            "Tournament"
-        ]:
+        self.update_status()
 
-            current_player = (
-                self.player1_name
-                if self.current_turn == 1
-                else self.player2_name
+    # ========================================================
+    # TIMER
+    # ========================================================
+
+    def start_timer(self):
+
+        self.stop_timer()
+
+        self.timer_tick()
+
+    def timer_tick(self):
+
+        if not self.game_running:
+            return
+
+        if self.time_freeze:
+            self.timer_id = self.root.after(
+                1000,
+                self.timer_tick
             )
+            return
 
-            self.turn_label.config(
-                text=f"🎮 {current_player}'S TURN"
-            )
+        self.time_left -= 1
 
-        self.score_label.config(
-            text=f"⭐ Score: {self.current_score}"
+        self.update_status()
+
+        if self.time_left <= 0:
+
+            self.time_left = 0
+
+            if self.mode == "Time Attack":
+
+                self.game_running = False
+
+                self.message_label.config(
+                    text=(
+                        f"⏰ TIME'S UP!\n"
+                        f"Final Score: {self.time_attack_score}"
+                    ),
+                    fg=RED
+                )
+
+                self.add_xp(self.time_attack_score // 10)
+
+            elif self.mode == "Survival":
+
+                self.survival_life_lost()
+
+            elif self.mode == "Endless":
+
+                self.endless_life_lost()
+
+            else:
+
+                self.handle_loss()
+
+            return
+
+        self.timer_id = self.root.after(
+            1000,
+            self.timer_tick
         )
 
-        self.attempts_label.config(
-            text=(
-                f"Attempts Remaining: "
-                f"{self.attempts_left}"
-            )
-        )
+    def stop_timer(self):
+
+        if self.timer_id is not None:
+
+            try:
+                self.root.after_cancel(self.timer_id)
+            except Exception:
+                pass
+
+            self.timer_id = None
 
     # ========================================================
     # POWER UPS
     # ========================================================
 
+    def competitive_powerup_blocked(self):
+
+        return self.mode in [
+            "Two Player",
+            "Tournament"
+        ]
+
     def use_extra_life(self):
 
-        if self.mode != "Single Player":
-
+        if not self.game_running:
             return
 
-        if not self.extra_life:
-
+        if self.competitive_powerup_blocked():
             return
 
-        self.extra_life = False
+        if self.power_used:
+            return
+
+        self.power_used = True
+        self.extra_life += 2
 
         self.attempts_left += 2
 
-        self.power_used = True
-
-        self.life_button.config(
-            state="disabled"
+        self.message_label.config(
+            text="❤️ EXTRA LIFE ACTIVATED! +2 attempts",
+            fg=RED
         )
 
-        self.status_label.config(
-            text="❤️ +2 ATTEMPTS!"
-        )
+        self.disable_powerups()
 
-        self.update_game_display()
+        self.update_status()
 
     def use_time_freeze(self):
 
-        if self.mode != "Single Player":
-
+        if not self.game_running:
             return
 
-        if not self.time_freeze:
-
+        if self.competitive_powerup_blocked():
             return
 
-        self.time_freeze = False
+        if self.power_used:
+            return
 
         self.power_used = True
+        self.time_freeze = True
 
-        self.freeze_button.config(
-            state="disabled"
+        self.message_label.config(
+            text="❄️ TIME FROZEN FOR 10 SECONDS!",
+            fg=CYAN
         )
 
-        self.timer_running = False
-
-        self.status_label.config(
-            text="❄️ TIME FROZEN!"
-        )
+        self.disable_powerups()
 
         self.root.after(
             10000,
-            self.resume_timer
+            self.end_time_freeze
         )
 
-    def resume_timer(self):
+    def end_time_freeze(self):
 
-        if not self.timer_running:
-
-            self.timer_running = True
-
-            self.timer_tick()
+        self.time_freeze = False
 
     def use_double_score(self):
 
-        if self.mode != "Single Player":
-
+        if not self.game_running:
             return
 
-        if not self.double_score:
-
+        if self.competitive_powerup_blocked():
             return
 
-        self.double_score = False
+        if self.power_used:
+            return
+
+        self.power_used = True
+        self.score_multiplier = 2
+
+        self.message_label.config(
+            text="⭐ 2X SCORE ACTIVATED!",
+            fg=YELLOW
+        )
+
+        self.disable_powerups()
+
+    def reveal_range(self):
+
+        if not self.game_running:
+            return
+
+        if self.competitive_powerup_blocked():
+            return
+
+        if self.power_used:
+            return
 
         self.power_used = True
 
-        self.double_button.config(
-            state="disabled"
-        )
-
-        self.status_label.config(
-            text="⭐ 2X SCORE ACTIVATED!"
-        )
-
-    def use_reveal_range(self):
-
-        if self.mode != "Single Player":
-
-            return
-
-        if not self.reveal_range:
-
-            return
-
-        self.reveal_range = False
-
-        self.power_used = True
-
-        self.range_button.config(
-            state="disabled"
-        )
-
-        lower = max(
-            1,
-            self.secret_number - 10
-        )
-
-        upper = min(
-            DIFFICULTIES[
-                self.current_difficulty
-            ]["max"],
-            self.secret_number + 10
-        )
+        low = max(1, self.number - 10)
+        high = self.number + 10
 
         self.range_label.config(
-            text=(
-                f"🔍 Secret is between "
-                f"{lower} and {upper}"
-            )
+            text=f"🔍 Secret range: {low} - {high}"
         )
 
+        self.message_label.config(
+            text="🔍 Range revealed!",
+            fg=PURPLE
+        )
+
+        self.disable_powerups()
+
+    def disable_powerups(self):
+
+        for button in [
+            self.life_btn,
+            self.freeze_btn,
+            self.double_btn,
+            self.reveal_btn
+        ]:
+            button.config(
+                state="disabled"
+            )
+
+    def enable_powerups(self):
+
+        for button in [
+            self.life_btn,
+            self.freeze_btn,
+            self.double_btn,
+            self.reveal_btn
+        ]:
+            button.config(
+                state="normal"
+            )
+
     # ========================================================
-    # XP
+    # XP / LEVEL
     # ========================================================
 
     def add_xp(self, amount):
 
-        self.profile["xp"] += amount
+        self.profile["xp"] = self.profile.get(
+            "xp",
+            0
+        ) + amount
 
-        self.statistics[
-            "total_xp_earned"
-        ] += amount
+        self.update_level()
 
-        while self.profile[
-            "xp"
-        ] >= self.profile[
-            "level"
-        ] * 250:
+        self.save_profile_data()
 
-            required = (
-                self.profile["level"]
-                * 250
-            )
+    def update_level(self):
 
-            self.profile[
-                "xp"
-            ] -= required
+        xp = self.profile.get("xp", 0)
 
-            self.profile[
-                "level"
-            ] += 1
-
-            self.statistics[
-                "highest_level"
-            ] = max(
-                self.statistics[
-                    "highest_level"
-                ],
-                self.profile["level"]
-            )
-
-            messagebox.showinfo(
-                "⭐ LEVEL UP!",
-                f"You reached Level "
-                f"{self.profile['level']}!"
-            )
-
-    # ========================================================
-    # ACHIEVEMENTS
-    # ========================================================
-
-    def unlock_achievement(
-        self,
-        key
-    ):
-
-        if key in self.achievements:
-
-            return
-
-        achievement = ACHIEVEMENTS[
-            key
-        ]
-
-        self.achievements[
-            key
-        ] = True
-
-        self.add_xp(
-            achievement["xp"]
+        new_level = max(
+            1,
+            xp // 500 + 1
         )
 
-        messagebox.showinfo(
-            "🏆 Achievement Unlocked!",
-            f"{achievement['icon']} "
-            f"{achievement['name']}\n\n"
-            f"{achievement['description']}\n\n"
-            f"+{achievement['xp']} XP"
+        old_level = self.profile.get(
+            "level",
+            1
         )
 
-    def check_achievements(
-        self,
-        guesses_used
-    ):
+        self.profile["level"] = new_level
 
-        if self.profile[
-            "total_wins"
-        ] == 1:
+        if new_level > old_level:
 
-            self.unlock_achievement(
-                "first_win"
+            self.message_label.config(
+                text=f"🎉 LEVEL UP! You are now Level {new_level}!",
+                fg=PURPLE
             )
 
-        if guesses_used <= 3:
-
-            self.unlock_achievement(
-                "sharp_shooter"
-            )
-
-        if self.streak >= 3:
-
-            self.unlock_achievement(
-                "on_fire"
-            )
-
-        if self.power_used:
-
-            self.unlock_achievement(
-                "power_player"
-            )
-
-        if self.current_score >= 300:
-
-            self.unlock_achievement(
-                "high_roller"
-            )
-
-        if not self.power_used:
-
-            self.unlock_achievement(
-                "no_help"
-            )
-
-        if self.time_left >= 10:
-
-            self.unlock_achievement(
-                "speed_demon"
-            )
-
-        if self.current_difficulty == "Hard":
-
-            self.unlock_achievement(
-                "hard_mode"
-            )
-
-        if self.streak >= 5:
-
-            self.unlock_achievement(
-                "five_streak"
-            )
-
-        if self.profile[
-            "level"
-        ] >= 5:
-
-            self.unlock_achievement(
-                "level_five"
-            )
-
-    # ========================================================
-    # LEADERBOARD
-    # ========================================================
-
-    def record_leaderboard(self):
-
-        entry = {
-            "name": self.player_name,
-            "score": self.current_score,
-            "difficulty": self.current_difficulty
-        }
-
-        self.leaderboard.append(
-            entry
-        )
-
-        self.leaderboard.sort(
-            key=lambda x: x["score"],
-            reverse=True
-        )
-
-        self.leaderboard = (
-            self.leaderboard[:10]
-        )
-
-        save_json(
-            SAVE_FILE,
-            self.leaderboard
-        )
-
-    # ========================================================
-    # LEADERBOARD WINDOW
-    # ========================================================
-
-    def show_leaderboard(self):
-
-        window = tk.Toplevel(
-            self.root
-        )
-
-        window.title(
-            "🏆 Leaderboard"
-        )
-
-        window.geometry(
-            "600x500"
-        )
-
-        window.configure(
-            bg=BG
-        )
-
-        tk.Label(
-            window,
-            text="🏆 TOP PLAYERS",
-            font=("Segoe UI", 20, "bold"),
-            bg=BG,
-            fg=YELLOW
-        ).pack(
-            pady=20
-        )
-
-        for index, player in enumerate(
-            self.leaderboard,
-            start=1
-        ):
-
-            text = (
-                f"{index}. "
-                f"{player['name']}   "
-                f"{player['score']} pts   "
-                f"({player['difficulty']})"
-            )
-
-            tk.Label(
-                window,
-                text=text,
-                font=("Segoe UI", 11, "bold"),
-                bg=PANEL,
-                fg=WHITE,
-                anchor="w",
-                padx=15
-            ).pack(
-                fill="x",
-                padx=35,
-                pady=3
-            )
+        self.update_profile_display()
 
     # ========================================================
     # PROFILE
     # ========================================================
 
+    def save_profile_data(self):
+
+        self.save_json(
+            PROFILE_FILE,
+            self.profile
+        )
+
+        self.save_json(
+            STATS_FILE,
+            self.stats
+        )
+
+        self.update_profile_display()
+
+    def update_profile_display(self):
+
+        xp = self.profile.get("xp", 0)
+        level = self.profile.get("level", 1)
+
+        self.xp_label.config(
+            text=f"XP: {xp} | Lv.{level}"
+        )
+
+    # ========================================================
+    # LEADERBOARD
+    # ========================================================
+
+    def add_leaderboard_score(self):
+
+        leaderboard = self.load_json(
+            LEADERBOARD_FILE,
+            []
+        )
+
+        leaderboard.append(
+            {
+                "name": self.player_name,
+                "score": self.score,
+                "mode": self.mode,
+                "difficulty": self.difficulty
+            }
+        )
+
+        leaderboard.sort(
+            key=lambda x: x.get("score", 0),
+            reverse=True
+        )
+
+        leaderboard = leaderboard[:10]
+
+        self.save_json(
+            LEADERBOARD_FILE,
+            leaderboard
+        )
+
+    def show_leaderboard(self):
+
+        leaderboard = self.load_json(
+            LEADERBOARD_FILE,
+            []
+        )
+
+        window = tk.Toplevel(self.root)
+        window.title("🏆 Leaderboard")
+        window.geometry("600x500")
+        window.configure(bg=BG)
+
+        tk.Label(
+            window,
+            text="🏆 TOP 10 LEADERBOARD",
+            font=("Arial", 20, "bold"),
+            bg=BG,
+            fg=YELLOW
+        ).pack(pady=20)
+
+        if not leaderboard:
+
+            tk.Label(
+                window,
+                text="No scores yet!",
+                font=("Arial", 14),
+                bg=BG,
+                fg=GRAY
+            ).pack()
+
+        else:
+
+            for i, entry in enumerate(
+                leaderboard,
+                start=1
+            ):
+
+                text = (
+                    f"{i}. {entry.get('name', 'Player')}   "
+                    f"• {entry.get('score', 0)} pts   "
+                    f"• {entry.get('mode', 'Unknown')}"
+                )
+
+                tk.Label(
+                    window,
+                    text=text,
+                    font=("Arial", 11, "bold"),
+                    bg=PANEL,
+                    fg=WHITE,
+                    anchor="w",
+                    padx=15,
+                    pady=8
+                ).pack(
+                    fill="x",
+                    padx=25,
+                    pady=3
+                )
+
+    # ========================================================
+    # PROFILE WINDOW
+    # ========================================================
+
     def show_profile(self):
 
-        window = tk.Toplevel(
-            self.root
+        window = tk.Toplevel(self.root)
+        window.title("👤 Player Profile")
+        window.geometry("600x600")
+        window.configure(bg=BG)
+
+        name = self.profile.get(
+            "name",
+            "Player"
         )
 
-        window.title(
-            "👤 Player Profile"
+        games = self.profile.get(
+            "games",
+            0
         )
 
-        window.geometry(
-            "720x650"
+        wins = self.profile.get(
+            "wins",
+            0
         )
 
-        window.configure(
-            bg=BG
+        losses = self.profile.get(
+            "losses",
+            0
         )
+
+        win_rate = (
+            (wins / games) * 100
+            if games > 0
+            else 0
+        )
+
+        highest = self.profile.get(
+            "highest_score",
+            0
+        )
+
+        best_streak = self.profile.get(
+            "best_streak",
+            0
+        )
+
+        total_guesses = self.profile.get(
+            "total_guesses",
+            0
+        )
+
+        achievements = len(
+            self.achievements
+        )
+
+        stats = [
+            ("👤 Player", name),
+            ("⭐ Level", self.profile.get("level", 1)),
+            ("✨ XP", self.profile.get("xp", 0)),
+            ("🎮 Games", games),
+            ("🏆 Wins", wins),
+            ("💀 Losses", losses),
+            ("📈 Win Rate", f"{win_rate:.1f}%"),
+            ("🔥 Best Streak", best_streak),
+            ("💰 Highest Score", highest),
+            ("🎯 Total Guesses", total_guesses),
+            ("🏅 Achievements", achievements)
+        ]
 
         tk.Label(
             window,
             text="👤 PLAYER PROFILE",
-            font=("Segoe UI", 24, "bold"),
+            font=("Arial", 22, "bold"),
             bg=BG,
             fg=CYAN
-        ).pack(
-            pady=(20, 3)
-        )
+        ).pack(pady=20)
 
-        tk.Label(
-            window,
-            text=self.player_name,
-            font=("Segoe UI", 16, "bold"),
-            bg=BG,
-            fg=WHITE
-        ).pack()
-
-        tk.Label(
-            window,
-            text=(
-                f"⭐ Level "
-                f"{self.profile['level']}"
-            ),
-            font=("Segoe UI", 12, "bold"),
-            bg=BG,
-            fg=YELLOW
-        ).pack(
-            pady=5
-        )
-
-        total_games = (
-            self.profile["total_games"]
-        )
-
-        wins = (
-            self.profile["total_wins"]
-        )
-
-        losses = max(
-            0,
-            total_games - wins
-        )
-
-        if total_games > 0:
-
-            win_rate = (
-                wins / total_games
-            ) * 100
-
-        else:
-
-            win_rate = 0
-
-        if total_games > 0:
-
-            average_guesses = (
-                self.statistics[
-                    "total_guesses"
-                ] / total_games
-            )
-
-        else:
-
-            average_guesses = 0
-
-        rows = [
-
-            (
-                "🎮 Total Games",
-                total_games
-            ),
-
-            (
-                "🏆 Total Wins",
-                wins
-            ),
-
-            (
-                "💥 Total Losses",
-                losses
-            ),
-
-            (
-                "📈 Win Rate",
-                f"{win_rate:.1f}%"
-            ),
-
-            (
-                "💯 Highest Score",
-                self.statistics[
-                    "highest_score"
-                ]
-            ),
-
-            (
-                "🔥 Best Streak",
-                self.profile[
-                    "best_streak"
-                ]
-            ),
-
-            (
-                "🎯 Average Guesses",
-                f"{average_guesses:.1f}"
-            ),
-
-            (
-                "⭐ Total XP",
-                self.statistics[
-                    "total_xp_earned"
-                ]
-            ),
-
-            (
-                "👑 Highest Level",
-                self.statistics[
-                    "highest_level"
-                ]
-            ),
-
-            (
-                "🎖 Achievements",
-                f"{len(self.achievements)}/"
-                f"{len(ACHIEVEMENTS)}"
-            )
-        ]
-
-        frame = tk.Frame(
-            window,
-            bg=BG
-        )
-
-        frame.pack(
-            fill="both",
-            expand=True,
-            padx=30,
-            pady=20
-        )
-
-        for title, value in rows:
+        for label, value in stats:
 
             row = tk.Frame(
-                frame,
+                window,
                 bg=PANEL
             )
-
             row.pack(
                 fill="x",
-                pady=3
+                padx=50,
+                pady=4
             )
 
             tk.Label(
                 row,
-                text=title,
-                font=("Segoe UI", 10, "bold"),
+                text=str(label),
+                font=("Arial", 11, "bold"),
                 bg=PANEL,
-                fg=WHITE,
+                fg=GRAY,
+                width=20,
                 anchor="w"
             ).pack(
                 side="left",
-                padx=15,
+                padx=10,
                 pady=8
             )
 
             tk.Label(
                 row,
                 text=str(value),
-                font=("Segoe UI", 10, "bold"),
+                font=("Arial", 11, "bold"),
                 bg=PANEL,
-                fg=CYAN
+                fg=WHITE
             ).pack(
                 side="right",
-                padx=15
+                padx=10
             )
 
     # ========================================================
     # ACHIEVEMENTS
     # ========================================================
 
+    def check_achievements(self):
+
+        achievements = {
+            "first_win": (
+                self.profile.get("wins", 0) >= 1,
+                "🏆 First Win"
+            ),
+
+            "sharp_shooter": (
+                self.attempts_left >= 7,
+                "🎯 Sharp Shooter"
+            ),
+
+            "on_fire": (
+                self.streak >= 3,
+                "🔥 On Fire"
+            ),
+
+            "power_player": (
+                self.power_used,
+                "💥 Power Player"
+            ),
+
+            "high_roller": (
+                self.score >= 500,
+                "💰 High Roller"
+            ),
+
+            "no_help": (
+                not self.power_used,
+                "🧠 No Help Needed"
+            ),
+
+            "speed_demon": (
+                self.time_left >= 30,
+                "⚡ Speed Demon"
+            ),
+
+            "hard_mode": (
+                self.difficulty == "Hard",
+                "💀 Hard Mode"
+            ),
+
+            "five_streak": (
+                self.streak >= 5,
+                "🔥 Five Streak"
+            ),
+
+            "level_five": (
+                self.profile.get("level", 1) >= 5,
+                "⭐ Level Five"
+            )
+        }
+
+        for key, (condition, name) in achievements.items():
+
+            if condition and key not in self.achievements:
+
+                self.achievements[key] = {
+                    "name": name,
+                    "unlocked": True
+                }
+
+                self.save_json(
+                    ACHIEVEMENTS_FILE,
+                    self.achievements
+                )
+
     def show_achievements(self):
 
-        window = tk.Toplevel(
-            self.root
-        )
-
-        window.title(
-            "🎖 Achievement Hall"
-        )
-
-        window.geometry(
-            "700x620"
-        )
-
-        window.configure(
-            bg=BG
-        )
+        window = tk.Toplevel(self.root)
+        window.title("🏅 Achievements")
+        window.geometry("600x600")
+        window.configure(bg=BG)
 
         tk.Label(
             window,
-            text="🎖 ACHIEVEMENT HALL",
-            font=("Segoe UI", 20, "bold"),
+            text="🏅 ACHIEVEMENT HALL",
+            font=("Arial", 22, "bold"),
             bg=BG,
-            fg=ORANGE
-        ).pack(
-            pady=15
-        )
+            fg=PINK
+        ).pack(pady=20)
 
-        tk.Label(
-            window,
-            text=(
-                f"{len(self.achievements)}/"
-                f"{len(ACHIEVEMENTS)} Unlocked"
-            ),
-            font=("Segoe UI", 11, "bold"),
-            bg=BG,
-            fg=CYAN
-        ).pack(
-            pady=(0, 15)
-        )
+        all_achievements = [
+            ("first_win", "🏆 First Win"),
+            ("sharp_shooter", "🎯 Sharp Shooter"),
+            ("on_fire", "🔥 On Fire"),
+            ("power_player", "💥 Power Player"),
+            ("high_roller", "💰 High Roller"),
+            ("no_help", "🧠 No Help Needed"),
+            ("speed_demon", "⚡ Speed Demon"),
+            ("hard_mode", "💀 Hard Mode"),
+            ("five_streak", "🔥 Five Streak"),
+            ("level_five", "⭐ Level Five")
+        ]
 
-        for key, achievement in (
-            ACHIEVEMENTS.items()
-        ):
+        for key, name in all_achievements:
 
-            unlocked = (
-                key in self.achievements
-            )
+            unlocked = key in self.achievements
 
-            status = (
-                "✅ UNLOCKED"
+            text = (
+                f"✅ {name}"
                 if unlocked
-                else "🔒 LOCKED"
+                else f"🔒 {name}"
             )
 
             color = (
@@ -2478,200 +2024,68 @@ class NumberGuessingGame:
                 else GRAY
             )
 
-            row = tk.Frame(
+            tk.Label(
                 window,
-                bg=PANEL
-            )
-
-            row.pack(
+                text=text,
+                font=("Arial", 12, "bold"),
+                bg=PANEL,
+                fg=color,
+                anchor="w",
+                padx=20,
+                pady=10
+            ).pack(
                 fill="x",
-                padx=25,
-                pady=4
-            )
-
-            tk.Label(
-                row,
-                text=achievement["icon"],
-                font=("Segoe UI Emoji", 18),
-                bg=PANEL,
-                fg=WHITE
-            ).pack(
-                side="left",
-                padx=10
-            )
-
-            tk.Label(
-                row,
-                text=achievement["name"],
-                font=("Segoe UI", 11, "bold"),
-                bg=PANEL,
-                fg=WHITE
-            ).pack(
-                side="left"
-            )
-
-            tk.Label(
-                row,
-                text=status,
-                font=("Segoe UI", 9, "bold"),
-                bg=PANEL,
-                fg=color
-            ).pack(
-                side="right",
-                padx=10
+                padx=40,
+                pady=3
             )
 
     # ========================================================
-    # DISPLAY
+    # STATUS
     # ========================================================
 
-    def update_game_display(self):
+    def update_status(self):
 
-        self.score_label.config(
-            text=(
-                f"⭐ Score: "
-                f"{self.current_score}"
+        self.attempt_label.config(
+            text=f"Attempts: {self.attempts_left}"
+        )
+
+        self.timer_label.config(
+            text=f"⏱ {self.time_left:02d}"
+        )
+
+        if self.mode == "Time Attack":
+
+            self.score_label.config(
+                text=f"Score: {self.time_attack_score}"
             )
-        )
 
-        self.streak_label.config(
-            text=(
-                f"🔥 Streak: "
-                f"{self.streak}"
-                f"   Combo: x{self.combo}"
+        elif self.mode in [
+            "Two Player",
+            "Tournament"
+        ]:
+
+            self.score_label.config(
+                text=(
+                    f"P1: {self.player1_score} "
+                    f"| P2: {self.player2_score}"
+                )
             )
-        )
-
-        self.attempts_label.config(
-            text=(
-                f"Attempts Remaining: "
-                f"{self.attempts_left}"
-            )
-        )
-
-        self.update_profile_display()
-
-    def update_profile_display(self):
-
-        level = self.profile[
-            "level"
-        ]
-
-        xp = self.profile[
-            "xp"
-        ]
-
-        self.player_display.config(
-            text=self.player_name
-        )
-
-        self.level_display.config(
-            text=f"⭐ Level {level}"
-        )
-
-        required = level * 250
-
-        self.xp_label.config(
-            text=f"XP: {xp}/{required}"
-        )
-
-        self.xp_bar.delete(
-            "all"
-        )
-
-        progress = min(
-            1,
-            xp / required
-        )
-
-        self.xp_bar.create_rectangle(
-            0,
-            0,
-            210 * progress,
-            16,
-            fill=PURPLE,
-            outline=""
-        )
-
-        total_games = (
-            self.profile[
-                "total_games"
-            ]
-        )
-
-        wins = (
-            self.profile[
-                "total_wins"
-            ]
-        )
-
-        if total_games:
-
-            win_rate = (
-                wins / total_games
-            ) * 100
 
         else:
 
-            win_rate = 0
-
-        self.quick_stats.config(
-            text=(
-                f"🎮 Games: {total_games}\n"
-                f"🏆 Wins: {wins}\n"
-                f"📈 Win Rate: "
-                f"{win_rate:.1f}%\n"
-                f"🔥 Best Streak: "
-                f"{self.profile['best_streak']}\n"
-                f"💯 High Score: "
-                f"{self.statistics['highest_score']}\n"
-                f"🎖 Badges: "
-                f"{len(self.achievements)}/"
-                f"{len(ACHIEVEMENTS)}"
+            self.score_label.config(
+                text=f"Score: {self.score}"
             )
-        )
-
-        self.competitive_side.config(
-            text=(
-                f"{self.player1_name}: "
-                f"{self.player1_score}\n\n"
-                f"{self.player2_name}: "
-                f"{self.player2_score}"
-            )
-        )
-
-    # ========================================================
-    # SAVE EVERYTHING
-    # ========================================================
-
-    def save_all(self):
-
-        save_json(
-            PROFILE_FILE,
-            self.profile
-        )
-
-        save_json(
-            ACHIEVEMENT_FILE,
-            self.achievements
-        )
-
-        save_json(
-            STATS_FILE,
-            self.statistics
-        )
 
 
 # ============================================================
-# START
+# RUN
 # ============================================================
 
 if __name__ == "__main__":
 
     root = tk.Tk()
 
-    game = NumberGuessingGame(
-        root
-    )
+    game = NumberGuessingGame(root)
 
     root.mainloop()
